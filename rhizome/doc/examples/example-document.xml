@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<rhizome xmlns="http://technosophos.com/xml/rhizome" 
+		docID="example-document.xml">
+	<metadata>
+		<metadatum name="title">
+			<value>Test Document</value>
+		</metadatum>
+		<metadatum name="tags">
+			<value>test</value>
+			<value>document</value>
+			<value>dummy</value>
+		</metadatum>
+		<metadatum name="created on" datatype="date-ISO">
+			<value>2006 12 21 00:00:01</value>
+		</metadatum>
+	</metadata>
+	<relations>
+		<relation relationType="child of">12345.xml</relation>
+		<relation relationType="created after">45678.xml</relation>
+		<relation relationType="crossreference">5432.xml</relaton>
+	</relations>
+	<data mimetype="text/xhtml">
+		<![CDATA[
+		<html><head><title>test</title></head><body>test</body></html>
+		]]>
+	</data>
+	<extensions>
+		<extension name="fooext">
+			<fooext:main xmlns:fooext="urn:fooext"/>
+		</extension>
+	</extensions>
+</rhizome>

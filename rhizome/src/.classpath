@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/mbutcher/temp/better-xml-java-daily-2006-08-24/dist/BetterXML-20060824.jar"/>
+	<classpathentry kind="output" path=""/>
+</classpath>
