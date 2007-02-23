@@ -39,6 +39,7 @@ public class RepositoryManager {
 	private String indexerClassName = null;
 	private String repositoryClassName = null;
 	private String searcherClassName = null;
+	
 	private DocumentRepository repoInstance = null;
 	private DocumentIndexer indexerInstance = null;
 	private RepositorySearcher searchInstance = null;
