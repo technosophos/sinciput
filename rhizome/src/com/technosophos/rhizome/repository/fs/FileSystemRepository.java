@@ -235,15 +235,6 @@ public class FileSystemRepository implements DocumentRepository {
 		if(!overwrite && docPath.exists())
 			throw new DocumentExistsException("Document exists: "+doc.getDocumentID());
 		
-		String fileContents;
-		try {
-			fileContents = doc.toXML();
-		} catch(javax.xml.parsers.ParserConfigurationException pce) {
-			throw new RepositoryAccessException(
-					"Could not get contents of RhizomeDocument: " + doc.getDocumentID() 
-					+ "(Error: " + pce.getMessage() + ")");
-		}
-		
 		/*
 		 * What we want to do:
 		 * 1. Lock the file. Ideally, this info should be stored on the file system,
@@ -256,7 +247,7 @@ public class FileSystemRepository implements DocumentRepository {
 			FileWriter fout = null;
 			try {
 				fout = new FileWriter(docPath);
-				fout.write(fileContents);
+				doc.toXML(fout);
 				fout.flush();
 				fout.close();	
 			} catch (IOException ioe) {
@@ -269,6 +260,11 @@ public class FileSystemRepository implements DocumentRepository {
 				throw new RepositoryAccessException("Could not write file: "
 						+ doc.getDocumentID()
 						+ " (IO Error: " + doc.getDocumentID() + ")");
+			} catch(javax.xml.parsers.ParserConfigurationException pce) {
+				try{ fout.close(); } catch (IOException e) {}
+				throw new RepositoryAccessException(
+						"Could not get contents of RhizomeDocument: " + doc.getDocumentID() 
+						+ "(Error: " + pce.getMessage() + ")");
 			} finally {
 				FileSystemLocks.getInstance().removeLock(doc.getDocumentID());
 			}
