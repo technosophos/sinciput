@@ -1,9 +1,14 @@
 package com.technosophos.rhizome.document;
 
 import java.util.ArrayList;
+import java.io.CharArrayWriter;
+
 //import org.betterxml.xelement.XDocument;
 import org.w3c.dom.*;
 import javax.xml.parsers.*;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import com.technosophos.rhizome.document.DocumentID;
 import com.technosophos.rhizome.document.Extension;
@@ -332,6 +337,7 @@ public class RhizomeDocument {
 		rhizome_ele.setAttribute(RHIZOME_DOC_ATTR_DOCID, this.docID);
 		doc.appendChild(rhizome_ele);
 		this.addRhizomeElements(doc, rhizome_ele);
+		//System.out.println("Root: " + doc.getFirstChild().getNodeName());
 		return doc;
 	}
 	
@@ -351,10 +357,16 @@ public class RhizomeDocument {
 	 */
 	private void addRhizomeElements(Document doc, Element rhizome_ele) {
 		//Add the main document sections:
+		/*
 		Element meta_ele = doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_METADATA);
 		Element relations_ele = doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_RELATIONS);
 		Element data_ele = doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_DATA);
 		Element extensions_ele = doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_EXTENSIONS);
+		*/
+		Element meta_ele = doc.createElement(RHIZOME_DOC_METADATA);
+		Element relations_ele = doc.createElement(RHIZOME_DOC_RELATIONS);
+		Element data_ele = doc.createElement(RHIZOME_DOC_DATA);
+		Element extensions_ele = doc.createElement(RHIZOME_DOC_EXTENSIONS);
 		rhizome_ele.appendChild(meta_ele);
 		rhizome_ele.appendChild(relations_ele);
 		rhizome_ele.appendChild(data_ele);
@@ -364,6 +376,7 @@ public class RhizomeDocument {
 		Element md_ele, val_ele;
 		Text val_pcd;
 		for (Metadatum m : this.getMetadata()) {
+			/*
 			md_ele = doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_METADATUM);
 			md_ele.setAttributeNS(RHIZOME_DOC_XMLNS, 
 					RHIZOME_DOC_ATTR_NAME, 
@@ -371,10 +384,15 @@ public class RhizomeDocument {
 			md_ele.setAttributeNS(RHIZOME_DOC_XMLNS, 
 					RHIZOME_DOC_ATTR_DATATYPE, 
 					m.getDataType());
+			*/
+			md_ele = doc.createElement(RHIZOME_DOC_METADATUM);
+			md_ele.setAttribute(RHIZOME_DOC_ATTR_NAME, m.getName());
+			md_ele.setAttribute(RHIZOME_DOC_ATTR_DATATYPE, m.getDataType());
 			meta_ele.appendChild(md_ele);
 			if(m.hasValues()) {
 				for(String txt : m.getValues()) {
-					val_ele = doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_VALUE);
+					//val_ele = doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_VALUE);
+					val_ele = doc.createElement(RHIZOME_DOC_VALUE);
 					val_pcd = doc.createTextNode(txt);
 					val_ele.appendChild(val_pcd);
 					md_ele.appendChild(val_ele);
@@ -387,19 +405,25 @@ public class RhizomeDocument {
 			Element rel_ele; 
 			Text rel_txt;
 			for(Relation r : this.getRelations()) {
-				rel_ele = doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_VALUE);
+				//rel_ele = doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_VALUE);
+				rel_ele = doc.createElement(RHIZOME_DOC_VALUE);
 				rel_txt = doc.createTextNode(r.getDocID());
 				rel_ele.appendChild(rel_txt);
 				if(r.hasRelationType())
+					rel_ele.setAttribute(RHIZOME_DOC_ATTR_RELATIONTYPE,r.getRelationType());
+					/*
 					rel_ele.setAttributeNS(RHIZOME_DOC_XMLNS, 
 							RHIZOME_DOC_ATTR_RELATIONTYPE, 
 							r.getRelationType());
+					*/
+					
 			}
 		}
 		
 		//Add data
 		if(this.body.getDataLength() > 0) {
-			data_ele.setAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_MIMETYPE, this.body.getMimeType());
+			//data_ele.setAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_MIMETYPE, this.body.getMimeType());
+			data_ele.setAttribute(RHIZOME_DOC_ATTR_MIMETYPE, this.body.getMimeType());
 			if(this.body.isXMLMimeType()) {
 				// FIXME: Do XML processing...
 				/*
@@ -435,10 +459,14 @@ public class RhizomeDocument {
 		if(this.extensions.size() > 0 ) {
 			Element ext_ele;
 			for(Extension ext : this.getExtensions()) {
+				/*
 				ext_ele = doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_EXTENSION);
 				ext_ele.setAttributeNS(RHIZOME_DOC_XMLNS, 
 						RHIZOME_DOC_ATTR_NAME, 
 						ext.getName());
+				*/
+				ext_ele = doc.createElement(RHIZOME_DOC_EXTENSION);
+				ext_ele.setAttribute(RHIZOME_DOC_ATTR_NAME, ext.getName());
 				extensions_ele.appendChild(ext_ele);
 				Node extroot_ele = doc.importNode(
 						ext.getDOMDocument().getDocumentElement(), 
@@ -448,8 +476,32 @@ public class RhizomeDocument {
 		}
 	}
 	
+	/**
+	 * Get an XML String.
+	 * @return
+	 * @throws ParserConfigurationException
+	 */
 	public String toXML() throws ParserConfigurationException {
-		return this.getDOM().toString();
+		Document d = this.getDOM();
+		//System.out.println("Root Node: " + d.getFirstChild().getNodeName());
+		CharArrayWriter output = new CharArrayWriter();
+		try {
+			Transformer t = TransformerFactory.newInstance().newTransformer();
+			t.transform(new DOMSource(d), new StreamResult(output));
+		} catch (Exception e) {
+			throw new ParserConfigurationException("Could not create Transformer: " + 
+					e.getMessage());
+		}
+		
+		return output.toString();
+	}
+	
+	public String toString() {
+		try {
+			return this.toXML();
+		} catch(ParserConfigurationException pce) {
+			return super.toString() + " (Parser Not Found)";
+		}
 	}
 	/*
 	public XDocument getXDocument() {

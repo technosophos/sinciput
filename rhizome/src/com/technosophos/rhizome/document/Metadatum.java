@@ -145,6 +145,18 @@ public class Metadatum {
 		this.values.add(val);
 	}
 	
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append(this.name);
+		sb.append(": ");
+		for(int i = 0; i < this.values.size(); ++i) {
+			if(i > 0)
+				sb.append(", ");
+			sb.append(this.values.get(i));
+		}
+		return sb.toString();
+	}
+	
 	/*
 	public String toXML() {
 		

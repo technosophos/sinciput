@@ -1,6 +1,7 @@
 package com.technosophos.rhizome.repository;
 
 import com.technosophos.rhizome.document.RhizomeDocument;
+import com.technosophos.rhizome.document.RhizomeParseException;
 
 /**
  * A document repository provides access to document storage.
@@ -25,7 +26,8 @@ public interface DocumentRepository {
 	 * Set the object that will contain configuration information.
 	 * @param ctx
 	 */
-	public void setConfiguration(RepositoryContext ctx);
+	public void setConfiguration(RepositoryContext ctx) 
+		throws RhizomeInitializationException;
 	
 	/**
 	 * Get the object that contains the configuration info that this 
@@ -39,14 +41,15 @@ public interface DocumentRepository {
 	 * @param docID
 	 * @return
 	 */
-	public RhizomeDocument getDocument(String docID);
+	public RhizomeDocument getDocument(String docID) 
+			throws RepositoryAccessException, RhizomeParseException;
 	
 	/**
 	 * Get a document as a raw (unparsed) Input Stream
 	 * @param docID
 	 * @return
 	 */
-	public java.io.InputStream getRawDocument(String docID);
+	public java.io.InputStream getRawDocument(String docID) throws RepositoryAccessException;
 	
 	/**
 	 * Tests to see if a document exists.
@@ -55,30 +58,55 @@ public interface DocumentRepository {
 	 * @param docID
 	 * @return
 	 */
-	public boolean hasDocument(String docID);
+	public boolean hasDocument(String docID) throws RepositoryAccessException;
 	
 	/**
 	 * Stores a RhizomeDocument.
-	 * 
+	 * <p>
 	 * If the document exists, this will overwrite the document. If the 
 	 * document does not exist, this will create a new entry in the 
 	 * repository.
-	 * 
+	 * </p><p>
 	 * The document ID is extracted from doc.getDocumentID(). If no document ID is found,
 	 * a new one is generated.
-	 * 
+	 * </p><p>
 	 * This should usually be synchronized.
-	 * 
+	 * </p>
 	 * @param doc document to store
 	 * @return the document ID.
 	 */
-	public String storeDocument(RhizomeDocument doc);
+	public String storeDocument(RhizomeDocument doc) throws RepositoryAccessException;
+	
+	/**
+	 * Stores a RhizomeDocument.
+	 * <p>
+	 * If <code>overwrite</code> is true and 
+	 * the document exists, this will overwrite the document. If the 
+	 * document does not exist, this will create a new entry in the 
+	 * repository.
+	 * </p><p>
+	 * If <code>overwrite</code> is false and the document exists, a RepositoryDocumentExistsException
+	 * will be thrown.
+	 * </p><p>
+	 * The document ID is extracted from doc.getDocumentID(). If no document ID is found,
+	 * a new one is generated.
+	 * </p><p>
+	 * This should usually be synchronized.
+	 * </p>
+	 * 
+	 * @param doc
+	 * @param overwrite
+	 * @return
+	 * @throws RepositoryAccessException, DocumentExistsException
+	 */
+	public String storeDocument(RhizomeDocument doc, boolean overwrite) 
+		throws RepositoryAccessException, DocumentExistsException;
 	
 	/**
 	 * Returns the number of documents in the repository.
 	 * @return
 	 */
-	public long countDocumentIDs();
+	public long countDocumentIDs() throws RepositoryAccessException;
 	
 	/**
 	 * Get an array containing all document IDs.
@@ -86,7 +114,7 @@ public interface DocumentRepository {
 	 * This should be used to safely pick a point to do a backup.
 	 * @return
 	 */
-	public String[] getAllDocumentIDs();
+	public String[] getAllDocumentIDs() throws RepositoryAccessException;
 	
 	/**
 	 * This should provide a hint to the Repository Manager as to 

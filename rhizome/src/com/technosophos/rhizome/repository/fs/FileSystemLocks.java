@@ -8,7 +8,10 @@ import java.util.List;
  * This object tracks lock status of files in the file system.
  * 
  * It simply <i>tracks</i> locks. Actual maintenance of the locks
- * is left to other objects.
+ * is left to other objects. The point of this class is to allow multiple
+ * objects to all access (more or less independently) the files on the 
+ * file system, without one write operation disrupting a bunch of read
+ * operations.
  * 
  * <p>
  * Locks are stored in a synchronized collection. This should, overall,

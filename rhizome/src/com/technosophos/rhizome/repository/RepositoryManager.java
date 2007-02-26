@@ -22,23 +22,25 @@ public class RepositoryManager {
 	 * If no alternate indexer is given, this one will be used.
 	 */
 	public static String DEFAULT_INDEXER_CLASS_NAME = 
-		"com.technosophos.repository.foo";
+		"com.technosophos.rhizome.repository.foo";
 	/**
 	 * Default repository class name.
 	 * If no other repository class is given, this one will be used.
 	 */
 	public static String DEFAULT_REPOSITORY_CLASS_NAME = 
-		"com.technosophos.repository.foo";
+		"com.technosophos.rhizome.repository.fs.FileSystemRepository";
 	/**
 	 * Default repository searcher class name.
 	 * If no other repository searcher class is given, this one will be used.
 	 */
 	public static String DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME = 
-		"com.technosophos.repository.foo";
+		"com.technosophos.rhizome.repository.foo";
 	
 	private String indexerClassName = null;
 	private String repositoryClassName = null;
 	private String searcherClassName = null;
+	
+	private RepositoryContext context = null;
 	
 	private DocumentRepository repoInstance = null;
 	private DocumentIndexer indexerInstance = null;
@@ -62,13 +64,33 @@ public class RepositoryManager {
 	 * getRepository() and predict the results. But if you set the classname
 	 * after these two methods has been called, you can get unpredictable 
 	 * results. 
+	 * @param context The configuration information for this RepositoryManager.
 	 * @see DocumentIndexer
 	 * @see DocumentRepository
 	 */
-	public RepositoryManager() {
+	public RepositoryManager(RepositoryContext context) {
+		this.context = context;
 		this.indexerClassName = RepositoryManager.DEFAULT_INDEXER_CLASS_NAME;
 		this.repositoryClassName = RepositoryManager.DEFAULT_REPOSITORY_CLASS_NAME;
 		this.searcherClassName = RepositoryManager.DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME;
+	}
+	
+	/**
+	 * Get the current configuration context
+	 * @return Returns the RepositoryContext, which could be null.
+	 */
+	public RepositoryContext getContext() {
+		return this.context;
+	}
+	
+	/**
+	 * Set the repository context.
+	 * This should not be called after getRepository, getIndexer, or getSearcher.
+	 * Doing so may return objects in an inconsistent way.
+	 * @param context
+	 */
+	public void setContext(RepositoryContext context) {
+		this.context = context;
 	}
 	
 	/**
@@ -160,6 +182,7 @@ public class RepositoryManager {
 		try {
 			Class<?> repoClass = Class.forName(this.repositoryClassName);
 			repoInst = (DocumentRepository)repoClass.newInstance();
+			repoInst.setConfiguration(this.context);
 			this.repoInstanceCreated = true;
 		} catch (ClassNotFoundException e) {
 			String errmsg = "Cannot load class: " + this.repositoryClassName;
