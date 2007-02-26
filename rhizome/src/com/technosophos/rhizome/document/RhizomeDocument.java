@@ -2,6 +2,8 @@ package com.technosophos.rhizome.document;
 
 import java.util.ArrayList;
 import java.io.CharArrayWriter;
+import java.io.OutputStream;
+import java.io.Writer;
 
 //import org.betterxml.xelement.XDocument;
 import org.w3c.dom.*;
@@ -310,6 +312,12 @@ public class RhizomeDocument {
 		this.metadata.add(md);
 	}
 	
+	/**
+	 * Get the DOM for this present object.
+	 * @see getDom(Document)
+	 * @return
+	 * @throws ParserConfigurationException
+	 */
 	public Document getDOM() throws ParserConfigurationException {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db; 
@@ -341,6 +349,15 @@ public class RhizomeDocument {
 		return doc;
 	}
 	
+	/**
+	 * Get the DOM, given the document and the parent element.
+	 * 
+	 * This takes a DOM Document and a starting element, and adds rhizome child nodes
+	 * to the given element. The DOM Document is required for create*() methods.
+	 * @param doc
+	 * @param parent_ele
+	 * @return
+	 */
 	public Document getDOM(Document doc, Element parent_ele) {
 		Element rhizome_ele = 
 			doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ROOT);
@@ -406,7 +423,7 @@ public class RhizomeDocument {
 			Text rel_txt;
 			for(Relation r : this.getRelations()) {
 				//rel_ele = doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_VALUE);
-				rel_ele = doc.createElement(RHIZOME_DOC_VALUE);
+				rel_ele = doc.createElement(RHIZOME_DOC_RELATION);
 				rel_txt = doc.createTextNode(r.getDocID());
 				rel_ele.appendChild(rel_txt);
 				if(r.hasRelationType())
@@ -416,7 +433,7 @@ public class RhizomeDocument {
 							RHIZOME_DOC_ATTR_RELATIONTYPE, 
 							r.getRelationType());
 					*/
-					
+				relations_ele.appendChild(rel_ele);	
 			}
 		}
 		
@@ -478,13 +495,24 @@ public class RhizomeDocument {
 	
 	/**
 	 * Get an XML String.
+	 * 
+	 * This converts the present object to an XML string.
 	 * @return
 	 * @throws ParserConfigurationException
 	 */
 	public String toXML() throws ParserConfigurationException {
-		Document d = this.getDOM();
-		//System.out.println("Root Node: " + d.getFirstChild().getNodeName());
 		CharArrayWriter output = new CharArrayWriter();
+		this.toXML(output);
+		return output.toString();
+	}
+	
+	/**
+	 * Transform the object to XML and write it to the given output stream.
+	 * @param output
+	 * @throws ParserConfigurationException
+	 */
+	public void toXML(OutputStream output) throws ParserConfigurationException {
+		Document d = this.getDOM();
 		try {
 			Transformer t = TransformerFactory.newInstance().newTransformer();
 			t.transform(new DOMSource(d), new StreamResult(output));
@@ -492,10 +520,31 @@ public class RhizomeDocument {
 			throw new ParserConfigurationException("Could not create Transformer: " + 
 					e.getMessage());
 		}
-		
-		return output.toString();
 	}
 	
+	/**
+	 * Transform the object to XML and write it to the given Writer.
+	 * @param output
+	 * @throws ParserConfigurationException
+	 */
+	public void toXML(Writer output) throws ParserConfigurationException {
+		Document d = this.getDOM();
+		try {
+			Transformer t = TransformerFactory.newInstance().newTransformer();
+			t.transform(new DOMSource(d), new StreamResult(output));
+		} catch (Exception e) {
+			throw new ParserConfigurationException("Could not create Transformer: " + 
+					e.getMessage());
+		}
+	}
+	
+	/**
+	 * Get a String representation of the object.
+	 * 
+	 * This attempts to convert the object to XML, but if that fails, it uses
+	 * the generic toString() method from Object.
+	 * @see java.lang.Object
+	 */
 	public String toString() {
 		try {
 			return this.toXML();

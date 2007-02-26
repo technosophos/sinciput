@@ -134,11 +134,16 @@ public class RhizomeDocumentBuilder {
 		RhizomeDocument rd = new RhizomeDocument(docID);
 		
 		// Get the major sections
+		/*
 		NodeList md_nodes = root.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_METADATA);
 		NodeList data_nodes = root.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_DATA);
 		NodeList rel_nodes = root.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_RELATIONS);
 		NodeList ext_nodes = root.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_EXTENSIONS);
-		
+		*/
+		NodeList md_nodes = root.getElementsByTagName(RHIZOME_DOC_METADATA);
+		NodeList data_nodes = root.getElementsByTagName(RHIZOME_DOC_DATA);
+		NodeList rel_nodes = root.getElementsByTagName(RHIZOME_DOC_RELATIONS);
+		NodeList ext_nodes = root.getElementsByTagName(RHIZOME_DOC_EXTENSIONS);
 		// Search the MD nodes and get all md elements.
 		if(md_nodes.getLength() > 0 ){
 			int i, j = md_nodes.getLength();
@@ -153,7 +158,8 @@ public class RhizomeDocumentBuilder {
 					
 					// Second: Get all metadatum elements...
 					NodeList m_nodes = 
-						n_ele.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_METADATUM);
+						n_ele.getElementsByTagName(RHIZOME_DOC_METADATUM);
+						//n_ele.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_METADATUM);
 					
 					if(m_nodes.getLength() > 0) {
 						Element m_ele; //Metadatum element
@@ -165,7 +171,8 @@ public class RhizomeDocumentBuilder {
 							
 							// Third: Get all Value elements and retrieve the text.
 							NodeList v_nodes = 
-								m_ele.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_VALUE);
+								m_ele.getElementsByTagName(RHIZOME_DOC_VALUE);
+								//m_ele.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_VALUE);
 							int iii, jjj = v_nodes.getLength();
 							for(iii = 0; iii < jjj; ++iii) {
 								Element v_ele = (Element)v_nodes.item(iii);
@@ -185,8 +192,12 @@ public class RhizomeDocumentBuilder {
 			Element data_ele = (Element)data_nodes.item(0);
 			String content = this.getTextFromEle(data_ele);
 			RhizomeData data = new RhizomeData(content);
+			/*
 			if(data_ele.hasAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_MIMETYPE))
 				data.setMimeType(data_ele.getAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_MIMETYPE));
+			*/
+			if(data_ele.hasAttribute(RHIZOME_DOC_ATTR_MIMETYPE))
+				data.setMimeType(data_ele.getAttribute(RHIZOME_DOC_ATTR_MIMETYPE));
 			rd.setBody(data);
 		}
 		
@@ -204,7 +215,8 @@ public class RhizomeDocumentBuilder {
 					
 					// Second: Get all relation elements...
 					NodeList m_nodes = 
-						n_ele.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_RELATION);
+						n_ele.getElementsByTagName(RHIZOME_DOC_RELATION);
+						//n_ele.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_RELATION);
 					
 					if(m_nodes.getLength() > 0) {
 						Element m_ele; //Relation element
@@ -215,8 +227,12 @@ public class RhizomeDocumentBuilder {
 							String str_docid = this.getTextFromEle(m_ele);
 							if(str_docid != null && str_docid.length() > 0) {
 								r_obj = new Relation(str_docid);
+								if(m_ele.hasAttribute(RHIZOME_DOC_ATTR_RELATIONTYPE))
+									r_obj.setRelationType(m_ele.getAttribute(RHIZOME_DOC_ATTR_RELATIONTYPE));
+								/*
 								if(m_ele.hasAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_RELATIONTYPE))
 									r_obj.setRelationType(m_ele.getAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_RELATIONTYPE));
+								*/
 								rd.addRelation(r_obj);
 							}
 							
@@ -238,7 +254,8 @@ public class RhizomeDocumentBuilder {
 					
 					// Second: Get all relation elements...
 					NodeList m_nodes = 
-						n_ele.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_EXTENSION);
+						n_ele.getElementsByTagName(RHIZOME_DOC_EXTENSION);
+						//n_ele.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_EXTENSION);
 					
 					if(m_nodes.getLength() > 0) {
 						Element m_ele; //Extension element
@@ -247,10 +264,12 @@ public class RhizomeDocumentBuilder {
 						int ii, jj = m_nodes.getLength();
 						for(ii = 0; ii < jj; ++ii) {
 							m_ele = (Element)m_nodes.item(ii);
-							if(m_ele.hasAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_NAME)) {
+							//if(m_ele.hasAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_NAME)) {
+							if(m_ele.hasAttribute(RHIZOME_DOC_ATTR_NAME)) {
 								Document d = db.newDocument();
 								d.importNode(m_ele, true);
-								String ext_name = m_ele.getAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_NAME);
+								//String ext_name = m_ele.getAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_NAME);
+								String ext_name = m_ele.getAttribute(RHIZOME_DOC_ATTR_NAME);
 								e_obj = new Extension(ext_name, d);
 								rd.addExtension(e_obj);
 							}						
