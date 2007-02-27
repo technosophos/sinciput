@@ -1,6 +1,7 @@
 package com.technosophos.rhizome.repository;
 
 import com.technosophos.rhizome.document.RhizomeDocument;
+import com.technosophos.rhizome.repository.RepositoryContext;
 
 /**
  * An indexer handles breaking a document down into searchable and indexable
@@ -59,4 +60,7 @@ public interface DocumentIndexer {
 	 * @return true if this object is thread safe and can be reused indefinitely.
 	 */
 	public boolean isReusable();
+	
+	public RepositoryContext getConfiguration();
+	public void setConfiguration(RepositoryContext context);
 }

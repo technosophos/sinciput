@@ -37,4 +37,7 @@ public interface RepositorySearcher {
 	 * @return true if this object is thread safe and can be reused indefinitely.
 	 */
 	public boolean isReusable();
+	
+	public RepositoryContext getConfiguration();
+	public void setConfiguration(RepositoryContext context);
 }
