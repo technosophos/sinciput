@@ -38,6 +38,7 @@ public class Relation {
 	 */
 	public Relation(String docID) {
 		this.docID = docID;
+		//this.relationType = RHIZOME_RELATION_DEFAULT;
 	}
 
 	/**

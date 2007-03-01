@@ -8,7 +8,20 @@ package com.technosophos.rhizome.repository.lucene;
  *
  */
 public class LuceneElements {
-	public static String LUCENE_BODY_FIELD = "body";
+	public static String LUCENE_BODY_FIELD = "_body";
+	public static String LUCENE_DOCID_FIELD = "_docid";
+	public static String LUCENE_RELATION_FIELD = "_relation";
+	public static String LUCENE_EXTENSION_FIELD = "_extension";
+	
+	/**
+	 * String used to separate DocID and relation name. Note that
+	 * this character should be escaped in the docID if it is present.
+	 * 
+	 * Currently, the string is the percent symbol twice.
+	 */
+	public static String RELATION_SEPARATOR = "%%";
+	
+	// Unused:
 	public static String METADATA_FIELD_PREFIX = "metadatum:";
 	public static String RELATION_FIELD_PREFIX = "relation:";
 }

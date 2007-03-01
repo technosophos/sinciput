@@ -24,5 +24,6 @@ public class XMLElements {
 	public static String RHIZOME_DOC_ATTR_NAME = "name";
 	public static String RHIZOME_DOC_ATTR_DATATYPE = "datatype";
 	public static String RHIZOME_DOC_ATTR_RELATIONTYPE = "relationtype";
-	public static String RHIZOME_DOC_ATTR_MIMETYPE = "mimetype";	
+	public static String RHIZOME_DOC_ATTR_MIMETYPE = "mimetype";
+	public static String RHIZOME_DOC_ATTR_INDEX = "index";
 }

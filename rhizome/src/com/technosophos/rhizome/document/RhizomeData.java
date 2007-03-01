@@ -4,6 +4,21 @@ import java.lang.StringBuffer;
 
 public class RhizomeData {
 	public static String RHIZOME_DATA_MIME_TYPE = "text/html";
+	
+	/** text/plain */
+	public static String MIME_PLAINTEXT = "text/plain";
+
+	/** text/html */
+	public static String MIME_HTML = "text/html";
+	
+	/** application/xhtml+xml */
+	public static String MIME_XHTML = "applciation/xhtml+xml";
+	
+	/** application/xml */
+	public static String MIME_XML = "application/xml";
+	
+	/** application/octet-stream (Base64 encoded?) */
+	public static String MIME_BINARY = "application/octet-stream";
 
 	private String mimeType = RHIZOME_DATA_MIME_TYPE;
 	private StringBuffer data = null;
@@ -128,14 +143,21 @@ public class RhizomeData {
 	/**
 	 * Indicates whether or not the MIME type for this data is recognized as
 	 * an XML type.
-	 * <p>FIXME: Currently, only "text/xml" is recognized as a valid XML
-	 * content type. Others, like text/xhtml and image/svg should
+	 * <p>FIXME: Currently, only "application/xml" is recognized as a valid XML
+	 * content type. Others, like application/xhtml+xml and image/svg should
 	 * probably be added.</p>
 	 * @param mimetype
 	 * @return
 	 */
 	public boolean isXMLMimeType() {
-		if ("text/xml".equalsIgnoreCase(this.mimeType)) return true;
+		if (MIME_XML.equalsIgnoreCase(this.mimeType)) return true;
 		return false;
+	}
+	
+	/** Returns this.getData() 
+	 * @see getData()
+	 */
+	public String toString() {
+		return this.getData();
 	}
 }

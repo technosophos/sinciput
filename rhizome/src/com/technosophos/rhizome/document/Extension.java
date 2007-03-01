@@ -15,10 +15,16 @@ import org.w3c.dom.Document;
 public class Extension {
 	private String name = null;
 	private Document extDoc = null;
+	private boolean indexible = false;
 	
 	public Extension (String name, Document extDoc) {
+		this(name, extDoc, false);
+	}
+	
+	public Extension(String name, Document extDoc, boolean indexible) {
 		this.name = name;
 		this.extDoc = extDoc;
+		this.indexible = indexible;
 	}
 	
 	private Extension () {
@@ -32,5 +38,14 @@ public class Extension {
 	
 	public Document getDOMDocument() {
 		return this.extDoc;
+	}
+	
+	public boolean isIndexible() {
+		return this.indexible;
+	}
+	
+	//FIXME: This is not implemented.
+	public String toIndexibleString() {
+		return this.toString();
 	}
 }

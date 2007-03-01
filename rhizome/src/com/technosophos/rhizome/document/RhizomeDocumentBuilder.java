@@ -252,7 +252,7 @@ public class RhizomeDocumentBuilder {
 				if(n.getNodeName() == RHIZOME_DOC_EXTENSIONS) {
 					Element n_ele = (Element)n;
 					
-					// Second: Get all relation elements...
+					// Second: Get all extension elements...
 					NodeList m_nodes = 
 						n_ele.getElementsByTagName(RHIZOME_DOC_EXTENSION);
 						//n_ele.getElementsByTagNameNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_EXTENSION);
@@ -270,7 +270,11 @@ public class RhizomeDocumentBuilder {
 								d.importNode(m_ele, true);
 								//String ext_name = m_ele.getAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_NAME);
 								String ext_name = m_ele.getAttribute(RHIZOME_DOC_ATTR_NAME);
-								e_obj = new Extension(ext_name, d);
+								if(m_ele.hasAttribute(RHIZOME_DOC_ATTR_INDEX)
+										&& "true".equals(m_ele.getAttribute(RHIZOME_DOC_ATTR_INDEX).toLowerCase()))
+									e_obj = new Extension(ext_name, d, true);
+								else
+									e_obj = new Extension(ext_name, d);
 								rd.addExtension(e_obj);
 							}						
 						}
