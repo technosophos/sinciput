@@ -7,7 +7,10 @@ import java.io.Reader;
 import java.io.InputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-
+import java.io.CharArrayWriter;
+import javax.xml.transform.*;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.DocumentBuilder;
 //import javax.xml.parsers.FactoryConfigurationError;
@@ -190,14 +193,43 @@ public class RhizomeDocumentBuilder {
 		// Get data from first of Data node
 		if(data_nodes.getLength() > 0) {
 			Element data_ele = (Element)data_nodes.item(0);
-			String content = this.getTextFromEle(data_ele);
-			RhizomeData data = new RhizomeData(content);
+			
+			// Figure out if child is XML-ish or Text-ish:
+			NodeList nl_kids = data_ele.getChildNodes();
+			Node t_node;
+			int ii, jj = nl_kids.getLength();
+			boolean isXML = false;
+			for(ii = 0; ii < jj; ++ ii ) {
+				t_node = nl_kids.item(ii);
+				if(t_node.getNodeType() == Node.ELEMENT_NODE) isXML = true;
+			}
+				
+			// If XML, then get the whole body section.
+			// If not,then store as text. 
+			RhizomeData data;				
+			if (isXML) {
+				// This is processor intensive... replace.
+				try {
+					data = new RhizomeData(elementToXMLString(data_ele, this.getParser()));
+					data.setXMLParseable(true);
+				} catch (Exception e) {
+					throw new RhizomeParseException("Error getting data XML: " 
+							+ e.getMessage());
+				}
+			} else {
+				String content = this.getTextFromEle(data_ele); 
+				data = new RhizomeData(content);
+				data.setXMLParseable(false);
+			}
+			
 			/*
 			if(data_ele.hasAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_MIMETYPE))
 				data.setMimeType(data_ele.getAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_MIMETYPE));
 			*/
 			if(data_ele.hasAttribute(RHIZOME_DOC_ATTR_MIMETYPE))
 				data.setMimeType(data_ele.getAttribute(RHIZOME_DOC_ATTR_MIMETYPE));
+			if(data_ele.hasAttribute(RHIZOME_DOC_ATTR_INDEX))
+				data.setIndexible("true".equals(data_ele.getAttribute(RHIZOME_DOC_ATTR_INDEX)));
 			rd.setBody(data);
 		}
 		
@@ -221,9 +253,9 @@ public class RhizomeDocumentBuilder {
 					if(m_nodes.getLength() > 0) {
 						Element m_ele; //Relation element
 						Relation r_obj; // Relation object
-						int ii, jj = m_nodes.getLength();
-						for(ii = 0; ii < jj; ++ii) {
-							m_ele = (Element)m_nodes.item(ii);
+						int iii, jjj = m_nodes.getLength();
+						for(iii = 0; iii < jjj; ++iii) {
+							m_ele = (Element)m_nodes.item(iii);
 							String str_docid = this.getTextFromEle(m_ele);
 							if(str_docid != null && str_docid.length() > 0) {
 								r_obj = new Relation(str_docid);
@@ -235,7 +267,6 @@ public class RhizomeDocumentBuilder {
 								*/
 								rd.addRelation(r_obj);
 							}
-							
 						}
 					}
 				}
@@ -271,10 +302,13 @@ public class RhizomeDocumentBuilder {
 								//String ext_name = m_ele.getAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_NAME);
 								String ext_name = m_ele.getAttribute(RHIZOME_DOC_ATTR_NAME);
 								if(m_ele.hasAttribute(RHIZOME_DOC_ATTR_INDEX)
-										&& "true".equals(m_ele.getAttribute(RHIZOME_DOC_ATTR_INDEX).toLowerCase()))
+										&& "true".equals(m_ele.getAttribute(RHIZOME_DOC_ATTR_INDEX).toLowerCase())) {
 									e_obj = new Extension(ext_name, d, true);
-								else
+								} else {
 									e_obj = new Extension(ext_name, d);
+									
+								}
+								
 								rd.addExtension(e_obj);
 							}						
 						}
@@ -332,4 +366,23 @@ public class RhizomeDocumentBuilder {
 		return sb.toString();
 	}
 	
+	/**
+	 * This takes an XML Element and turns it into a parseable XML document (String).
+	 * @param element
+	 * @return String representation of an XML document.
+	 */
+	public static String elementToXMLString(Element m_ele, DocumentBuilder db)
+			throws ParserConfigurationException {
+		CharArrayWriter output = new CharArrayWriter();
+		Document d = db.newDocument();
+		d.importNode(m_ele, true);
+		try {
+			Transformer t = TransformerFactory.newInstance().newTransformer();
+			t.transform(new DOMSource(d), new StreamResult(output));
+		} catch (Exception e) {
+			throw new ParserConfigurationException("Could not create Transformer: " + 
+					e.getMessage());
+		}
+		return output.toString();
+	}
 }

@@ -5,40 +5,152 @@ import static com.technosophos.rhizome.repository.lucene.LuceneElements.*;
 import com.technosophos.rhizome.document.*;
 import com.technosophos.rhizome.repository.DocumentIndexer;
 import com.technosophos.rhizome.repository.RepositoryContext;
+import com.technosophos.rhizome.repository.RepositoryManager;
+import com.technosophos.rhizome.repository.RhizomeInitializationException;
+import com.technosophos.rhizome.repository.RepositoryAccessException;
 
 //import java.util.ArrayList;
 import java.util.Iterator;
+import java.io.File;
+import java.io.IOException;
+import java.io.FileNotFoundException;
+
 import org.apache.lucene.document.*;
+//import org.apache.lucene.index.IndexModifier;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.Term;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
+/**
+ * Maintain the Index in Apache Lucene.
+ * 
+ * <p>This is an implementation of the DocumentIndexer that uses Apache Lucene as
+ * a search index. The methods in this class can be used to prepare documents to be
+ * indexed, index one or more RhizomeDocument objects, and perform basic maintenance
+ * on the index.</p>
+ * <p>The underlying Lucene code is supposed to be thread safe, but I have not
+ * thoroughly tested it.</p>
+ * @author mbutcher
+ *
+ */
 public class LuceneIndexer implements DocumentIndexer {
+	//TODO: Dynamically load analyzer classes (to support alternate analyzers).
+	
+	
+	/**
+	 * This is the value that the indexer looks for in the context
+	 * to determine where the index is located.
+	 * <p>
+	 * Use 'indexpath' in your RepositoryContext:
+	 * <code>context.setParam("indexpath","/tmp/indexdir/");</code>
+	 * </p>
+	 */
+	public static String LUCENE_INDEX_PATH_PARAM = "indexpath";
 
-	RepositoryContext context;
+	private RepositoryContext context;
+	private String indexLocation = null;
 	
 	public LuceneIndexer() {
 		this.context = new RepositoryContext();
 	}
 	
+	/**
+	 * This is reusable.
+	 */
 	public boolean isReusable() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
-	public long reindex() {
-		// TODO Auto-generated method stub
-		return 0;
+	/**
+	 * Completely rebuild the index.
+	 * <p>This should run incrementally, and not interrupt traffic too much.</p>
+	 */
+	public long reindex(RepositoryManager repman) 
+			throws RepositoryAccessException, RhizomeInitializationException {
+		
+		// TODO: Make sure documents get deleted from index.
+		String [] all_docs = repman.getRepository().getAllDocumentIDs();
+		int doc_count = 0;
+		try {
+			//This should start in overwriting mode
+			IndexWriter indWriter = 
+				new IndexWriter(this.getIndexDir(), new StandardAnalyzer(), true);
+			Document doc;
+			RhizomeDocument rd;
+			for(int i = 0; i < all_docs.length; ++i ) {
+				rd = repman.getRepository().getDocument(all_docs[i]);
+				doc = this.prepareDocument(rd);
+				indWriter.addDocument(doc);
+			}
+			indWriter.optimize();
+			doc_count = indWriter.docCount();
+		} catch (RhizomeParseException e) {	
+			throw new RepositoryAccessException("Could not parse document: " + e.getMessage());
+		} catch (IOException e) {
+			throw new RhizomeInitializationException("Lucene: " + e.getMessage());
+		}
+		return doc_count;
 	}
 
-	public void updateIndex(RhizomeDocument doc) {
-		// TODO Auto-generated method stub
-
+	/**
+	 * Index this document.
+	 * <p>If the document is already in the index, the old entries will be overwritten
+	 * by the new entry.</p>
+	 */
+	public void updateIndex(RhizomeDocument doc) throws RhizomeInitializationException {
+		Document luceneDoc = this.prepareDocument(doc);
+		Term id = new Term(LUCENE_DOCID_FIELD, doc.getDocumentID());
+		try {
+			IndexWriter indWrite = new IndexWriter(this.getIndexDir(), new StandardAnalyzer());
+			indWrite.updateDocument(id, luceneDoc);
+			indWrite.close();
+		} catch (IOException ioe) {
+			throw new RhizomeInitializationException("Could not write to index: " 
+					+ ioe.getMessage());
+		}
 	}
 
-	public void updateIndex(String docID) {
-		// TODO Auto-generated method stub
-
+	public void updateIndex(String docID, RepositoryManager repman) 
+			throws RhizomeParseException, RhizomeInitializationException, RepositoryAccessException {
+		this.updateIndex(repman.getRepository().getDocument(docID));
 	}
 	
-	public void indexDocument(RhizomeDocument doc) {
+	/**
+	 * This always returns true. The underlying function does not give any information
+	 * about success.
+	 * @return boolean true all the time
+	 * @param documentID for document to be deleted
+	 * @see RhizomeDocument.getDocumentID()
+	 */
+	public boolean deleteFromIndex(String docID) throws RhizomeInitializationException {
+		//this.initIndex();
+		Term id = new Term(LUCENE_DOCID_FIELD, docID);
+		int deleted = 0;
+		try {
+			IndexWriter indWrite = new IndexWriter(this.getIndexDir(), new StandardAnalyzer());
+			deleted = indWrite.docCount();
+			indWrite.deleteDocuments(id);
+			deleted = deleted - indWrite.docCount();
+			indWrite.close();
+		} catch(IOException ioe) {
+			throw new RhizomeInitializationException("Could not delete doc from index: "
+					+ ioe.getMessage());
+		}
+		return deleted > 0;
+	}
+	
+	/**
+	 * This takes a RhizomeDocument and prepares it to be indexed.
+	 * <p>This will index the metadata and relations. It will index the Data (the body)
+	 * iff the isIndexible() flag is set, and the document is marked as text, (X)HTML, or XML.</p>
+	 * 
+	 * <p>Lucene has its own document format. This uses that format.</p>
+	 * @param doc the Rhizome document.
+	 * @return document suitable for Lucene indexing.
+	 * @see com.technosophos.rhizome.document.RhizomeData
+	 * @see com.technosophos.rhizome.document.RhizomeDocument
+	 */
+	public Document prepareDocument(RhizomeDocument doc) {
 		/*
 		 * What to do:
 		 * Store each metadatum in a separate field.
@@ -95,29 +207,21 @@ public class LuceneIndexer implements DocumentIndexer {
 		// Add body
 		Field bodyField;
 		RhizomeData data = doc.getData();
-		/*
-		 * TODO: This should all be replaced with isIndexible() method in RhizomeData.
-		 */
+		
 		String mimetype = data.getMimeType();
-		if(RhizomeData.MIME_PLAINTEXT.equals(mimetype)) {
-			bodyField = new Field(
-					LUCENE_BODY_FIELD, 
-					data.toString(),
-					Field.Store.NO, 
-					Field.Index.TOKENIZED );
-			ldoc.add(bodyField);
-		} else if (RhizomeData.MIME_HTML.equals(mimetype) ||
-				RhizomeData.MIME_XML.equals(mimetype)) {
-			// FIXME: Remove tags from HTML/XML
-			bodyField = new Field(
-					LUCENE_BODY_FIELD, 
-					data.toString(),
-					Field.Store.NO, 
-					Field.Index.TOKENIZED );
-			ldoc.add(bodyField);
-		//} else {
-			// DO NOT ADD FIELD
-		}
+		if (data.isIndexible()) {
+			if (RhizomeData.MIME_PLAINTEXT.equals(mimetype)) {
+				bodyField = new Field(LUCENE_BODY_FIELD, data.toString(),
+						Field.Store.NO, Field.Index.TOKENIZED);
+				ldoc.add(bodyField);
+			} else if (data.isTaggedText()) {
+				bodyField = new Field(LUCENE_BODY_FIELD, 
+						FastTagStripper.strip(data.toString()), 
+						Field.Store.NO,
+						Field.Index.TOKENIZED);
+				ldoc.add(bodyField);
+			} // Ignore the rest
+		} // Ignore non-indexible content.
 		
 		// Add Extensions
 		Iterator<Extension> exts = doc.getExtensions().iterator();
@@ -133,6 +237,8 @@ public class LuceneIndexer implements DocumentIndexer {
 				ldoc.add(mfield);
 			}
 		}
+		
+		return ldoc;
 	}
 	
 	public RepositoryContext getConfiguration() {
@@ -141,6 +247,47 @@ public class LuceneIndexer implements DocumentIndexer {
 	
 	public void setConfiguration(RepositoryContext context) {
 		this.context = context;
+		if(context.hasKey(LUCENE_INDEX_PATH_PARAM))
+			this.indexLocation = context.getParam(LUCENE_INDEX_PATH_PARAM);
 	}
-
+	
+	/**
+	 * Get the index directory.
+	 * <p>Also, make sure index directory can be found and used.
+	 * This is public to allow applications to test the index path before it is 
+	 * lazily instantiated later.</p>
+	 * @param pathname
+	 * @throws FileNotFoundException if the directory does not exist.
+	 * @throws IOException if the directory is not readible or writeable
+	 */
+	public File getIndexDir() throws FileNotFoundException, IOException {
+		String pathname = this.indexLocation;
+		File indexDir = new File(pathname);
+		if(!indexDir.exists())
+			throw new FileNotFoundException("Index Dir not found: " + pathname);
+		if(!indexDir.isDirectory())
+			throw new IOException("Index Dir is not a directory: " + pathname);
+		if(!indexDir.canRead() || !indexDir.canWrite())
+			throw new IOException("Index Dir must have read/write access: " + pathname);
+		return indexDir;
+	}
+	
+	/**
+	 * Creates a local index modifier.
+	 * @throws RhizomeInitializationException
+	 */
+	/*
+	protected void initIndex() throws RhizomeInitializationException {
+		if(this.indWrite == null) {
+			try {
+				File dir = this.getIndexDir();
+				//this.indMod = new IndexModifier(dir, new StandardAnalyzer(), false);
+				this.indWrite = new IndexWriter(dir, new StandardAnalyzer());
+			} catch (IOException ioe) {
+				throw new RhizomeInitializationException(ioe.getMessage());
+			}
+		}
+	}
+	*/
+	
 }

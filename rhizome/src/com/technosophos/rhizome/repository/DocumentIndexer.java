@@ -2,6 +2,10 @@ package com.technosophos.rhizome.repository;
 
 import com.technosophos.rhizome.document.RhizomeDocument;
 import com.technosophos.rhizome.repository.RepositoryContext;
+import com.technosophos.rhizome.repository.RepositoryManager;
+import com.technosophos.rhizome.document.RhizomeParseException;
+import com.technosophos.rhizome.repository.RhizomeInitializationException;
+import com.technosophos.rhizome.repository.RepositoryAccessException;
 
 /**
  * An indexer handles breaking a document down into searchable and indexable
@@ -25,7 +29,7 @@ public interface DocumentIndexer {
 	 * defunct info.
 	 * @param doc
 	 */
-	public void updateIndex(RhizomeDocument doc);
+	public void updateIndex(RhizomeDocument doc) throws RhizomeInitializationException;
 	
 	/**
 	 * Update the index with a document already in the repository.
@@ -34,7 +38,8 @@ public interface DocumentIndexer {
 	 * @see updateIndex(RhizomeDocument) 
 	 * @param docID
 	 */
-	public void updateIndex(String docID);
+	public void updateIndex(String docID, RepositoryManager repman) 
+		throws RhizomeParseException, RhizomeInitializationException, RepositoryAccessException;
 	
 	/**
 	 * Re-create the entire index.
@@ -43,7 +48,8 @@ public interface DocumentIndexer {
 	 * the repository.
 	 * @return number of documents indexed.
 	 */
-	public long reindex(); 
+	public long reindex(RepositoryManager repman) 
+		throws RepositoryAccessException, RhizomeInitializationException; 
 	
 	/**
 	 * This should provide a hint to the Repository Manager as to 
@@ -60,7 +66,18 @@ public interface DocumentIndexer {
 	 * @return true if this object is thread safe and can be reused indefinitely.
 	 */
 	public boolean isReusable();
-	
+	/**
+	 * Delete a document from the index.
+	 * 
+	 * This does NOT throw an exception if the document is not found. It just returns
+	 * false. Note that if it finds (somehow) multiple documents with the same ID, it will
+	 * delete them all. Under normal operations, that should never happen, though.
+	 * 
+	 * @param docID
+	 * @return true if one or more documents is deleted
+	 * @throws RhizomeInitializationException if there was an error manipulating the index
+	 */
+	public boolean deleteFromIndex(String docID) throws RhizomeInitializationException;
 	public RepositoryContext getConfiguration();
 	public void setConfiguration(RepositoryContext context);
 }

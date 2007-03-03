@@ -23,6 +23,8 @@ public class RhizomeData {
 	private String mimeType = RHIZOME_DATA_MIME_TYPE;
 	private StringBuffer data = null;
 	
+	private boolean canBeIndexed = true;
+	private boolean isParseable = false;
 	/**
 	 * Construct a new RhizomeData object.
 	 * The MIME type *should* be formed according to the convention
@@ -143,15 +145,79 @@ public class RhizomeData {
 	/**
 	 * Indicates whether or not the MIME type for this data is recognized as
 	 * an XML type.
-	 * <p>FIXME: Currently, only "application/xml" is recognized as a valid XML
-	 * content type. Others, like application/xhtml+xml and image/svg should
-	 * probably be added.</p>
+	 * <p>This is used to determine whether or not an XML parser should parse this text.</p>
 	 * @param mimetype
 	 * @return
+	 *  @deprecated Use isXMLParseable() to determine if the content is parseable, and isTaggedText() to find out if it is XML-like text.
 	 */
 	public boolean isXMLMimeType() {
 		if (MIME_XML.equalsIgnoreCase(this.mimeType)) return true;
 		return false;
+	}
+	
+	/**
+	 * Sets the XMLParseable flag.
+	 * <p>If it is okay for Rhizome to parse the data into an internal 
+	 * representation of the XML, then this should be true.
+	 * </p>
+	 * <p>When converting from XML to RhizomeDocument, this should be set
+	 * to TRUE if the Data is not in a CDATA section, and false if it is.</p>
+	 * @param isParseable
+	 */
+	public void setXMLParseable(boolean isParseable) {
+		this.isParseable = isParseable;
+	}
+	
+	/**
+	 * Indicates if data ought to be parsed with an XML parser.
+	 * <p>Data can be in a parseable format, but that factor alone does not mean
+	 * that we want it parsed. This flag indicates whether or not we want it parsed.
+	 * </p>
+	 * @return true if it is okay to parse this document for the application.
+	 * @see isTaggedText()
+	 */
+	public boolean isXMLParseable() {
+		return this.isParseable;
+	}
+	
+	/**
+	 * This returns true if the MIME type for the text suggests the content
+	 * is XML, HTML, or XHTML. 
+	 * 
+	 * <p>Any type that returns true should be parseable by an HTML/XML parser.
+	 * Typically, this is used to 
+	 * help indexing applications to guess how to treat this document.</p>
+	 * @return true if this is an XML-like document (based on MIME type)
+	 * @see isXMLParseable()
+	 */
+	public boolean isTaggedText() {
+		if (MIME_XML.equalsIgnoreCase(this.mimeType)
+				|| MIME_HTML.equalsIgnoreCase(this.mimeType)
+				|| MIME_XHTML.equalsIgnoreCase(this.mimeType)) 
+			return true;
+		return false;
+	}
+	
+	/**
+	 * Check to see if text can be included in search index.
+	 * @return true if this data should be included in search indexes
+	 */
+	public boolean isIndexible(){
+		return this.canBeIndexed;
+	}
+	
+	/**
+	 * Turn on indexing for the body of this data.
+	 * <p>This is used to tell the underlying indexing engine whether or not 
+	 * this body can be parsed and indexed for searching. In general, 
+	 * you probably want this on (the default), but if the body contains
+	 * binary data or XML not intended to be displayed, then you might want to 
+	 * turn this off.</p>
+	 * <p>By default, all RhizomeData bodies are indexed.</p>
+	 * @param flag
+	 */
+	public void setIndexible(boolean flag) {
+		this.canBeIndexed = flag;
 	}
 	
 	/** Returns this.getData() 

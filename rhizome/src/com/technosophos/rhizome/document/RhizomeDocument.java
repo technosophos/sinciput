@@ -441,8 +441,9 @@ public class RhizomeDocument {
 		if(this.body.getDataLength() > 0) {
 			//data_ele.setAttributeNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ATTR_MIMETYPE, this.body.getMimeType());
 			data_ele.setAttribute(RHIZOME_DOC_ATTR_MIMETYPE, this.body.getMimeType());
-			if(this.body.isXMLMimeType()) {
-				// FIXME: Do XML processing...
+			data_ele.setAttribute(RHIZOME_DOC_ATTR_INDEX, 
+					this.body.isIndexible()?"true":"false");
+			if(this.body.isXMLParseable()) {
 				/*
 				 * Need to get a new parser, parse the document, and insert
 				 * the results into the DOM. Need to check namespace issues

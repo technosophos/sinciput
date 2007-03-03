@@ -23,7 +23,13 @@ public class XMLElements {
 	public static String RHIZOME_DOC_ATTR_DOCID = "docid";
 	public static String RHIZOME_DOC_ATTR_NAME = "name";
 	public static String RHIZOME_DOC_ATTR_DATATYPE = "datatype";
+	
+	/** Used to indicate what type of relation is contained. */
 	public static String RHIZOME_DOC_ATTR_RELATIONTYPE = "relationtype";
+	
+	/** used for indicating type of data stored in the element. */
 	public static String RHIZOME_DOC_ATTR_MIMETYPE = "mimetype";
+	
+	/** Used to determine whether or not an item can be indexed. */
 	public static String RHIZOME_DOC_ATTR_INDEX = "index";
 }
