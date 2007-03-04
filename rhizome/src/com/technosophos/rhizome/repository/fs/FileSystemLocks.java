@@ -51,7 +51,33 @@ public class FileSystemLocks {
 	}
 	
 	/**
+	 * This will try to acquire a lock.
+	 * If it is unsuccessful, it will wait <code>waitInSec</code> seconds and try
+	 * again. If it fails twice, it will return false.
+	 * <p>Returns false if: file is locked after waiting term has expired, 
+	 * thread is interrupted, or another error occurs.</p>
+	 * @param fileID
+	 * @param waitInSec
+	 * @return boolean true if it acquires the lock before timing out.
+	 */
+	public synchronized boolean acquireLock(String fileID, int waitInSec) {
+		if(!this.isLocked(fileID)) {
+			this.lock(fileID);
+			return true;
+		} 
+		try {
+			this.wait(1000 * waitInSec);
+			if (this.isLocked(fileID)) return false;
+			this.lock(fileID);
+			return true;
+		} catch (InterruptedException ie) {
+			return false;
+		}
+	}
+	
+	/**
 	 * Add a new lock to the list.
+	 * Use <code>acquireLock</code> in most cases.
 	 * @param fileID
 	 */
 	public void lock(String fileID) {

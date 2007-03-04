@@ -9,6 +9,7 @@ import com.technosophos.rhizome.repository.DocumentRepository;
 import com.technosophos.rhizome.repository.RepositoryContext;
 import com.technosophos.rhizome.repository.RhizomeInitializationException;
 import com.technosophos.rhizome.repository.RepositoryAccessException;
+import com.technosophos.rhizome.repository.DocumentNotFoundException;
 import com.technosophos.rhizome.repository.DocumentExistsException;
 import java.io.File;
 import java.io.FileWriter;
@@ -122,10 +123,10 @@ public class FileSystemRepository implements DocumentRepository {
 	 * found, and it will throw a parse exception if anything goes wrong while parsing the file.
 	 */
 	public RhizomeDocument getDocument(String docID) 
-			throws RepositoryAccessException, RhizomeParseException {
+			throws DocumentNotFoundException, RepositoryAccessException, RhizomeParseException {
 		File doc = new File(this.getRepoDir(), docID);
 		if(!doc.exists()) 
-			throw new RepositoryAccessException("File not found: " + doc.toString());
+			throw new DocumentNotFoundException("File not found: " + doc.toString());
 		if(!doc.isFile())
 			throw new RepositoryAccessException("Item not a file: " + doc.toString());
 		RhizomeDocumentBuilder rdb = new RhizomeDocumentBuilder();
@@ -153,10 +154,11 @@ public class FileSystemRepository implements DocumentRepository {
 	 * This will throw a RepositoryAccessException if the file is not found, 
 	 * is not a valid file, or causes an IO error when opened.
 	 */
-	public InputStream getRawDocument(String docID) throws RepositoryAccessException {
+	public InputStream getRawDocument(String docID) 
+			throws DocumentNotFoundException, RepositoryAccessException {
 		File doc = new File(this.getRepoDir(), docID);
 		if(!doc.exists()) 
-			throw new RepositoryAccessException("File not found: " + doc.toString());
+			throw new DocumentNotFoundException("File not found: " + doc.toString());
 		if(doc.isFile())
 			throw new RepositoryAccessException("Item not a file: " + doc.toString());
 		InputStream is;
@@ -180,6 +182,36 @@ public class FileSystemRepository implements DocumentRepository {
 		return false;
 	}
 
+	/**
+	 * Remove a document from the repository.
+	 * 
+	 * <p>This completely deletes the document from the repository.</p>
+	 * <p>This method contains synchronized sections.</p>
+	 * @param docID of the document to be deleted
+	 * @return true if the document was deleted.
+	 * @throws RepositoryAccessException if there is a problem with accessing the repository.
+	 */
+	public boolean removeDocument(String docID) throws RepositoryAccessException {
+		File doc = new File(this.getRepoDir(), docID);
+		if(!doc.exists() || !doc.isFile()) return false;
+		
+		boolean isDel = false;
+		String dn = doc.getName();
+		synchronized(this) {
+			// FIXME: This is not finished!!!
+			// Should probably migrate to java.util.concurrent.lock.*
+			if(FileSystemLocks.getInstance().acquireLock(dn, 4))
+				try {
+					isDel = doc.delete();
+				}finally{
+					FileSystemLocks.getInstance().removeLock(dn);
+				}
+			else
+				throw new RepositoryAccessException("Document is locked: " + dn);
+		}
+		return isDel;
+	}
+	
 	/**
 	 * This component is reusable.
 	 */
@@ -242,8 +274,8 @@ public class FileSystemRepository implements DocumentRepository {
 		 * 2. Write the file.
 		 * 3. (Finally) unlock the file.
 		 */
-		if(this.canAccess(doc.getDocumentID())) {
-			FileSystemLocks.getInstance().lock(doc.getDocumentID());
+		if(!FileSystemLocks.getInstance().acquireLock(doc.getDocumentID(), 4)) {
+			//FileSystemLocks.getInstance().lock(doc.getDocumentID());
 			FileWriter fout = null;
 			try {
 				fout = new FileWriter(docPath);
@@ -274,9 +306,11 @@ public class FileSystemRepository implements DocumentRepository {
 		return null;
 	}
 	
+	/*
 	private boolean canAccess(String docID) {
 		return !FileSystemLocks.getInstance().isLocked(docID);
 	}
+	*/
 	
 	private File getRepoDir() throws RepositoryAccessException {
 		if(!this.isConfigured)

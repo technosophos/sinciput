@@ -1,5 +1,10 @@
 package com.technosophos.rhizome.repository;
 
+import com.technosophos.rhizome.document.RhizomeDocument;
+import com.technosophos.rhizome.repository.DocumentNotFoundException;
+import com.technosophos.rhizome.repository.RepositoryAccessException;
+import com.technosophos.rhizome.RhizomeException;
+
 /**
  * The main entry point to the Rhizome backend.
  * 
@@ -22,7 +27,7 @@ public class RepositoryManager {
 	 * If no alternate indexer is given, this one will be used.
 	 */
 	public static String DEFAULT_INDEXER_CLASS_NAME = 
-		"com.technosophos.rhizome.repository.foo";
+		"com.technosophos.rhizome.repository.lucene.LuceneIndexer";
 	/**
 	 * Default repository class name.
 	 * If no other repository class is given, this one will be used.
@@ -34,7 +39,7 @@ public class RepositoryManager {
 	 * If no other repository searcher class is given, this one will be used.
 	 */
 	public static String DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME = 
-		"com.technosophos.rhizome.repository.foo";
+		"com.technosophos.rhizome.repository.lucene.LuceneSearcher";
 	
 	private String indexerClassName = null;
 	private String repositoryClassName = null;
@@ -83,6 +88,72 @@ public class RepositoryManager {
 		return this.context;
 	}
 	
+	/*===============================================
+	 * Convenience Methods
+	 *===============================================*/
+	
+	/**
+	 * Put a document into Rhizome.
+	 * <p>
+	 * This puts a document into the repository. If a document with the same
+	 * document ID already exists, then this document will replace the other
+	 * (in other words, it acts as a modification operation). If no other document
+	 * exists, this will be added to the repository.</p>
+	 * <p>Adding a document this way automatically puts it into the search
+	 * index, so there is no reason to interact directly with the indexer.</p>
+	 * @param document to add to repository. 
+	 */
+	public void storeDocument(RhizomeDocument doc) throws RhizomeException {
+		DocumentRepository repo = this.getRepository();
+		DocumentIndexer indexer = this.getIndexer();
+		
+		repo.storeDocument(doc);
+		indexer.updateIndex(doc);
+	}
+	
+	/**
+	 * This attempts to remove a document from the index (first) and then the 
+	 * repository.
+	 * <p>If a document cannot be removed from the index, then it will not be removed from
+	 * the repository. Otherwise, there would be the possiblity for much misleading
+	 * information.</p>
+	 * <p>On the other hand, if a document is successfully removed from the index, 
+	 * and then cannot be removed from the repository, the transaction is not rolled
+	 * back. The document is left in the repository, and omitted from the index.
+	 * <b>This behavior may change in future versions.</b></p>
+	 * <p>In both cases, if a delete fails, a 
+	 * <code>RepositoryAccessException</code> will be thrown.</p>
+	 * 
+	 * @param docID document to delete
+	 * @throws RepositoryAccessException, RhizomeException
+	 */
+	public void removeDocument(String docID) throws RhizomeException {
+		DocumentRepository repo = this.getRepository();
+		DocumentIndexer indexer = this.getIndexer();
+		
+		if (!indexer.deleteFromIndex(docID)) 
+			throw new RepositoryAccessException(
+				"Could not remove document from index. Document is still available.");
+		if(!repo.removeDocument(docID))
+			throw new RepositoryAccessException(
+				"Could not remove document from repository. Document is not in index.");
+	}
+	
+	/**
+	 * Return a document.
+	 * <p>Given a document ID, attempt to fetch the document from the repository.</p>
+	 * <p>If the file is not found, a <code>repositoryAccessException</code> is thrown.</p>
+	 * @param docID
+	 * @return
+	 * @throws RhizomeException
+	 */
+	public RhizomeDocument getDocument(String docID) 
+			throws DocumentNotFoundException, RhizomeException {
+		return this.getRepository().getDocument(docID);
+	}
+	/*===============================================
+	 * Mutator Methods
+	 *===============================================*/
 	/**
 	 * Set the repository context.
 	 * This should not be called after getRepository, getIndexer, or getSearcher.
@@ -150,6 +221,10 @@ public class RepositoryManager {
 					"Searcher already instantiated. Cannot change class name."); 
 		this.searcherClassName = classname;
 	}
+	
+	/*===============================================
+	 * Accessor Methods
+	 *===============================================*/
 	/**
 	 * Return the class name of the currently set indexer.
 	 * @return class name
@@ -264,6 +339,18 @@ public class RepositoryManager {
 		if(searchInst.isReusable()) this.searchInstance = searchInst;
 		
 		return searchInst;
+	}
+	
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("Search: ");
+		sb.append(this.searcherClassName);
+		sb.append("\nIndex: ");
+		sb.append(this.indexerClassName);
+		sb.append("\nRepository: ");
+		sb.append(this.repositoryClassName);
+		sb.append("\n");
+		return sb.toString();
 	}
 }
 

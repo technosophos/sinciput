@@ -42,14 +42,15 @@ public interface DocumentRepository {
 	 * @return
 	 */
 	public RhizomeDocument getDocument(String docID) 
-			throws RepositoryAccessException, RhizomeParseException;
+			throws DocumentNotFoundException, RepositoryAccessException, RhizomeParseException;
 	
 	/**
 	 * Get a document as a raw (unparsed) Input Stream
 	 * @param docID
 	 * @return
 	 */
-	public java.io.InputStream getRawDocument(String docID) throws RepositoryAccessException;
+	public java.io.InputStream getRawDocument(String docID) 
+			throws DocumentNotFoundException, RepositoryAccessException;
 	
 	/**
 	 * Tests to see if a document exists.
@@ -115,6 +116,19 @@ public interface DocumentRepository {
 	 * @return
 	 */
 	public String[] getAllDocumentIDs() throws RepositoryAccessException;
+	
+	/**
+	 * Removes a document from the repository.
+	 * 
+	 * <p>The exact handling of this is implementation-depedant, but in general, 
+	 * once a document is removed, it should no longer be returned by any of the 
+	 * methods defined in this interface.</p>
+	 * 
+	 * @param docID
+	 * @return
+	 * @throws RepositoryAccessException
+	 */
+	public boolean removeDocument(String docID) throws RepositoryAccessException;
 	
 	/**
 	 * This should provide a hint to the Repository Manager as to 
