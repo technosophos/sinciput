@@ -274,12 +274,13 @@ public class FileSystemRepository implements DocumentRepository {
 		 * 2. Write the file.
 		 * 3. (Finally) unlock the file.
 		 */
-		if(!FileSystemLocks.getInstance().acquireLock(doc.getDocumentID(), 4)) {
+		if(FileSystemLocks.getInstance().acquireLock(doc.getDocumentID(), 4)) {
 			//FileSystemLocks.getInstance().lock(doc.getDocumentID());
 			FileWriter fout = null;
 			try {
 				fout = new FileWriter(docPath);
 				doc.toXML(fout);
+				//doc.toXML(System.out);
 				fout.flush();
 				fout.close();	
 			} catch (IOException ioe) {

@@ -190,6 +190,7 @@ public class RhizomeDocumentBuilder {
 			}
 		}
 		
+		RhizomeData data = null;
 		// Get data from first of Data node
 		if(data_nodes.getLength() > 0) {
 			Element data_ele = (Element)data_nodes.item(0);
@@ -198,25 +199,22 @@ public class RhizomeDocumentBuilder {
 			NodeList nl_kids = data_ele.getChildNodes();
 			Node t_node;
 			int ii, jj = nl_kids.getLength();
-			boolean isXML = false;
 			for(ii = 0; ii < jj; ++ ii ) {
 				t_node = nl_kids.item(ii);
-				if(t_node.getNodeType() == Node.ELEMENT_NODE) isXML = true;
+				if(t_node.getNodeType() == Node.ELEMENT_NODE) {
+					Element base = (Element)t_node;
+					try {
+						data = new RhizomeData(elementToXMLString(base, this.getParser()));
+						data.setXMLParseable(true);
+					} catch (Exception e) {
+						throw new RhizomeParseException("Error getting data XML: " 
+								+ e.getMessage());
+					}
+					continue;
+				}
 			}
 				
-			// If XML, then get the whole body section.
-			// If not,then store as text. 
-			RhizomeData data;				
-			if (isXML) {
-				// This is processor intensive... replace.
-				try {
-					data = new RhizomeData(elementToXMLString(data_ele, this.getParser()));
-					data.setXMLParseable(true);
-				} catch (Exception e) {
-					throw new RhizomeParseException("Error getting data XML: " 
-							+ e.getMessage());
-				}
-			} else {
+			if (data == null) {
 				String content = this.getTextFromEle(data_ele); 
 				data = new RhizomeData(content);
 				data.setXMLParseable(false);
@@ -375,7 +373,8 @@ public class RhizomeDocumentBuilder {
 			throws ParserConfigurationException {
 		CharArrayWriter output = new CharArrayWriter();
 		Document d = db.newDocument();
-		d.importNode(m_ele, true);
+		
+		d.appendChild(d.importNode(m_ele, true));
 		try {
 			Transformer t = TransformerFactory.newInstance().newTransformer();
 			t.transform(new DOMSource(d), new StreamResult(output));

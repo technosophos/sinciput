@@ -7,16 +7,23 @@ import com.technosophos.rhizome.RhizomeException;
 
 /**
  * The main entry point to the Rhizome backend.
- * 
+ * <p>
  * The repository manager provides the necessary mechanisms to get 
- * instances of the backend repository, index, and searcher.
- * 
+ * instances of the backend repository, index, and searcher. Also, it 
+ * has a handful of convenience methods that make it much easier to 
+ * perform simple tasks like getting and storing documents.
+ * </p><p>
+ * There should be only one instance of RepositoryManager per repository.
+ * Multiple instances may have undefined behavior (depending on the 
+ * backend implementation).
+ * </p><p>
  * The backend repository, indexer, and searcher interfaces can have 
- * different implementations. To set the appropriate classes, set the 
+ * different implementations. The default implementation is loaded 
+ * automatically. To use alternative implementations, set the 
  * class names with the set*ClassName() methods. You must do this
  * before one of the accessors for those objects is called, or else 
  * you might get unpredictable results.
- * 
+ * </p>
  * @author mbutcher
  *
  */
@@ -107,7 +114,10 @@ public class RepositoryManager {
 		DocumentRepository repo = this.getRepository();
 		DocumentIndexer indexer = this.getIndexer();
 		
-		repo.storeDocument(doc);
+		repo.setConfiguration(this.context);
+		indexer.setConfiguration(this.context);
+		
+		repo.storeDocument(doc, true);
 		indexer.updateIndex(doc);
 	}
 	
@@ -247,7 +257,7 @@ public class RepositoryManager {
 	 * Depending on the repository class's isReusable() method, this may
 	 * return a fresh instance or a cached copy.
 	 * 
-	 * @return
+	 * @return initialized document repository.
 	 */
 	public DocumentRepository getRepository() 
 			throws RhizomeInitializationException {
@@ -281,7 +291,7 @@ public class RepositoryManager {
 	 * Depending on the indexer class's isReusable() method, this may
 	 * return a fresh instance or a cached copy.
 	 * 
-	 * @return
+	 * @return initialized indexer.
 	 */
 	public DocumentIndexer getIndexer() 
 			throws RhizomeInitializationException {
@@ -314,7 +324,7 @@ public class RepositoryManager {
 	 * Depending on the Searcher class's isReusable() method, this may
 	 * return a fresh instance or a cached copy.
 	 * 
-	 * @return
+	 * @return initialized repository searcher.
 	 */
 	public RepositorySearcher getRepositorySearcher() 
 			throws RhizomeInitializationException {
@@ -341,6 +351,9 @@ public class RepositoryManager {
 		return searchInst;
 	}
 	
+	/**
+	 * Prints out information about what searcher, indexer and repository are being used.
+	 */
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Search: ");

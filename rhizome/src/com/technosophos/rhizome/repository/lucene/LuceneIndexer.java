@@ -116,8 +116,11 @@ public class LuceneIndexer implements DocumentIndexer {
 	}
 	
 	/**
+	 * Delete a document from the index.
+	 * <p>
 	 * This always returns true. The underlying function does not give any information
-	 * about success.
+	 * about success, and deleted documents are buffered (though not returned in searches)
+	 * until the delete buffer is full.</p>
 	 * @return boolean true all the time
 	 * @param documentID for document to be deleted
 	 * @see RhizomeDocument.getDocumentID()
@@ -125,18 +128,21 @@ public class LuceneIndexer implements DocumentIndexer {
 	public boolean deleteFromIndex(String docID) throws RhizomeInitializationException {
 		//this.initIndex();
 		Term id = new Term(LUCENE_DOCID_FIELD, docID);
-		int deleted = 0;
+		//int deleted = 0;
 		try {
 			IndexWriter indWrite = new IndexWriter(this.getIndexDir(), new StandardAnalyzer());
-			deleted = indWrite.docCount();
+			//indWrite.setMaxBufferedDeleteTerms(10);
+			//deleted = indWrite.docCount();
 			indWrite.deleteDocuments(id);
-			deleted = deleted - indWrite.docCount();
+			indWrite.flush();
+			//deleted = deleted - indWrite.docCount();
 			indWrite.close();
 		} catch(IOException ioe) {
 			throw new RhizomeInitializationException("Could not delete doc from index: "
 					+ ioe.getMessage());
 		}
-		return deleted > 0;
+		//return deleted > 0;
+		return true;
 	}
 	
 	/**
@@ -261,6 +267,8 @@ public class LuceneIndexer implements DocumentIndexer {
 	 * @throws IOException if the directory is not readible or writeable
 	 */
 	public File getIndexDir() throws FileNotFoundException, IOException {
+		if(this.indexLocation == null)
+			throw new IOException("Index dir not specified.");
 		String pathname = this.indexLocation;
 		File indexDir = new File(pathname);
 		if(!indexDir.exists())

@@ -65,6 +65,7 @@ public class FileSystemLocks {
 			this.lock(fileID);
 			return true;
 		} 
+		
 		try {
 			this.wait(1000 * waitInSec);
 			if (this.isLocked(fileID)) return false;

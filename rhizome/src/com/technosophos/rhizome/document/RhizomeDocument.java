@@ -339,7 +339,6 @@ public class RhizomeDocument {
 	 * @return The document in the form of a DOM.
 	 */
 	public Document getDOM(Document doc) {
-		
 		Element rhizome_ele = 
 			doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_ROOT);
 		rhizome_ele.setAttribute(RHIZOME_DOC_ATTR_DOCID, this.docID);
@@ -373,6 +372,7 @@ public class RhizomeDocument {
 	 * @param rhizome_ele
 	 */
 	private void addRhizomeElements(Document doc, Element rhizome_ele) {
+		//System.out.println("AddRhizomeElements called.");
 		//Add the main document sections:
 		/*
 		Element meta_ele = doc.createElementNS(RHIZOME_DOC_XMLNS, RHIZOME_DOC_METADATA);
@@ -457,14 +457,18 @@ public class RhizomeDocument {
 				 * Update: Partially done.
 				 */
 				try {
-					DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-					DocumentBuilder db = dbf.newDocumentBuilder();
-				
-					Document tempD = db.parse(new java.io.ByteArrayInputStream(this.body.getData().getBytes()));
-					Element rn = tempD.getDocumentElement();
-					data_ele.appendChild(doc.adoptNode(rn));
+					DocumentBuilder db = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+					
+					Document tempdoc = db.parse(new java.io.ByteArrayInputStream(this.body.getData().getBytes()));
+					
+					//org.xml.sax.InputSource is = 
+					//	new org.xml.sax.InputSource(new java.io.StringReader(this.body.getData()));
+					//Document tempdoc = db.parse(is);
+					Element rn = tempdoc.getDocumentElement();
+					data_ele.appendChild(doc.importNode(rn, true));
 				} catch (Exception e ) {
-				    CDATASection cdata = doc.createCDATASection(this.body.getData());
+					CDATASection cdata = doc.createCDATASection(this.body.getData());
+				    //e.printStackTrace();
 				    data_ele.appendChild(cdata);
 				}
 			} else {
@@ -530,6 +534,7 @@ public class RhizomeDocument {
 	 */
 	public void toXML(Writer output) throws ParserConfigurationException {
 		Document d = this.getDOM();
+		
 		try {
 			Transformer t = TransformerFactory.newInstance().newTransformer();
 			t.transform(new DOMSource(d), new StreamResult(output));
@@ -537,6 +542,7 @@ public class RhizomeDocument {
 			throw new ParserConfigurationException("Could not create Transformer: " + 
 					e.getMessage());
 		}
+		
 	}
 	
 	/**
