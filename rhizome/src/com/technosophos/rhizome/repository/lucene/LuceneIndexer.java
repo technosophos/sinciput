@@ -45,7 +45,7 @@ public class LuceneIndexer implements DocumentIndexer {
 	 * <code>context.setParam("indexpath","/tmp/indexdir/");</code>
 	 * </p>
 	 */
-	public static String LUCENE_INDEX_PATH_PARAM = "indexpath";
+	//public static String LUCENE_INDEX_PATH_PARAM = "indexpath";
 
 	private RepositoryContext context;
 	private String indexLocation = null;

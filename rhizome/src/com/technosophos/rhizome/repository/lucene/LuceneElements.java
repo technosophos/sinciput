@@ -8,6 +8,12 @@ package com.technosophos.rhizome.repository.lucene;
  *
  */
 public class LuceneElements {
+	/**
+	 * Name of the context key that will contain the path information.
+	 * This is usually "indexpath".
+	 */
+	public static String LUCENE_INDEX_PATH_PARAM = "indexpath";
+	
 	public static String LUCENE_BODY_FIELD = "_body";
 	public static String LUCENE_DOCID_FIELD = "_docid";
 	public static String LUCENE_RELATION_FIELD = "_relation";

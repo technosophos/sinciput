@@ -28,6 +28,15 @@ import com.technosophos.rhizome.RhizomeException;
  *
  */
 public class RepositoryManager {
+	/*
+	 * TODO: Rewrite the configurations stuff so that the Repository Manager does
+	 * all of the configuring of the indexer, searcher, and repository.
+	 * 
+	 * Make Interfaces for those three contain arrays of all necessary configuration
+	 * parameters, and all optional configurations. That way, better reports can be
+	 * generated from RepoMan.
+	 */
+	
 	
 	/**
 	 * Default indexer class. 
@@ -302,6 +311,7 @@ public class RepositoryManager {
 		try {
 			Class<?> indClass = Class.forName(this.indexerClassName);
 			indInst = (DocumentIndexer)indClass.newInstance();
+			indInst.setConfiguration(this.context);
 			this.indexerInstanceCreated = true;
 		} catch (ClassNotFoundException e) {
 			String errmsg = "Cannot load class: " + this.indexerClassName;
@@ -335,6 +345,7 @@ public class RepositoryManager {
 		try {
 			Class<?> searchClass = Class.forName(this.searcherClassName);
 			searchInst = (RepositorySearcher)searchClass.newInstance();
+			searchInst.setConfiguration(this.context);
 			this.searcherInstanceCreated = true;
 		} catch (ClassNotFoundException e) {
 			String errmsg = "Cannot load class: " + this.searcherClassName;
