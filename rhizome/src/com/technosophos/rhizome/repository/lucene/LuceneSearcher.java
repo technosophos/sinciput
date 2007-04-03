@@ -8,10 +8,12 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.MapFieldSelector;
+import org.apache.lucene.document.SetBasedFieldSelector;
 
 import java.util.Map;
-import java.util.Set;
+//import java.util.Set;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.ArrayList;
@@ -65,8 +67,31 @@ public class LuceneSearcher implements RepositorySearcher {
 	 * @param value value to search for in <code>name</code> metadata.
 	 * @return array of matching document IDs.
 	 */
-	public String [] getDocIDsByMetadataValue(String name, String value) {
-		return null;
+	public String [] getDocIDsByMetadataValue(String name, String value) throws RepositoryAccessException {
+		
+		ArrayList<String> docIDs = new ArrayList<String>();
+		String [] fields = {name, LUCENE_DOCID_FIELD};
+		
+		MapFieldSelector fieldSelector = new MapFieldSelector(fields);
+		IndexReader lreader;
+		
+		try {
+			lreader = this.getIndexReader();
+			int last = lreader.maxDoc();
+			Document d;
+			for(int i = 0; i < last; ++i) {
+				if(!lreader.isDeleted(i)) {
+					d = lreader.document(i, fieldSelector);
+					if(this.checkFieldValueMatches(name, value, d))
+						docIDs.add(d.get(LUCENE_DOCID_FIELD));	
+				}
+			}
+			lreader.close();
+		} catch (java.io.IOException ioe) {
+			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		}
+		
+		return docIDs.toArray(new String[docIDs.size()]);
 	}
 	
 	/**
@@ -152,12 +177,46 @@ public class LuceneSearcher implements RepositorySearcher {
 	 * @param docs array of document IDs to search
 	 * @return Map of documentID->String['val1','val2'...]
 	 */
-	public java.util.Map<String, String[]> getMetadataByName(String name, String[] docs) {
+	public java.util.Map<String, String[]> getMetadataByName(String name, String[] docs) 
+			throws RepositoryAccessException {
+		
+		
 		/*
 		 * Loop through all IDs, getting a document with only attribute DocID
 		 * If docID matches, fetch name too?
 		 */
-		return null;
+		
+		HashMap<String, String[]> vals = new HashMap<String, String[]>();
+		
+		HashSet<String> activeFields = new HashSet<String>();
+		HashSet<String> lazyFields = new HashSet<String>();
+		
+		activeFields.add(LUCENE_DOCID_FIELD);
+		lazyFields.add(name);
+		
+		SetBasedFieldSelector fsel = new SetBasedFieldSelector(activeFields, lazyFields);
+		IndexReader lreader;
+		
+		try {
+			lreader = this.getIndexReader();
+			int last = lreader.maxDoc();
+			Document d;
+			String docID;
+			for(int i = 0; i < last; ++i) {
+				if(!lreader.isDeleted(i)) {
+					d = lreader.document(i, fsel);
+					docID = d.get(LUCENE_DOCID_FIELD);
+					for(String did: docs)
+						if(did.equals(docID)) vals.put(docID, d.getValues(name));
+				}
+				
+			}
+			lreader.close();
+		} catch (java.io.IOException ioe) {
+			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		}
+		
+		return vals;
 	}
 	
 	/**
