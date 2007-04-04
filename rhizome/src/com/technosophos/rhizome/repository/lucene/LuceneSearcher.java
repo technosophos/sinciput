@@ -105,12 +105,12 @@ public class LuceneSearcher implements RepositorySearcher {
 	 * this gets the associated values for that metadatum.
 	 * @param name Name of metadata to get value for.
 	 * @param docID Name of the document to fetch
-	 * @return Array of metadata values
+	 * @return Metadatum containing metadata values.
 	 * @throws RepositoryAccessException if there is an underlying IO issue.
 	 */
-	public String [] getMetadatumByDocID(String name, String docID) 
+	public Metadatum getMetadatumByDocID(String name, String docID) 
 			throws RepositoryAccessException {
-		String [] vals = null;
+		Metadatum md = null;
 		String [] fields = {name};
 		
 		MapFieldSelector fsel = new MapFieldSelector(fields);
@@ -119,20 +119,17 @@ public class LuceneSearcher implements RepositorySearcher {
 		try {
 			lreader = this.getIndexReader();
 			TermDocs td = lreader.termDocs(new Term(LUCENE_DOCID_FIELD,docID));
-			
-			ArrayList<String> md_vals = new ArrayList<String>();
 			while(td.next()) {
 				Document d = lreader.document(td.doc(), fsel);
-				md_vals.add(d.get(name));
+				md = new Metadatum(name, d.getValues(name));
 			}
-			vals = md_vals.toArray(new String[md_vals.size()]);
 			td.close();
 			lreader.close();
 		} catch (java.io.IOException ioe) {
 			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
 		}
 		
-		return vals;
+		return md;
 	}
 	
 	/**
