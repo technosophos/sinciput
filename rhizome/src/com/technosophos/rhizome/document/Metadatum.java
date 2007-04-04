@@ -1,6 +1,7 @@
 package com.technosophos.rhizome.document;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /** 
  * This class describes an individual metadatum. Each metadatum is 
@@ -43,6 +44,10 @@ public class Metadatum {
 	public Metadatum(String name, ArrayList<String> value) {
 		this.name = name;
 		this.values = value;
+	}
+	
+	public Metadatum(String name, String[] values) {
+		this(name, new ArrayList<String>(Arrays.asList(values)));
 	}
 
 	/**
@@ -148,10 +153,11 @@ public class Metadatum {
 	public String toString() {
 		StringBuffer sb = new StringBuffer();
 		sb.append(this.name);
-		sb.append(": ");
+		sb.append("(");
+		sb.append(this.values.size());
+		sb.append("): ");
 		for(int i = 0; i < this.values.size(); ++i) {
-			if(i > 0)
-				sb.append(", ");
+			if(i > 0) sb.append(", ");
 			sb.append(this.values.get(i));
 		}
 		return sb.toString();

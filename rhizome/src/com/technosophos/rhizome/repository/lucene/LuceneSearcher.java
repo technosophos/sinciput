@@ -3,6 +3,8 @@ package com.technosophos.rhizome.repository.lucene;
 import com.technosophos.rhizome.repository.RepositorySearcher;
 import com.technosophos.rhizome.repository.RepositoryContext;
 import com.technosophos.rhizome.repository.RepositoryAccessException;
+import com.technosophos.rhizome.document.DocumentCollection;
+import com.technosophos.rhizome.document.Metadatum;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
@@ -11,6 +13,9 @@ import org.apache.lucene.document.MapFieldSelector;
 import org.apache.lucene.document.SetBasedFieldSelector;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.List;
+import java.util.Arrays;
 //import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -166,26 +171,25 @@ public class LuceneSearcher implements RepositorySearcher {
 	}
 	
 	/**
-	 * Returns a map of document IDs and values.
+	 * Returns a DocumentCollection of document IDs and metadata.
 	 * <p>Given a metadata name and an array of document IDs, 
-	 * this returns a map where the key is the document
+	 * this returns a DocumentCollection where the key is the document
 	 * ID for a document with that metdatum name, and the value is the list of
 	 * values (as a <code>String []</code>) for that metadata.</p>
 	 * <p>This search ONLY checks for metdata in the document IDs given in the 
 	 * <code>docs[]</code> array.</p>
+	 * @see com.technosophos.rhizome.document.DocumentCollection
 	 * @param name metadatum name to search for
 	 * @param docs array of document IDs to search
-	 * @return Map of documentID->String['val1','val2'...]
+	 * @return DocumentCollection with entries for docs, each with a Metadatum for name.
 	 */
-	public java.util.Map<String, String[]> getMetadataByName(String name, String[] docs) 
+	public DocumentCollection getMetadataByName(String name, String[] docs)  
 			throws RepositoryAccessException {
 		
+		String[] names = {name};
+		return this.getDocCollection(names, docs);
 		
 		/*
-		 * Loop through all IDs, getting a document with only attribute DocID
-		 * If docID matches, fetch name too?
-		 */
-		
 		HashMap<String, String[]> vals = new HashMap<String, String[]>();
 		
 		HashSet<String> activeFields = new HashSet<String>();
@@ -217,6 +221,139 @@ public class LuceneSearcher implements RepositorySearcher {
 		}
 		
 		return vals;
+		*/
+	}
+	
+	/**
+	 * This retrieves a DocumentCollection.
+	 * <p>The collection will have an entry for every member of docIDs that exists in 
+	 * the directory. An entry in the list will have a Metadatum item for every item
+	 * in the names array.</p>
+	 * <p>This method is used to grab a subset of available metadata for a select
+	 * batch of document IDs.</p>
+	 * @param names
+	 * @param docIDs
+	 * @return a DocumentCollection containing docs from docIDs, each with metadata.
+	 */
+	public DocumentCollection getDocCollection(String[] names, String[] docIDs) 
+			throws RepositoryAccessException {
+		DocumentCollection dc = new DocumentCollection(names);
+		
+		HashSet<String> activeFields = new HashSet<String>();
+		HashSet<String> lazyFields = new HashSet<String>();
+		
+		activeFields.add(LUCENE_DOCID_FIELD);
+		lazyFields.addAll(Arrays.asList(names));
+		SetBasedFieldSelector fsel = new SetBasedFieldSelector(activeFields, lazyFields);
+		IndexReader lreader;
+		
+		try {
+			lreader = this.getIndexReader();
+			int last = lreader.maxDoc();
+			Document d;
+			String docID;
+			for(int i = 0; i < last; ++i) {
+				if(!lreader.isDeleted(i)) {
+					d = lreader.document(i, fsel);
+					docID = d.get(LUCENE_DOCID_FIELD);
+					// This should be optimized:
+					for(String did: docIDs)
+						if(did.equals(docID)) 
+							dc.put(docID, this.fetchMetadata(d, names));
+				}
+				
+			}
+			lreader.close();
+		} catch (java.io.IOException ioe) {
+			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		}
+		
+		return dc;
+		
+	}
+	
+	/**
+	 * Search for matching documents, and return them in a DocumentCollection.
+	 * <p>This method performs a narrowing (AND) search, returning a DocumentCollection
+	 * that contains docIDs for all docs that matched everything in the narrower.</p>
+	 * <p>What metadata is in the DocumentCollection? This tries to retrieve all of the
+	 * metadata items in the narrower, plus all of the metadata in the additional_md
+	 * array.</p>
+	 * <p>So, if there are two items in the narrower, and three items in the additional_md:
+	 * <ul>
+	 * <li>The DocumentCollection will contain an entry for every document that matched 
+	 * both items in the narrower.</li>
+	 * <li>Each item will have up to five Metadatum objects: one for each narrower name/value,
+	 * and one for each additional_md entry.</li>
+	 * </ul>
+	 * </p>
+	 * <p>This sort of thing is the same operation that could be achived running 
+	 * {@see narrowingSearch(Map)}, and using getDocCollection() on the results.
+	 * This, however, is far more efficient.</p>
+	 * 
+	 * 
+	 * @param narrower
+	 * @param additional_md
+	 * @return DocumentCollection with all docs that match the narrower.
+	 * @throws RepositoryAccessException
+	 */
+	public DocumentCollection narrowingSearch(Map<String, String> narrower, String[] additional_md)
+			throws RepositoryAccessException {
+		
+		/*
+		 * Welcome to your worst collections nightmare....
+		 * fields: Those that require value matching
+		 * all_fields: Those that should be included in collection, but need no matching.
+		 */
+		String [] all_fields;
+		Set<String> narrower_keys = narrower.keySet();
+		String [] fields = narrower_keys.toArray(new String[narrower_keys.size()]);
+		HashSet<String> activeFields = new HashSet<String>();
+		HashSet<String> lazyFields = new HashSet<String>();
+		
+		activeFields.addAll(narrower_keys);
+		activeFields.add(LUCENE_DOCID_FIELD);
+		
+		if (additional_md.length > 0) {
+			// If there are additional fields, we need to add those to all_fields.
+			List<String> add_md = Arrays.asList(additional_md);
+			ArrayList<String> allFields = new ArrayList<String>();
+			allFields.addAll(narrower_keys);
+			allFields.addAll(add_md);
+			
+			all_fields = allFields.toArray(new String[allFields.size()]);
+			
+			// Additional fields should be lazily loaded.
+			lazyFields.addAll(add_md);
+		} else {
+			all_fields = fields;
+		}
+		
+		DocumentCollection dc = new DocumentCollection(all_fields);
+		SetBasedFieldSelector fsel = new SetBasedFieldSelector(activeFields, lazyFields);
+		IndexReader lreader;
+		
+		// Do the work....
+		try {
+			lreader = this.getIndexReader();
+			int last = lreader.maxDoc();
+			Document d;
+			String docID;
+			for(int i = 0; i < last; ++i) {
+				if(!lreader.isDeleted(i)) {
+					d = lreader.document(i, fsel);
+					docID = d.get(LUCENE_DOCID_FIELD);
+					if(this.checkANDFieldMatches(fields, narrower, d))
+						dc.put(docID, this.fetchMetadata(d, all_fields));
+				}
+				
+			}
+			lreader.close();
+		} catch (java.io.IOException ioe) {
+			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		}
+		
+		return dc;
 	}
 	
 	/**
@@ -279,13 +416,13 @@ public class LuceneSearcher implements RepositorySearcher {
 	 * Takes a Map of key, val pairs to match with field, vals in doc. A Document field may 
 	 * have multiple values. This checks all values.
 	 */
+	/*
 	private boolean checkANDFieldMatches(Map<String, String> match, Document doc) {
-		Iterator keys = match.keySet().iterator();
 		int l = match.size();
-		String [] fields = new String[l];
-		for(int i = 0; i < l; ++i) fields[i] = (String)keys.next();
+		String [] fields = match.keySet().toArray(new String[l]);
 		return this.checkANDFieldMatches(fields, match, doc);
 	}
+	*/
 	
 	/** 
 	 * Helper function that checks that all fields in a list match for a document.
@@ -310,8 +447,15 @@ public class LuceneSearcher implements RepositorySearcher {
 		return false;
 	}
 	
+	private ArrayList<Metadatum> fetchMetadata(Document d, String[] names) {
+		ArrayList<Metadatum> md = new ArrayList<Metadatum>(names.length);
+		
+		for(String name: names)	md.add(new Metadatum(name, d.getValues(name)));
+		
+		return md;
+	}
+	
 	public boolean isReusable() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	
