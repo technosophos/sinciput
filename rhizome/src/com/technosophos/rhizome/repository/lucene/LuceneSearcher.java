@@ -47,9 +47,10 @@ public class LuceneSearcher implements RepositorySearcher {
 	 */
 	public String []  getMetadataNames() throws RepositoryAccessException {
 		String [] fields = null;
+		IndexReader lreader = null;
 		try {
 			File indexDir = new File(this.context.getParam(LUCENE_INDEX_PATH_PARAM));
-			IndexReader lreader = IndexReader.open(indexDir);
+			lreader = IndexReader.open(indexDir);
 			Collection c = lreader.getFieldNames(IndexReader.FieldOption.ALL);
 			fields = new String[c.size()];
 			Iterator it = c.iterator();
@@ -60,6 +61,10 @@ public class LuceneSearcher implements RepositorySearcher {
 		} catch (java.io.IOException ioe) {
 
 			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		} finally {
+			if(lreader != null) {
+				try{ lreader.close(); } catch (java.io.IOException ioe) {}
+			}
 		}
 		return fields;
 	}
@@ -78,7 +83,7 @@ public class LuceneSearcher implements RepositorySearcher {
 		String [] fields = {name, LUCENE_DOCID_FIELD};
 		
 		MapFieldSelector fieldSelector = new MapFieldSelector(fields);
-		IndexReader lreader;
+		IndexReader lreader = null;
 		
 		try {
 			lreader = this.getIndexReader();
@@ -94,6 +99,10 @@ public class LuceneSearcher implements RepositorySearcher {
 			lreader.close();
 		} catch (java.io.IOException ioe) {
 			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		} finally {
+			if(lreader != null) {
+				try{ lreader.close(); } catch (java.io.IOException ioe) {}
+			}
 		}
 		
 		return docIDs.toArray(new String[docIDs.size()]);
@@ -114,19 +123,23 @@ public class LuceneSearcher implements RepositorySearcher {
 		String [] fields = {name};
 		
 		MapFieldSelector fsel = new MapFieldSelector(fields);
-		IndexReader lreader;
+		IndexReader lreader = null;
+		TermDocs td = null;
 		
 		try {
 			lreader = this.getIndexReader();
-			TermDocs td = lreader.termDocs(new Term(LUCENE_DOCID_FIELD,docID));
+			td = lreader.termDocs(new Term(LUCENE_DOCID_FIELD,docID));
 			while(td.next()) {
 				Document d = lreader.document(td.doc(), fsel);
 				md = new Metadatum(name, d.getValues(name));
 			}
-			td.close();
-			lreader.close();
 		} catch (java.io.IOException ioe) {
 			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		} finally {
+			try {
+				if(lreader != null) lreader.close(); 
+				if(td != null) td.close();
+			} catch (java.io.IOException ioe) {}
 		}
 		
 		return md;
@@ -145,7 +158,7 @@ public class LuceneSearcher implements RepositorySearcher {
 		String [] fields = {LUCENE_DOCID_FIELD, name};
 		
 		MapFieldSelector fieldSelector = new MapFieldSelector(fields);
-		IndexReader lreader;
+		IndexReader lreader = null;
 		
 		try {
 			lreader = this.getIndexReader();
@@ -159,9 +172,13 @@ public class LuceneSearcher implements RepositorySearcher {
 				}
 				
 			}
-			lreader.close();
+			//lreader.close();
 		} catch (java.io.IOException ioe) {
 			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		} finally {
+			if(lreader != null) {
+				try{ lreader.close(); } catch (java.io.IOException ioe) {}
+			}
 		}
 		
 		return vals;
@@ -242,7 +259,7 @@ public class LuceneSearcher implements RepositorySearcher {
 		activeFields.add(LUCENE_DOCID_FIELD);
 		lazyFields.addAll(Arrays.asList(names));
 		SetBasedFieldSelector fsel = new SetBasedFieldSelector(activeFields, lazyFields);
-		IndexReader lreader;
+		IndexReader lreader = null;
 		
 		try {
 			lreader = this.getIndexReader();
@@ -260,9 +277,13 @@ public class LuceneSearcher implements RepositorySearcher {
 				}
 				
 			}
-			lreader.close();
+			//lreader.close();
 		} catch (java.io.IOException ioe) {
 			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		} finally {
+			if(lreader != null) {
+				try{ lreader.close(); } catch (java.io.IOException ioe) {}
+			}
 		}
 		
 		return dc;
@@ -299,8 +320,24 @@ public class LuceneSearcher implements RepositorySearcher {
 		
 		/*
 		 * Welcome to your worst collections nightmare....
-		 * fields: Those that require value matching
+		 * 
+		 * Here's what's going on. We want to collect only items that match the narrower.
+		 * But we also may want more metadata returned in the DocumentCollection. For
+		 * example, I might want to match PublishDate, but I want Title to be retrieved
+		 * even though no matching is done on that field.
+		 * 
+		 * PublishDate, then, needs to be actively loaded, as it will DEFINITELY be used.
+		 * Title, on the other hand, will only be used if all of the narrower conditions
+		 * match. So, we should load it lazily.
+		 * 
+		 * So... DocumentCollection needs a list of all fields. But the FieldSelector
+		 * needs to lists: one for actively loaded fields, and one for lazily loaded
+		 * fields (if there are any).
+		 * 
+		 * fields: Those that require value matching (actively loaded)
 		 * all_fields: Those that should be included in collection, but need no matching.
+		 * activeFields: fields + DOCID
+		 * lazyFields: additional_md (lazily loaded)
 		 */
 		String [] all_fields;
 		Set<String> narrower_keys = narrower.keySet();
@@ -328,7 +365,7 @@ public class LuceneSearcher implements RepositorySearcher {
 		
 		DocumentCollection dc = new DocumentCollection(all_fields);
 		SetBasedFieldSelector fsel = new SetBasedFieldSelector(activeFields, lazyFields);
-		IndexReader lreader;
+		IndexReader lreader = null;
 		
 		// Do the work....
 		try {
@@ -345,9 +382,12 @@ public class LuceneSearcher implements RepositorySearcher {
 				}
 				
 			}
-			lreader.close();
 		} catch (java.io.IOException ioe) {
 			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		} finally {
+			if(lreader != null) {
+				try{ lreader.close(); } catch (java.io.IOException ioe) {}
+			}
 		}
 		
 		return dc;
@@ -374,21 +414,18 @@ public class LuceneSearcher implements RepositorySearcher {
 		String [] fields = new String[l];
 		for(int i = 0; i < l; ++i) fields[i] = (String)keys.next();
 		
-		/*
-		 * Irritating artifact of limitations of MapFieldSelector:
-		 * Since there is no way to add last field to the map field selector,
-		 * we need to copy the array and add the DocID field to this version.
-		 * 
-		 * The other array (fields[]) is used for scanning values.
-		 */
-		String [] fields_plus = new String[fields.length + 1];
-		for(int j = 0; j < fields.length; ++ j)
-			fields_plus[j] = fields[j];
-		fields_plus[fields_plus.length -1] = LUCENE_DOCID_FIELD; 
+		/* More efficient to copy another way:
+		ArrayList<String> fieldList = new ArrayList<String>(Arrays.asList(fields));
+		fieldList.add(LUCENE_DOCID_FIELD);
+		*/
+		String [] fieldList = new String[ fields.length + 1];
+		System.arraycopy(fields, 0, fieldList, 0, fields.length);
+		fieldList[fieldList.length - 1] = LUCENE_DOCID_FIELD;
+		
 		
 		// Now we are ready to check for matches:
-		MapFieldSelector fieldSelector = new MapFieldSelector(fields_plus);
-		IndexReader lreader;
+		MapFieldSelector fieldSelector = new MapFieldSelector(fieldList);
+		IndexReader lreader = null;
 		try {
 			lreader = this.getIndexReader();
 			int last = lreader.maxDoc();
@@ -400,26 +437,16 @@ public class LuceneSearcher implements RepositorySearcher {
 						docIDs.add(d.get(LUCENE_DOCID_FIELD));
 				}
 			}
-			lreader.close();
 		} catch (java.io.IOException ioe) {
 			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		} finally {
+			if(lreader != null) {
+				try{ lreader.close(); } catch (java.io.IOException ioe) {}
+			}
 		}
 		
 		return docIDs.toArray(new String[docIDs.size()]);
 	}
-	
-	/** 
-	 * Helper function that checks that all fields in a list match for a document.
-	 * Takes a Map of key, val pairs to match with field, vals in doc. A Document field may 
-	 * have multiple values. This checks all values.
-	 */
-	/*
-	private boolean checkANDFieldMatches(Map<String, String> match, Document doc) {
-		int l = match.size();
-		String [] fields = match.keySet().toArray(new String[l]);
-		return this.checkANDFieldMatches(fields, match, doc);
-	}
-	*/
 	
 	/** 
 	 * Helper function that checks that all fields in a list match for a document.
