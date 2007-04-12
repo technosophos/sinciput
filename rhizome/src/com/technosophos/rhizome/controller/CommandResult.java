@@ -7,7 +7,7 @@ package com.technosophos.rhizome.controller;
  */
 public class CommandResult {
 
-	private Object result = null;
+	private Presentable result = null;
 	private boolean err = false;
 	private String errMsg = "";
 	private String friendlyErrMsg = "An error occured while processing this request.";
@@ -21,10 +21,10 @@ public class CommandResult {
 	 * Create a new class in which results are stored.
 	 * The object passed in is treated as the results. Different applications will deal
 	 * with this object in their own ways, but a primitive one may simply call 
-	 * Object.toString().
-	 * @param o
+	 * Object.toPresentation().
+	 * @param o a presentable object.
 	 */
-	public CommandResult(Object o) {
+	public CommandResult(Presentable o) {
 		this.result = o;
 	}
 	
@@ -39,10 +39,10 @@ public class CommandResult {
 	/**
 	 * Set the result object.
 	 * Different applications will treat this object differently. A primitive one may 
-	 * simply call the object's <code>toString()</code> method.
+	 * simply call the object's <code>toPresentable()</code> method.
 	 * @param o
 	 */
-	public void setResult(Object o) {
+	public void setResult(Presentable o) {
 		this.result = o;
 	}
 	

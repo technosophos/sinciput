@@ -11,6 +11,7 @@ public class CommandConfiguration {
 
 	protected String name = null;
 	protected String classname = null;
+	private String prefix = "";
 	protected Map<String, String> params;
 	private boolean failFast = false;
 	
@@ -50,6 +51,11 @@ public class CommandConfiguration {
 		this.classname = classname;
 		this.params = params;
 		this.failFast = fail;
+	}
+	
+	public CommandConfiguration(String name, String classname) {
+		this.name = name;
+		this.classname = classname;
 	}
 	
 	/**
@@ -119,6 +125,35 @@ public class CommandConfiguration {
 	}
 	
 	/**
+	 * Return the input prefix.
+	 * A prefix is a string prepended to keys before the keys are grabbed out of the 
+	 * input context.
+	 * @return The prefix, or an empty string if none is set.
+	 */
+	public String getPrefix() {
+		return this.prefix;
+	}
+	
+	/**
+	 * Set a prefix.
+	 * The prefix will be prepended to the keys used to fetch key/value pairs out of
+	 * the input context.
+	 * @param prefix
+	 */
+	public void setPrefix(String prefix) {
+		this.prefix = prefix;
+	}
+	
+	/**
+	 * Returns true if there is a prefix.
+	 * @return
+	 */
+	public boolean hasPrefix() {
+		if(this.prefix == null || this.prefix.length() == 0) return false;
+		return true;
+	}
+	
+	/**
 	 * Get a map of paramter name-> value entries.
 	 * @return Map of name/val pairs
 	 */
@@ -143,5 +178,28 @@ public class CommandConfiguration {
 	public void setParameters(Map<String, String> m) {
 		this.params = m;
 	}
-	
+
+	public String toString() {
+		StringBuffer sb = new StringBuffer();
+		sb.append("{Command: ");
+		sb.append(this.name);
+		sb.append("(");
+		sb.append(this.classname);
+		if (this.failOnError()) sb.append(" failfast is on ");
+		if(this.prefix.length() > 0) {
+			sb.append(", prefix is \"");
+			sb.append(this.prefix);
+			sb.append("\"");
+		}
+		sb.append(") {Parameters: ");
+		for(String pname: this.params.keySet()) {
+			sb.append("{");
+			sb.append(pname);
+			sb.append(": ");
+			sb.append(this.params.get(pname));
+			sb.append("}");
+		}
+		sb.append(" }}");
+		return sb.toString();
+	}
 }

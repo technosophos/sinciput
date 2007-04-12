@@ -1,6 +1,7 @@
 package com.technosophos.rhizome.controller;
 
 import java.util.Map;
+import java.util.List;
 
 /**
  * A Command Object
@@ -27,10 +28,12 @@ public interface RhizomeCommand {
 	 * The CommandParameters object may contain parameters that are not directly related
 	 * to this object, since many commands may be executed during a single request.
 	 * 
+	 * It is this method's responsibility to add some output to the results list.
+	 * 
 	 * @param params The runtime parameters that this command will need to execute.
 	 * @return The result of the command, wrapped as a CommandResult object.
 	 */
-	public abstract CommandResult doCommand(Map params);
+	public abstract void doCommand(Map params, List results);
 	
 	
 }

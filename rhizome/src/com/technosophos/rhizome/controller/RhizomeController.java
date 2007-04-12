@@ -5,6 +5,7 @@ import java.util.Queue;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Controller for handling Rhizome requests.
@@ -85,7 +86,7 @@ public class RhizomeController {
 		try {
 			while (commands.hasNext()) {
 				CommandConfiguration cconf = commands.next();
-				results.add(this.doCommand(cconf, data));
+				this.doCommand(cconf, data, results);
 			}
 		} catch (FatalCommandException fce) {
 			results.clear();
@@ -106,12 +107,11 @@ public class RhizomeController {
 	 * @param data
 	 * @return
 	 */
-	protected CommandResult doCommand(CommandConfiguration cconf, Map data) 
+	protected void doCommand(CommandConfiguration cconf, Map data, List results) 
 			throws FatalCommandException {
-		CommandResult res;
 		try {
 			RhizomeCommand command = RhizomeCommandFactory.getCommand(cconf);
-			res = command.doCommand(data);
+			command.doCommand(data, results);
 		} catch (CommandNotFoundException cnfe) {
 			if (cconf.failOnError()) {
 				String err = "Fatal error in " +cconf.getName() + ".";
@@ -119,11 +119,10 @@ public class RhizomeController {
 			} else {
 				String errMsg = "Command " + cconf.getName() + " not found.";
 				String ferrMsg = "The server could not find the tools required to handle this request.";
-				res = new CommandResult();
+				CommandResult res = new CommandResult();
 				res.setError(errMsg, ferrMsg, cnfe);
 			}			
 		}
-		return res;
 	}
 	
 }
