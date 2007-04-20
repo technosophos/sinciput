@@ -2,7 +2,19 @@ package com.technosophos.rhizome.controller;
 
 /**
  * This contains the result of a particular command.
+ * <p>When a command (a class implementing {@link RhizomeCommand} and called during processing
+ * of a command queue) completes its task, it returns a CommandResult. The CommandResult is
+ * a convenient wrapper for return information, including whether the command executed successfully,
+ * and what information was returned by the command.</p>
+ * <p>The main item of interest in a CommandResult is the {@link Presentable} stored within
+ * it. The Presentable object (any object that implements the Presentable interface) should
+ * contain the information that is to be returned to the requesting client.</p>
+ * <p>Generally, it is up to the implementing server to decide what to do with the
+ * CommandResult and its Presentable object.</p>
  * @author mbutcher
+ * @see Presentable
+ * @see RhizomeCommand
+ * @see RhizomeController.doRequest(String, Map)
  *
  */
 public class CommandResult {
@@ -30,10 +42,10 @@ public class CommandResult {
 	
 	/**
 	 * Return the result from the command.
-	 * @return
+	 * @return A {@link Presentable} object.
 	 */
-	public Object getResult() {
-		return null;
+	public Presentable getResult() {
+		return this.result;
 	}
 	
 	/**

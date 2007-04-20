@@ -2,6 +2,7 @@ package com.technosophos.rhizome.controller;
 
 import java.util.Map;
 import java.util.List;
+import com.technosophos.rhizome.repository.RepositoryManager;
 
 /**
  * A Command Object
@@ -20,7 +21,7 @@ public interface RhizomeCommand {
 	 * Initialize the command. This may be called soon after the empty constructor.
 	 * @param comConf
 	 */
-	public abstract void init(CommandConfiguration comConf);
+	public abstract void init(CommandConfiguration comConf, RepositoryManager rm);
 	
 	/**
 	 * Execute a command.
@@ -33,7 +34,7 @@ public interface RhizomeCommand {
 	 * @param params The runtime parameters that this command will need to execute.
 	 * @return The result of the command, wrapped as a CommandResult object.
 	 */
-	public abstract void doCommand(Map params, List results);
+	public abstract void doCommand(Map<String, Object> params, List<CommandResult> results);
 	
 	
 }

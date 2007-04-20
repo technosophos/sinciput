@@ -1,5 +1,7 @@
 package com.technosophos.rhizome.controller;
 
+import com.technosophos.rhizome.repository.RepositoryManager;
+
 /**
  * Factory for creating RhizomeCommand objects.
  * @author mbutcher
@@ -12,7 +14,7 @@ public class RhizomeCommandFactory {
 	 * This returns an initialized RhizomeCommand object, ready to have doCommand() called.
 	 * @param commandName the name of the command.
 	 */
-	public static RhizomeCommand getCommand(CommandConfiguration cconf)
+	public static RhizomeCommand getCommand(CommandConfiguration cconf, RepositoryManager rm)
 			throws CommandNotFoundException {
 		RhizomeCommand command = null;
 		String classname = cconf.getCommandClassname();
@@ -35,7 +37,7 @@ public class RhizomeCommandFactory {
 			throw new CommandNotFoundException(errmsg);
 		}
 		
-		command.init(cconf);
+		command.init(cconf, rm);
 		return command;
 	}
 }

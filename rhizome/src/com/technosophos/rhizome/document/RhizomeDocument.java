@@ -18,6 +18,8 @@ import com.technosophos.rhizome.document.Metadatum;
 import com.technosophos.rhizome.document.Relation;
 import com.technosophos.rhizome.document.RhizomeData;
 
+import com.technosophos.rhizome.controller.Presentable;
+
 import static com.technosophos.rhizome.document.XMLElements.*;
 
 /**
@@ -56,7 +58,7 @@ import static com.technosophos.rhizome.document.XMLElements.*;
  * @author mbutcher
  *
  */
-public class RhizomeDocument {
+public class RhizomeDocument implements Presentable {
 	
 	
 	
@@ -558,6 +560,17 @@ public class RhizomeDocument {
 		} catch(ParserConfigurationException pce) {
 			return super.toString() + " (Parser Not Found)";
 		}
+	}
+	
+	public String toPresentation() {
+		return this.toString();
+	}
+	
+	public java.util.List<String> toPresentationList() {
+		// FIXME: This should return metadata and data in a list.
+		ArrayList<String> a = new ArrayList<String>();
+		a.add(this.toString());
+		return a;
 	}
 	/*
 	public XDocument getXDocument() {

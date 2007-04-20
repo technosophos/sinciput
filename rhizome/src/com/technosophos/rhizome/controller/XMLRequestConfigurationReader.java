@@ -10,6 +10,18 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.LinkedList;
 
+/**
+ * Read XML files containing request-to-command information.
+ * <p>
+ * The {@link RhizomeController} takes a string request and performs a sequence of commands,
+ * based on the information passed in to as a HashMap of request-to-command mappings. This
+ * class reads an XML file containing that information and converts it into an appropriately
+ * formatted HashMap.</p>
+ * @author mbutcher
+ * @see RhizomeController
+ * @see CommandConfiguration
+ *
+ */
 public class XMLRequestConfigurationReader {
 
 	public static String REQ_ROOT_ELE = "commands";

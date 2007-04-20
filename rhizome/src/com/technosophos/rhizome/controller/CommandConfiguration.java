@@ -4,8 +4,25 @@ import java.util.Map;
 
 /**
  * A Container for Command Configuration Information.
+ * <p>The {@link RhizomeController} maps requests to a queue of commands. Commands, simply
+ * put, are classes, loaded as needed, that perform a specific task. Commands are chained
+ * together, processed in sequence, and then the results are converted to a representation
+ * appropriate for the requesting client's needs.</p>
+ * <p>This class represents the information necessary to identify, load, and operate a 
+ * command. It includes the ability to pass in initial configuration parameters so that 
+ * the command can be customized at initialization time.</p>
+ * <p>Each command should have the following:
+ * <ul>
+ * <li>Name: a short identifier string.</li>
+ * <li>Classname: The name of the class to be loaded. This class must implement {@link RhizomeCommand}.</li>
+ * <li>Params: A map of string-to-string name value pairs.</li>
+ * <li>Fail Flag: A flag indicating whether the command, if it fails, should halt processing of the rest of the command queue.</li>
+ * </ul>
+ * </p>
  * @author mbutcher
- *
+ * @see RhizomeController
+ * @see RhizomeCommand
+ * @see XMLRequestConfigurationReader
  */
 public class CommandConfiguration {
 
