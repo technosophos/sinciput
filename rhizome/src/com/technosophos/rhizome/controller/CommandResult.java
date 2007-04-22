@@ -6,20 +6,20 @@ package com.technosophos.rhizome.controller;
  * of a command queue) completes its task, it returns a CommandResult. The CommandResult is
  * a convenient wrapper for return information, including whether the command executed successfully,
  * and what information was returned by the command.</p>
- * <p>The main item of interest in a CommandResult is the {@link Presentable} stored within
- * it. The Presentable object (any object that implements the Presentable interface) should
+ * <p>The main item of interest in a CommandResult is the object stored within
+ * it. The object should
  * contain the information that is to be returned to the requesting client.</p>
  * <p>Generally, it is up to the implementing server to decide what to do with the
- * CommandResult and its Presentable object.</p>
+ * CommandResult and its object. Clients may introspect the object and call methods, or
+ * they may simply use the object's toString() method.</p>
  * @author mbutcher
- * @see Presentable
  * @see RhizomeCommand
  * @see RhizomeController.doRequest(String, Map)
  *
  */
 public class CommandResult {
 
-	private Presentable result = null;
+	private Object result = null;
 	private boolean err = false;
 	private String errMsg = "";
 	private String friendlyErrMsg = "An error occured while processing this request.";
@@ -33,28 +33,28 @@ public class CommandResult {
 	 * Create a new class in which results are stored.
 	 * The object passed in is treated as the results. Different applications will deal
 	 * with this object in their own ways, but a primitive one may simply call 
-	 * Object.toPresentation().
-	 * @param o a presentable object.
+	 * Object.toString().
+	 * @param o an object.
 	 */
-	public CommandResult(Presentable o) {
+	public CommandResult(Object o) {
 		this.result = o;
 	}
 	
 	/**
 	 * Return the result from the command.
-	 * @return A {@link Presentable} object.
+	 * @return An object.
 	 */
-	public Presentable getResult() {
+	public Object getResult() {
 		return this.result;
 	}
 	
 	/**
 	 * Set the result object.
 	 * Different applications will treat this object differently. A primitive one may 
-	 * simply call the object's <code>toPresentable()</code> method.
+	 * simply call the object's <code>toString()</code> method.
 	 * @param o
 	 */
-	public void setResult(Presentable o) {
+	public void setResult(Object o) {
 		this.result = o;
 	}
 	

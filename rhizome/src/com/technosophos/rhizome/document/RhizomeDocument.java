@@ -562,10 +562,18 @@ public class RhizomeDocument implements Presentable {
 		}
 	}
 	
+	/**
+	 * Use toString() instead.
+	 * @deprecated object will not be a {@link Presentable} in the future.
+	 */
 	public String toPresentation() {
 		return this.toString();
 	}
 	
+	/**
+	 * Use toString() instead.
+	 * @deprecated object will not be a {@link Presentable} in the future.
+	 */
 	public java.util.List<String> toPresentationList() {
 		// FIXME: This should return metadata and data in a list.
 		ArrayList<String> a = new ArrayList<String>();
