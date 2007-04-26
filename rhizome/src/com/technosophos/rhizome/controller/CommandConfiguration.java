@@ -188,6 +188,15 @@ public class CommandConfiguration {
 	}
 	
 	/**
+	 * Returns true if it has a param value for this name.
+	 * @param paramName name of the parameter to check for
+	 * @return true if a value exists, false otherwise
+	 */
+	public boolean hasParameter(String paramName) {
+		return this.params.containsKey(paramName);
+	}
+	
+	/**
 	 * Set the map of name/val pair-based parameters.
 	 * @param m
 	 * @return

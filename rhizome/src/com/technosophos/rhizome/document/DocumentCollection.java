@@ -1,5 +1,7 @@
 package com.technosophos.rhizome.document;
 
+import com.technosophos.rhizome.RhizomeException;
+import com.technosophos.rhizome.repository.RepositoryManager;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
@@ -35,6 +37,23 @@ public class DocumentCollection {
 	public DocumentCollection(String [] md_hints) {
 		this.md_hints = md_hints;
 		this.entries = new HashMap<String, List<Metadatum>>(); 
+	}
+	
+	/**
+	 * Create a document collection with metadata hints.
+	 * 
+	 * @param the names of the metadata that elements in this collection may contain.
+	 */
+	public DocumentCollection(List<String> md_hints) {
+		this(md_hints.toArray(new String[md_hints.size()]));
+	}
+	
+	/**
+	 * Create a document collection that tries to retrieve only one metadatum type.
+	 * @param md_hint the name of the metadatum to try to retrieve.
+	 */
+	public DocumentCollection(String md_hint) {
+		this(new String []{md_hint});
 	}
 	
 	/*
@@ -88,6 +107,23 @@ public class DocumentCollection {
 			}
 		}
 		return null;
+	}
+	
+	/**
+	 * Get the RhizomeDocument representation of a particular document.
+	 * This is a convenience method for getting a RhizomeDocument for an item in this
+	 * document collection. It is lazy in the sense that the document in its entirety is
+	 * not fetched until this method is called. For that reason, it is possible that in 
+	 * some repositories, the document can be deleted after the metadata is returned, 
+	 * resulting in a {@link DocumentNotFoundException} being thrown.
+	 * @param repoman An initialized Repository Manager.
+	 * @param docID The ID of the document to fetch.
+	 * @return A Rhizome Document
+	 * @throws RhizomeException
+	 */
+	public RhizomeDocument getRhizomeDocument(RepositoryManager repoman, String docID) 
+			throws RhizomeException {
+		return repoman.getDocument(docID);
 	}
 	
 	/**

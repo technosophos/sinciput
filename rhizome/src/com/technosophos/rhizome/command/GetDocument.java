@@ -3,21 +3,17 @@ package com.technosophos.rhizome.command;
 import java.util.List;
 import java.util.Map;
 
-import com.technosophos.rhizome.controller.CommandConfiguration;
-import com.technosophos.rhizome.controller.RhizomeCommand;
+//import com.technosophos.rhizome.controller.CommandConfiguration;
+//import com.technosophos.rhizome.controller.RhizomeCommand;
+//import com.technosophos.rhizome.repository.RepositoryManager;
+
 import com.technosophos.rhizome.controller.CommandResult;
 import com.technosophos.rhizome.document.RhizomeDocument;
 import com.technosophos.rhizome.repository.DocumentNotFoundException;
-import com.technosophos.rhizome.repository.RepositoryManager;
 import com.technosophos.rhizome.RhizomeException;
 
-public class GetDocument implements RhizomeCommand {
+public class GetDocument extends AbstractCommand {
 
-	/** the CommandConfiguration */
-	protected CommandConfiguration comConf = null;
-	/** the RepositoryManager instance */
-	protected RepositoryManager repoman = null;
-	
 	/**
 	 * This command looks for the parameter "docid" (or [prefix]docid if prefix is
 	 * set in the command configuration).
@@ -33,9 +29,10 @@ public class GetDocument implements RhizomeCommand {
 	 * {@link CommandResult} will have the error flag set, and error information embedded.</p>
 	 */
 	public void doCommand(Map<String, Object> params, List<CommandResult> results) {
+		
 		CommandResult res;
 		RhizomeDocument doc;
-		if(!params.containsKey(PARAM_DOCID)) {
+		if(!params.containsKey(this.getPrefixedParamName(PARAM_DOCID))) {
 			res = new CommandResult();
 			String errMsg = "\"docid\" param is not set. Nothing to retrieve.";
 			String friendlyErrMsg = "A document was requested, but no document name was given. We don't know what to look for.";
@@ -43,7 +40,7 @@ public class GetDocument implements RhizomeCommand {
 			results.add(res);
 			return;
 		}
-		String docID = params.get(PARAM_DOCID).toString();
+		String docID = this.getParam(params, PARAM_DOCID).toString();
 		try {
 			doc = this.fetchDocument(docID);
 			results.add(new CommandResult(doc));
@@ -57,12 +54,13 @@ public class GetDocument implements RhizomeCommand {
 		}
 	}
 	
-	// inherit javadoc
-	public void init(CommandConfiguration comConf, RepositoryManager rm) {
-		this.comConf = comConf;
-		this.repoman = rm;
-	}
-	
+	/**
+	 * This method retrieves a document. Subclasses may wish to override or call this.
+	 * @param docID
+	 * @return A RhizomeDocument retrieved from the repository.
+	 * @throws DocumentNotFoundException if the document is not found.
+	 * @throws RhizomeException if there is an error accessing the respository.
+	 */
 	protected RhizomeDocument fetchDocument(String docID) throws DocumentNotFoundException, RhizomeException {
 		return this.repoman.getDocument(docID);
 	}
