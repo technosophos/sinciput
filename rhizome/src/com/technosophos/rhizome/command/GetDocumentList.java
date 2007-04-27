@@ -12,13 +12,6 @@ import com.technosophos.rhizome.repository.RepositoryAccessException;
 import com.technosophos.rhizome.repository.RhizomeInitializationException;
 
 public class GetDocumentList extends AbstractCommand {
-
-	/**
-	 * The string "md_hints".
-	 * The name of the field to fetch from the params in order to get a list of metdata
-	 * hints.
-	 */
-	public static String CONF_MD_HINTS = "md_hints";
 	
 	/**
 	 * The string "fields".
@@ -27,6 +20,13 @@ public class GetDocumentList extends AbstractCommand {
 	 * is passed into doCommand.
 	 */
 	public static String CONF_PARAM_FIELDS = "fields";
+	
+	/**
+	 * The string "additional_fields".
+	 * Additional fields which should be retrieved, but not used to construct the 
+	 * narrower. (Nothing for these fields is fetched from the params list passed
+	 * into {@link doCommand(Map, List)}.
+	 */
 	public static String CONF_ADD_FIELDS = "additional_fields";
 	
 	/**
@@ -108,6 +108,7 @@ public class GetDocumentList extends AbstractCommand {
 	 * this is that the Map returned could be empty.</p>
 	 * <p>This is prefix aware, and if a prefix is present, it will be prepended to each 
 	 * value in the fields array.</p>
+	 * <p>You might want to override this if you want any value checking done.</p>
 	 * @param fields array of field names (keys to look for in the params Map).
 	 * @param params a Map of parameters.
 	 * @return
