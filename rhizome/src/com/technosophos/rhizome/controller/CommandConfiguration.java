@@ -29,7 +29,7 @@ public class CommandConfiguration {
 	protected String name = null;
 	protected String classname = null;
 	private String prefix = "";
-	protected Map<String, String> params;
+	protected Map<String, String[]> params;
 	private boolean failFast = false;
 	
 	private CommandConfiguration() {
@@ -63,7 +63,7 @@ public class CommandConfiguration {
 	 * @param fail whether the entire request should fail when this command fails. False by default.
 	 */
 	public CommandConfiguration(String name, String classname, 
-								Map<String, String> params, boolean fail) {
+								Map<String, String[]> params, boolean fail) {
 		this.name = name;
 		this.classname = classname;
 		this.params = params;
@@ -82,7 +82,7 @@ public class CommandConfiguration {
 	 * @param params name/value parameters
 	 * @see CommandConfiguration(String, String, Map, boolean)
 	 */
-	public CommandConfiguration(String name, String classname, Map<String, String> params) {
+	public CommandConfiguration(String name, String classname, Map<String, String[]> params) {
 		this(name, classname, params, false);
 	}
 	
@@ -174,7 +174,7 @@ public class CommandConfiguration {
 	 * Get a map of paramter name-> value entries.
 	 * @return Map of name/val pairs
 	 */
-	public Map<String, String> getParameters() {
+	public Map<String, String[]> getParameters() {
 		return this.params;
 	}
 	
@@ -183,7 +183,7 @@ public class CommandConfiguration {
 	 * @param paramName the name of the paramter
 	 * @return the value
 	 */
-	public String getParameter(String paramName) {
+	public String[] getParameter(String paramName) {
 		return this.params.get(paramName);
 	}
 	
@@ -201,7 +201,7 @@ public class CommandConfiguration {
 	 * @param m
 	 * @return
 	 */
-	public void setParameters(Map<String, String> m) {
+	public void setParameters(Map<String, String[]> m) {
 		this.params = m;
 	}
 
@@ -222,7 +222,11 @@ public class CommandConfiguration {
 			sb.append("{");
 			sb.append(pname);
 			sb.append(": ");
-			sb.append(this.params.get(pname));
+			String [] vals = this.params.get(pname);
+			for(String val: vals) {
+				sb.append(val);
+				sb.append(",");
+			}
 			sb.append("}");
 		}
 		sb.append(" }}");

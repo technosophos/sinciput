@@ -31,6 +31,7 @@ public class XMLRequestConfigurationReader {
 	public static String REQ_GLOBAL_ELE = "global";
 	public static String REQ_CMD_ELE = "cmd";
 	public static String REQ_PARAM_ELE = "param";
+	public static String REQ_VALUE_ELE = "value";
 	
 	public static String REQ_NAME_ATTR = "name";
 	public static String REQ_CLASS_ATTR = "class";
@@ -42,7 +43,7 @@ public class XMLRequestConfigurationReader {
 	private XParser p = null;
 	private XDocument doc = null;
 	private HashMap<String, String> classes = new HashMap<String, String>();
-	private HashMap<String, String> globals = new HashMap<String, String>();
+	private HashMap<String, String[]> globals = new HashMap<String, String[]>();
 	
 	/**
 	 * Read an XML file and return a Map of requests and their respective command queues.
@@ -117,9 +118,21 @@ public class XMLRequestConfigurationReader {
 		XElement reqs_ele = root.getChildrenElements(REQ_REQUESTS_ELE).getFirst();
 		XElement globals_ele = reqs_ele.getChildrenElements(REQ_GLOBAL_ELE).getFirst();
 		LinkedList<XElement> param_l = globals_ele.getChildrenElements(REQ_PARAM_ELE);
-		String txt;
+		String txt[];
+		LinkedList<XElement> value_l;
 		for(XElement param_ele: param_l) {
-			txt = this.catPCData(param_ele.getPCData()); 
+			value_l = param_ele.getChildrenElements(REQ_VALUE_ELE);
+			if(value_l == null || value_l.size() == 0) {
+				txt = new String [1];
+				txt[0] = this.catPCData(param_ele.getPCData());
+			} else {
+				txt = new String [value_l.size()];
+				XElement val_ele;
+				for(int iii = 0; iii < value_l.size(); ++iii) {
+					val_ele = value_l.get(iii);
+					txt[iii] = this.catPCData(val_ele.getPCData());
+				}
+			}
 			xattrs = param_ele.getAttributes();
 			if(xattrs.containsAttribute(REQ_NAME_ATTR))
 				this.globals.put(xattrs.getAttributeValue(REQ_NAME_ATTR), txt);
@@ -140,13 +153,15 @@ public class XMLRequestConfigurationReader {
 	private Queue<CommandConfiguration> getCommands(XElement req_ele) {
 		LinkedList<XElement> cmd_l = req_ele.getChildrenElements(REQ_CMD_ELE);
 		LinkedList<CommandConfiguration> cconf_l = new LinkedList<CommandConfiguration>();
-		HashMap<String, String> ppp;
+		HashMap<String, String[]> ppp;
 		CommandConfiguration cconf;
-		String cmd_name, txt;
+		String cmd_name;
+		String [] txt;
 		XAttributes xattrs, xattrs2;
 		LinkedList<XElement> param_l;
+		LinkedList<XElement> value_l;
 		for(XElement cmd_ele: cmd_l) {
-			ppp = new HashMap<String, String>(globals);
+			ppp = new HashMap<String, String[]>(globals);
 			xattrs = cmd_ele.getAttributes();
 			if(xattrs.containsAttribute(REQ_DO_ATTR)) {
 				cmd_name = xattrs.getAttributeValue(REQ_DO_ATTR);
@@ -154,8 +169,20 @@ public class XMLRequestConfigurationReader {
 					cconf = new CommandConfiguration(cmd_name, this.classes.get(cmd_name));
 					param_l = cmd_ele.getChildrenElements(REQ_PARAM_ELE);
 					for(XElement param_ele: param_l) {
+						value_l = param_ele.getChildrenElements(REQ_VALUE_ELE);
+						if(value_l == null || value_l.size() == 0) {
+							txt = new String [1];
+							txt[0] = this.catPCData(param_ele.getPCData());
+						} else {
+							txt = new String [value_l.size()];
+							XElement val_ele;
+							for(int iii = 0; iii < value_l.size(); ++iii) {
+								val_ele = value_l.get(iii);
+								txt[iii] = this.catPCData(val_ele.getPCData());
+							}
+						}
 						xattrs2 = param_ele.getAttributes();
-						txt = this.catPCData(param_ele.getPCData());
+						//txt = this.catPCData(param_ele.getPCData());
 						if(xattrs2.containsAttribute(REQ_NAME_ATTR)) {
 							ppp.put(xattrs2.getAttributeValue(REQ_NAME_ATTR), txt);
 						}
