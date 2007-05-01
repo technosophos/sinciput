@@ -3,9 +3,6 @@ package com.technosophos.rhizome.command;
 import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
-
-//import com.technosophos.rhizome.RhizomeException;
-//import com.technosophos.rhizome.document.RhizomeDocument;
 import com.technosophos.rhizome.controller.CommandResult;
 import com.technosophos.rhizome.document.DocumentCollection;
 import com.technosophos.rhizome.repository.RepositoryAccessException;

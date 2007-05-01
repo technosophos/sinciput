@@ -40,7 +40,7 @@ import java.util.List;
  */
 public class RhizomeController {
 
-	private HashMap<String, Queue<CommandConfiguration>> cqMap = null;
+	private Map<String, Queue<CommandConfiguration>> cqMap = null;
 	private RepositoryManager repoman = null;
 	private RepositoryContext repocxt = null;
 	
@@ -62,7 +62,7 @@ public class RhizomeController {
 	 * @param cxt A RepositoryContext with settings for operating the respository.
 	 * @see RepositoryContext()
 	 */
-	public RhizomeController(HashMap<String, Queue<CommandConfiguration>> cqMap, RepositoryContext cxt) {
+	public RhizomeController(Map<String, Queue<CommandConfiguration>> cqMap, RepositoryContext cxt) {
 		this.cqMap = cqMap;
 		this.repocxt = cxt;
 		this.repoman = new RepositoryManager(cxt);
@@ -76,7 +76,7 @@ public class RhizomeController {
 	 * @param cqMap a command queue map of request names to a queue of command names.
 	 * @param cxt A RepositoryContext with settings for operating the repository.
 	 */
-	public void init(HashMap<String, Queue<CommandConfiguration>> cqMap, RepositoryContext cxt) {
+	public void init(Map<String, Queue<CommandConfiguration>> cqMap, RepositoryContext cxt) {
 		this.cqMap = cqMap;
 		this.repocxt = cxt;
 		this.repoman = new RepositoryManager(cxt);

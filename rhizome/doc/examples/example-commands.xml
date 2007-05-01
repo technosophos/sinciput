@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<commands>
+<!--
+This file contains information that Rhizome uses to determine what classes
+it should load.
+-->
+	<loadclass class="com.technosophos.rhizome.cmd.EchoCommand" name="echo" />
+	<loadclass class="com.technosophos.rhizome.template.TemplateRenderer" 
+		   name="template" />
+
+	<requests>
+		<global>
+			<param name="homedir">/tmp</param>
+		</global>
+		<request name="doEcho">
+			<!-- Evaluated like a queue, top to bottom. -->
+			<cmd do="echo"/>
+			<cmd do="template">
+				<param name="file">file:///tmp/template.vlc</param>
+			</cmd>
+		</request>
+		<request name="doSysInfo">
+			<cmd do="systeminfo" fatal="true"/>
+			<cmd do="template" prefix="template-">
+				<param name="file">file:///tmp/template.vlc</param>
+			</cmd>
+		</request>
+	</requests>
+</commands>

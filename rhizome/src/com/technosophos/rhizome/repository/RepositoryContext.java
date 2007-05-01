@@ -61,13 +61,24 @@ public class RepositoryContext {
 	}
 	
 	/**
+	 * Use the addParam instead.
+	 * @deprecated 
+	 * @see addParam(String, String)
+	 * @param key
+	 * @param value
+	 */
+	public void setParam(String key, String value) {
+		this.addParam(key, value);
+	}
+	
+	/**
 	 * Set a particular key/value.
 	 * 
 	 * Insert or overwrite a key in the context.
 	 * @param key
 	 * @param value
 	 */
-	public void setParam(String key, String value) {
+	public void addParam(String key, String value) {
 		this.ctx.put(key, value);
 	}
 	
