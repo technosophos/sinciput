@@ -2,6 +2,7 @@ package com.technosophos.rhizome.controller;
 
 import com.technosophos.rhizome.repository.RepositoryManager;
 import com.technosophos.rhizome.repository.RepositoryContext;
+import com.technosophos.rhizome.RhizomeException;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.HashMap;
@@ -95,6 +96,18 @@ public class RhizomeController {
 	}
 	
 	/**
+	 * Check whether this controller can process the given request.
+	 * If this controller can process the given request, this will return true. Otherwise,
+	 * it will return false.
+	 * @param requestName
+	 * @return true if it can process the given request
+	 */
+	public boolean hasRequest(String requestName) {
+		if(this.cqMap.containsKey(requestName)) return true;
+		return false;
+	}
+	
+	/**
 	 * Handle a request.
 	 * This handles a request, which is typically made up of one or more commands, and
 	 * returns the results in a List. Exceptions thrown by commands are caught and stored
@@ -114,18 +127,21 @@ public class RhizomeController {
 					+ requestName + "\" ");
 		Iterator<CommandConfiguration> commands = this.cqMap.get(requestName).iterator();
 		
-		
+		CommandConfiguration cconf = null;
 		try {
 			while (commands.hasNext()) {
-				CommandConfiguration cconf = commands.next();
+				//System.out.println("Doing command");
+				cconf = commands.next();
 				this.doCommand(cconf, data, results);
+				System.out.format("Command: There are %d results.\n", results.size());
 			}
 		} catch (FatalCommandException fce) {
 			results.clear();
-			CommandResult res = new CommandResult();
+			CommandResult res;
 			String errMsg = "Fatal Error in " + requestName + ".";
 			String ferrMsg = "The server experienced a severe error, and cannot complete this task.";
-			res = new CommandResult();
+			if(cconf == null) cconf = new CommandConfiguration("FatalCommandException","");
+			res = new CommandResult(cconf);
 			res.setError(errMsg, ferrMsg, fce);
 			results.add(res);
 		}		
@@ -146,15 +162,16 @@ public class RhizomeController {
 		try {
 			RhizomeCommand command = RhizomeCommandFactory.getCommand(cconf, this.repoman);
 			command.doCommand(data, results);
-		} catch (CommandNotFoundException cnfe) {
+		} catch (RhizomeException re) {
 			if (cconf.failOnError()) {
 				String err = "Fatal error in " +cconf.getName() + ".";
-				throw new FatalCommandException(err, cnfe);
+				throw new FatalCommandException(err, re);
 			} else {
 				String errMsg = "Command " + cconf.getName() + " not found.";
 				String ferrMsg = "The server could not find the tools required to handle this request.";
-				CommandResult res = new CommandResult();
-				res.setError(errMsg, ferrMsg, cnfe);
+				CommandResult res = new CommandResult(cconf.getName());
+				res.setError(errMsg, ferrMsg, re);
+				results.add(res);
 			}			
 		}
 	}

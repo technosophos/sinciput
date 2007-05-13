@@ -54,7 +54,7 @@ public class GetDocumentList extends AbstractCommand {
 		 */
 		
 		if(!this.comConf.hasParameter(CONF_PARAM_FIELDS)) {
-			res = new CommandResult();
+			res = new CommandResult(this.comConf);
 			String errMsg = "\"fields\" param is not set in the configuration. Nothing to retrieve.";
 			String friendlyErrMsg = "A list of documents was requested, but the server could not process the request. We don't know what to look for.";
 			res.setError(errMsg, friendlyErrMsg);
@@ -65,7 +65,7 @@ public class GetDocumentList extends AbstractCommand {
 		String [] fields = this.comConf.getParameter(CONF_PARAM_FIELDS);
 		HashMap<String, String> narrower = this.buildNarrower(fields, params);
 		if(narrower.size() == 0 ) {
-			res = new CommandResult();
+			res = new CommandResult(this.comConf);
 			String errMsg = "None of the expected keys (fields) appeared in the params passed to this command. Nothing to retrieve.";
 			String friendlyErrMsg = "A list of documents was requested, but not enough search information was given. We don't know what to look for.";
 			res.setError(errMsg, friendlyErrMsg);
@@ -79,14 +79,14 @@ public class GetDocumentList extends AbstractCommand {
 		try {
 			doc = this.repoman.getRepositorySearcher().narrowingSearch(narrower, additional_md);
 		} catch (RhizomeInitializationException rie) {
-			res = new CommandResult();
+			res = new CommandResult(this.comConf);
 			String errMsg = "Error initializing the repository.";
 			String friendlyErrMsg = "A list of documents was requested, but the data is unavailable. Nothing was returned.";
 			res.setError(errMsg, friendlyErrMsg, rie);
 			results.add(res);
 			return;
 		} catch (RepositoryAccessException rae) {
-			res = new CommandResult();
+			res = new CommandResult(this.comConf);
 			String errMsg = "Error doing narrowing search of the repository.";
 			String friendlyErrMsg = "A list of documents was requested, but the search failed. Nothing was returned.";
 			res.setError(errMsg, friendlyErrMsg, rae);
@@ -95,7 +95,7 @@ public class GetDocumentList extends AbstractCommand {
 		}
 		
 		// Package the results and return
-		res = new CommandResult(doc);
+		res = new CommandResult(this.comConf, doc);
 	}
 	
 	/**

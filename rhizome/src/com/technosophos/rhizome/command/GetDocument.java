@@ -33,7 +33,7 @@ public class GetDocument extends AbstractCommand {
 		CommandResult res;
 		RhizomeDocument doc;
 		if(!params.containsKey(this.getPrefixedParamName(PARAM_DOCID))) {
-			res = new CommandResult();
+			res = new CommandResult(this.comConf);
 			String errMsg = "\"docid\" param is not set. Nothing to retrieve.";
 			String friendlyErrMsg = "A document was requested, but no document name was given. We don't know what to look for.";
 			res.setError(errMsg, friendlyErrMsg);
@@ -43,9 +43,9 @@ public class GetDocument extends AbstractCommand {
 		String docID = this.getParam(params, PARAM_DOCID).toString();
 		try {
 			doc = this.fetchDocument(docID);
-			results.add(new CommandResult(doc));
+			results.add(new CommandResult(this.comConf, doc));
 		} catch (RhizomeException re) {
-			res = new CommandResult();
+			res = new CommandResult(this.comConf);
 			String errMsg = "Failed to retrieve document: " + re.getMessage();
 			String friendlyErrMsg = "The document you are looking for cannot be found right now.";
 			res.setError(errMsg, friendlyErrMsg, re);

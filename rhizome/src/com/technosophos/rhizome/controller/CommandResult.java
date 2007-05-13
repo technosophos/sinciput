@@ -24,19 +24,59 @@ public class CommandResult {
 	private String errMsg = "";
 	private String friendlyErrMsg = "An error occured while processing this request.";
 	private Exception e = null;
+	private String cmdName = null;
 	
-	public CommandResult() {
-		
+	/**
+	 * This will set the command name to the String value.
+	 * This method should only be used when the command configuration cannot be found.
+	 * @param commandName Command name (might have prefix)
+	 * @see #CommandResult(CommandConfiguration)
+	 */
+	public CommandResult(String commandName) {
+		this.cmdName = commandName;
+	}
+	
+	/**
+	 * This will set the CommandResult name to cc.getPrefix() + cc.getName().
+	 * @param cc
+	 * @see #CommandResult(CommandConfiguration, Object)
+	 */
+	public CommandResult(CommandConfiguration cc) {
+		if( cc.hasPrefix() )
+			this.cmdName = cc.getPrefix() + cc.getName();
+		else
+			this.cmdName = cc.getName();
 	}
 	
 	/**
 	 * Create a new class in which results are stored.
+	 * <b>Use this only when you must.</b>
 	 * The object passed in is treated as the results. Different applications will deal
 	 * with this object in their own ways, but a primitive one may simply call 
 	 * Object.toString().
+	 * @param commandName name of the command that produced this result
 	 * @param o an object.
+	 * @deprecated Use a form that takes a CommandConfiguration.
+	 * @see #CommandResult(CommandConfiguration, Object)
 	 */
-	public CommandResult(Object o) {
+	public CommandResult(String commandName, Object o) {
+		this.cmdName = commandName;
+		this.result = o;
+	}
+	
+	/**
+	 * This is the preferred way of creating a CommandResult.
+	 * This will use the CommandConfiguration to get the prefix and the command
+	 * name, which will be used together to create the name of this result. The object will
+	 * be stored here, for retrieval by other commands, or by the controller.
+	 * @param cc The CommandConfiguration object for the invoking command.
+	 * @param o The object to be wrapped.
+	 */
+	public CommandResult(CommandConfiguration cc, Object o) {
+		if( cc.hasPrefix() )
+			this.cmdName = cc.getPrefix() + cc.getName();
+		else
+			this.cmdName = cc.getName();
 		this.result = o;
 	}
 	
@@ -46,6 +86,19 @@ public class CommandResult {
 	 */
 	public Object getResult() {
 		return this.result;
+	}
+	
+	/**
+	 * Get the name of this command.
+	 * @return
+	 * @deprecated use {@link #getName()}
+	 */
+	public String getCommandName() {
+		return this.getName();
+	}
+	
+	public String getName() {
+		return this.cmdName;
 	}
 	
 	/**

@@ -38,6 +38,7 @@ public class XMLRequestConfigurationReader {
 	public static String REQ_DO_ATTR = "do";
 	public static String REQ_FATAL_ATTR = "fatal";
 	public static String REQ_PREFIX_ATTR = "prefix";
+	//public static String REQ_DEFAULT_ATTR = "default";
 	
 	
 	private XParser p = null;

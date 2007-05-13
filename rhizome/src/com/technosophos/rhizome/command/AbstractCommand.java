@@ -4,10 +4,19 @@ import java.util.List;
 import java.util.Map;
 
 import com.technosophos.rhizome.controller.CommandConfiguration;
+import com.technosophos.rhizome.controller.CommandInitializationException;
 import com.technosophos.rhizome.controller.CommandResult;
 import com.technosophos.rhizome.controller.RhizomeCommand;
 import com.technosophos.rhizome.repository.RepositoryManager;
 
+/**
+ * Basic command functionality.
+ * This abstract class implements some basic functionality of the {@link RhizomeCommand}
+ * interface, and also provides some basic utility methods that will expedite development
+ * of commands.
+ * @author mbutcher
+ *
+ */
 public abstract class AbstractCommand implements RhizomeCommand {
 
 	/** the CommandConfiguration */
@@ -24,7 +33,9 @@ public abstract class AbstractCommand implements RhizomeCommand {
 	 * @param CommandConfiguration command configuration
 	 * @param RepositoryManager initialized repository manager
 	 */
-	public void init(CommandConfiguration comConf, RepositoryManager rm) {
+	public void init(CommandConfiguration comConf, RepositoryManager rm) 
+			throws CommandInitializationException {
+		assert comConf != null;
 		this.comConf = comConf;
 		this.repoman = rm;
 	}
@@ -55,6 +66,50 @@ public abstract class AbstractCommand implements RhizomeCommand {
 		String pname = this.getPrefixedParamName(name);
 		if(!params.containsKey(pname)) return null;
 		return params.get(pname);
+	}
+	
+	/**
+	 * Create and initialize a new {@link CommandResult}.
+	 * This is a convenience method for creating a new command result.
+	 * @return initialized CommandResult
+	 */
+	protected CommandResult createCommandResult() {
+		return new CommandResult(this.comConf);
+	}
+	
+	/**
+	 * Create and initialize a new {@link CommandResult}.
+	 * This is a convenience method for creating a new command result.
+	 * @param o The object that the command result wraps.
+	 * @return initialized CommandResult (ready to add to the results list)
+	 */
+	protected CommandResult createCommandResult(Object o) {
+		return new CommandResult(this.comConf, o);
+	}
+	
+	/**
+	 * Create a new error message {@link CommandResult}.
+	 * @param errMsg technical error message
+	 * @param friendlyErrMsg user-friendly error message
+	 * @return initialized CommandResult with error information
+	 */
+	protected CommandResult createErrorCommandResult(String errMsg, String friendlyErrMsg) {
+		CommandResult r = new CommandResult(this.comConf);
+		r.setError(errMsg, friendlyErrMsg);
+		return r;
+	}
+	
+	/**
+	 * Create a new error message {@link CommandResult}.
+	 * @param errMsg technical error message
+	 * @param friendlyErrMsg user-friendly error message
+	 * @param e Exception that the controller should examine or print
+	 * @return initialized CommandResult with error information
+	 */
+	protected CommandResult createErrorCommandResult(String errMsg, String friendlyErrMsg, Exception e) {
+		CommandResult r = new CommandResult(this.comConf);
+		r.setError(errMsg, friendlyErrMsg, e);
+		return r;
 	}
 
 }

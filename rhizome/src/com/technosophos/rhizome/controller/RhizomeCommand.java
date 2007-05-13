@@ -20,8 +20,10 @@ public interface RhizomeCommand {
 	/**
 	 * Initialize the command. This may be called soon after the empty constructor.
 	 * @param comConf
+	 * @throws CommandInitializationException if the init fails.
 	 */
-	public abstract void init(CommandConfiguration comConf, RepositoryManager rm);
+	public abstract void init(CommandConfiguration comConf, RepositoryManager rm) 
+		throws CommandInitializationException;
 	
 	/**
 	 * Execute a command.

@@ -15,7 +15,7 @@ public class RhizomeCommandFactory {
 	 * @param commandName the name of the command.
 	 */
 	public static RhizomeCommand getCommand(CommandConfiguration cconf, RepositoryManager rm)
-			throws CommandNotFoundException {
+			throws CommandNotFoundException, CommandInitializationException {
 		RhizomeCommand command = null;
 		String classname = cconf.getCommandClassname();
 		
