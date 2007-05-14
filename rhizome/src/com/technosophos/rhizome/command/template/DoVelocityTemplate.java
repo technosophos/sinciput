@@ -13,7 +13,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.VelocityEngine;
 
 /**
- * Abstract class that performs velocity template rendering.
+ * Performs velocity template rendering.
  * <p>This class handles velocity template manipulation. It will format the data contained
  * in all of the previous {@link CommandResult} items in the {@link List}, and it
  * will then remove those items from the list. (To not do so would be to give the 

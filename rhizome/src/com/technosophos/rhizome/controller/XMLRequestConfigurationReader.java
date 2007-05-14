@@ -243,9 +243,10 @@ public class XMLRequestConfigurationReader {
 	protected String translatePI(XProcessingInstruction p) {
 		if(this.pathInfo.size() == 0) return null; // We know that we will never match.
 		String k = p.getData();
+		if( k == null) return null;
+		k = k.trim();
 		String d = null;
 		if(REQ_PATH_PI_TARGET.equals(p.getTarget())
-				&& k != null
 				&& this.pathInfo.containsKey(k)) {
 			d = this.pathInfo.get(k);
 			if("".equals(d)) return null;
