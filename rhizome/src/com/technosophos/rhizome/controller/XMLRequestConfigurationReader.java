@@ -40,11 +40,26 @@ public class XMLRequestConfigurationReader {
 	public static String REQ_PREFIX_ATTR = "prefix";
 	//public static String REQ_DEFAULT_ATTR = "default";
 	
+	/**
+	 * Processor Instructions for this Target will be translated to path information.
+	 */
+	public static final String REQ_PATH_PI_TARGET = "path";
+	
+	
+	public static final String BASE_PATH = "base_path";
+	public static final String CONFIG_PATH = "config_path";
+	public static final String RESOURCE_PATH = "resource_path";
+	
 	
 	private XParser p = null;
 	private XDocument doc = null;
 	private HashMap<String, String> classes = new HashMap<String, String>();
 	private HashMap<String, String[]> globals = new HashMap<String, String[]>();
+	private Map<String, String> pathInfo = null;
+	
+	public XMLRequestConfigurationReader(Map<String, String> pathInfo) {
+		this.pathInfo = pathInfo;
+	}
 	
 	/**
 	 * Read an XML file and return a Map of requests and their respective command queues.
@@ -118,6 +133,7 @@ public class XMLRequestConfigurationReader {
 		// SECOND: Get Global Params
 		XElement reqs_ele = root.getChildrenElements(REQ_REQUESTS_ELE).getFirst();
 		XElement globals_ele = reqs_ele.getChildrenElements(REQ_GLOBAL_ELE).getFirst();
+		this.piReplace(globals_ele); // Replace processing instructions.
 		LinkedList<XElement> param_l = globals_ele.getChildrenElements(REQ_PARAM_ELE);
 		String txt[];
 		LinkedList<XElement> value_l;
@@ -152,6 +168,7 @@ public class XMLRequestConfigurationReader {
 	}
 	
 	private Queue<CommandConfiguration> getCommands(XElement req_ele) {
+		this.piReplace(req_ele); // Replace processing instructions.
 		LinkedList<XElement> cmd_l = req_ele.getChildrenElements(REQ_CMD_ELE);
 		LinkedList<CommandConfiguration> cconf_l = new LinkedList<CommandConfiguration>();
 		HashMap<String, String[]> ppp;
@@ -213,5 +230,46 @@ public class XMLRequestConfigurationReader {
 			sb.append(d.getText());
 		}
 		return sb.toString();
+	}
+	
+	//protected void replaceSpecials
+	
+	/**
+	 * Replace processor instructions.
+	 * This attempts to replace a PI with the target {@link REQ_PATH_PI_TARGET}. 
+	 * This may return null.
+	 * @see #XMLRequestConfigurationReader(Map)
+	 */
+	protected String translatePI(XProcessingInstruction p) {
+		if(this.pathInfo.size() == 0) return null; // We know that we will never match.
+		String k = p.getData();
+		String d = null;
+		if(REQ_PATH_PI_TARGET.equals(p.getTarget())
+				&& k != null
+				&& this.pathInfo.containsKey(k)) {
+			d = this.pathInfo.get(k);
+			if("".equals(d)) return null;
+		}
+		return d;
+	}
+	
+	/**
+	 * Scan everything below the given element and replace PIs.
+	 * @param top
+	 */
+	protected void piReplace(XElement top) {
+		LinkedList<XNode> nodes = top.getChildren();
+		XNode t;
+		String rep = null;
+		for(int i = 0; i < nodes.size(); ++i) {
+			t = nodes.get(i);
+			if(t instanceof XProcessingInstruction) {
+				rep = this.translatePI((XProcessingInstruction)t);
+				if(rep == null) nodes.remove(i);
+				else nodes.set(i, new XPCData(rep));
+			} else if (t instanceof XElement) {
+				this.piReplace((XElement)t);
+			}
+		}
 	}
 }

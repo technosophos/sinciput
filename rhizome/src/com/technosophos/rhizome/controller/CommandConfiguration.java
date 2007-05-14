@@ -176,14 +176,14 @@ public class CommandConfiguration {
 	 * @deprecated Use {@link #getDirective()} instead
 	 */
 	public Map<String, String[]> getParameters() {
-		return getDirective();
+		return getDirectives();
 	}
 
 	/**
 	 * Get a map of directive name-> value entries.
 	 * @return Map of name/val pairs
 	 */
-	public Map<String, String[]> getDirective() {
+	public Map<String, String[]> getDirectives() {
 		return this.params;
 	}
 	

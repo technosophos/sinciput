@@ -25,7 +25,7 @@ import org.apache.velocity.app.VelocityEngine;
  * <p>Commands that appear after this one in a Request Queue should perform their own 
  * formatting.</p>
  * @author mbutcher
- *
+ * @see #doCommand(Map, List)
  */
 public class DoVelocityTemplate extends AbstractCommand {
 
@@ -78,6 +78,36 @@ public class DoVelocityTemplate extends AbstractCommand {
 	 * in the List of {@link CommandResult}s into some unified textual format.</p>
 	 * <p>When this method completes, there will be only one CommandResult in the List:
 	 * the one containing the results of this method. All others will be deleted.</p>
+	 * <h3>What is in the context?</h3>
+	 * <p>Velocity templates have access to a Velocity context. What is in this context?
+	 * Here is a list.</p>
+	 * <ul>
+	 *  <li>The params passed into doCommand().</li>
+	 *  <li>The configuration directives from the {@see CommandConfiguration}.</li>
+	 *  <li>An entry for every object in the list of {@see CommandResult}s.</li>
+	 * </ul>
+	 * <p>There are a few important things to note about this. First, if a parameter and
+	 * a configuration directive have identical names, the directive is the one stored in
+	 * the map.</p>
+	 * <p>Second, the CommandResults are keyed using the command prefix and the command
+	 * name, while the object is stored as the value. For example a command with prefix
+	 * "test-" and command "GetDocument" can be retrieved with get(test-GetDocument).</p>
+	 * <h3>Order of Execution</h3>
+	 * <p>You might want to override some or all of the protected methods here (for 
+	 * instance, 
+	 * if you want to use the Singleton velocity model). Here is the sequence of method
+	 * calls for this method:</p>
+	 * <ol>
+	 * <li>Store a local copy of the params and results list so that other methods can access them.</li>
+	 * <li>Create the VelocityContext with this.createContext()</li>
+	 * <li>Render the contents of the template with this.processTemplate(). Note that it is up 
+	 * to the processTemplate() method to retrieve the template.</li>
+	 * <li>Create the command result, clear teh command list, and then add the command result
+	 * to the list.</li>
+	 * </ol>
+	 * <p>Note that in DoVelocityTemplate, all templates are loaded from the file system,
+	 * and the path used is specified by the values of the {@link #TEMPLATE_PATH_CONF}
+	 * in the {@link CommandConfiguration}.</p> 
 	 */
 	public void doCommand(Map<String, Object> params,
 			List<CommandResult> results) {
@@ -110,10 +140,23 @@ public class DoVelocityTemplate extends AbstractCommand {
 	 * <p>The parameters are put in the top-level of the Context.</p>
 	 * <p>The {@link CommandResult}s are stored with the key name retrieved from 
 	 * {@link CommandResult.getName()}.</p>
-	 * @return
+	 * <h3>What is in the context?</h3>
+	 * <ul>
+	 *  <li>The params passed into doCommand().</li>
+	 *  <li>The configuration directives from the {@see CommandConfiguration}.</li>
+	 *  <li>An entry for every object in the list of {@see CommandResult}s.</li>
+	 * </ul>
+	 * <p>There are a few important things to note about this. First, if a parameter and
+	 * a configuration directive have identical names, the directive is the one stored in
+	 * the map.</p>
+	 * <p>Second, the CommandResults are keyed using the command prefix and the command
+	 * name, while the object is stored as the value. For example a command with prefix
+	 * "test-" and command "GetDocument" can be retrieved with get(test-GetDocument).</p>
+	 * @return An initialized VelocityContext.
 	 */
 	protected VelocityContext createContext() {
-		VelocityContext c = new VelocityContext(this.params);
+		VelocityContext basic = new VelocityContext(this.params);
+		VelocityContext c = new VelocityContext(this.comConf.getDirectives(), basic);
 		Object o;
 		for(CommandResult cr: this.results) {
 			
@@ -150,7 +193,7 @@ public class DoVelocityTemplate extends AbstractCommand {
 	 */
 	protected String processTemplate(VelocityContext c) throws Exception {
 		StringWriter w = new StringWriter();
-		velen.mergeTemplate(this.template_name, c, w);
+		this.velen.mergeTemplate(this.template_name, c, w);
 		return w.toString();
 	}
 	
