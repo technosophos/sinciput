@@ -53,7 +53,7 @@ public class GetDocumentList extends AbstractCommand {
 		 * 4. Do a narrowing search
 		 */
 		
-		if(!this.comConf.hasParameter(CONF_PARAM_FIELDS)) {
+		if(!this.comConf.hasDirective(CONF_PARAM_FIELDS)) {
 			res = new CommandResult(this.comConf);
 			String errMsg = "\"fields\" param is not set in the configuration. Nothing to retrieve.";
 			String friendlyErrMsg = "A list of documents was requested, but the server could not process the request. We don't know what to look for.";
@@ -62,7 +62,7 @@ public class GetDocumentList extends AbstractCommand {
 			return;
 		}
 		
-		String [] fields = this.comConf.getParameter(CONF_PARAM_FIELDS);
+		String [] fields = this.comConf.getDirective(CONF_PARAM_FIELDS);
 		HashMap<String, String> narrower = this.buildNarrower(fields, params);
 		if(narrower.size() == 0 ) {
 			res = new CommandResult(this.comConf);
@@ -73,7 +73,7 @@ public class GetDocumentList extends AbstractCommand {
 			return;
 		}
 		
-		String [] additional_md = this.comConf.getParameter(CONF_ADD_FIELDS);
+		String [] additional_md = this.comConf.getDirective(CONF_ADD_FIELDS);
 		if(additional_md == null) additional_md = new String [0];
 		
 		try {

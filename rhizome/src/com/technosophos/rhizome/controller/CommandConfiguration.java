@@ -15,7 +15,7 @@ import java.util.Map;
  * <ul>
  * <li>Name: a short identifier string.</li>
  * <li>Classname: The name of the class to be loaded. This class must implement {@link RhizomeCommand}.</li>
- * <li>Params: A map of string-to-string name value pairs.</li>
+ * <li>Directives: A map of string-to-string[] name value pairs.</li>
  * <li>Fail Flag: A flag indicating whether the command, if it fails, should halt processing of the rest of the command queue.</li>
  * </ul>
  * </p>
@@ -59,14 +59,14 @@ public class CommandConfiguration {
 	 * 
 	 * @param name name of the command.
 	 * @param classname class for the command.
-	 * @param params paramters for initializing the command.
+	 * @param directives directives for initializing the command.
 	 * @param fail whether the entire request should fail when this command fails. False by default.
 	 */
 	public CommandConfiguration(String name, String classname, 
-								Map<String, String[]> params, boolean fail) {
+								Map<String, String[]> directives, boolean fail) {
 		this.name = name;
 		this.classname = classname;
-		this.params = params;
+		this.params = directives;
 		this.failFast = fail;
 	}
 	
@@ -173,35 +173,74 @@ public class CommandConfiguration {
 	/**
 	 * Get a map of paramter name-> value entries.
 	 * @return Map of name/val pairs
+	 * @deprecated Use {@link #getDirective()} instead
 	 */
 	public Map<String, String[]> getParameters() {
+		return getDirective();
+	}
+
+	/**
+	 * Get a map of directive name-> value entries.
+	 * @return Map of name/val pairs
+	 */
+	public Map<String, String[]> getDirective() {
 		return this.params;
 	}
 	
 	/**
-	 * Get the value of a specific paramter.
-	 * @param paramName the name of the paramter
+	 * Get the value of a specific directive.
+	 * @param name the name of the paramter
+	 * @return the value
+	 * @deprecated Use {@link #getDirective(String)} instead
+	 */
+	public String[] getParameter(String name) {
+		return getDirective(name);
+	}
+
+	/**
+	 * Get the value of a specific directive.
+	 * @param name the name of the directive
 	 * @return the value
 	 */
-	public String[] getParameter(String paramName) {
-		return this.params.get(paramName);
+	public String[] getDirective(String name) {
+		return this.params.get(name);
 	}
 	
 	/**
 	 * Returns true if it has a param value for this name.
 	 * @param paramName name of the parameter to check for
 	 * @return true if a value exists, false otherwise
+	 * @deprecated Use {@link #hasDirective(String)} instead
 	 */
 	public boolean hasParameter(String paramName) {
-		return this.params.containsKey(paramName);
+		return hasDirective(paramName);
+	}
+
+	/**
+	 * Returns true if it has a directive value for this name.
+	 * @param name name of the directive to check for
+	 * @return true if a value exists, false otherwise
+	 */
+	public boolean hasDirective(String name) {
+		return this.params.containsKey(name);
 	}
 	
 	/**
 	 * Set the map of name/val pair-based parameters.
 	 * @param m
 	 * @return
+	 * @deprecated Use {@link #setDirective(Map<String, String[]>)} instead
 	 */
 	public void setParameters(Map<String, String[]> m) {
+		setDirective(m);
+	}
+
+	/**
+	 * Set the map of name/val pair-based directives.
+	 * @param m
+	 * @return
+	 */
+	public void setDirective(Map<String, String[]> m) {
 		this.params = m;
 	}
 
@@ -217,7 +256,7 @@ public class CommandConfiguration {
 			sb.append(this.prefix);
 			sb.append("\"");
 		}
-		sb.append(") {Parameters: ");
+		sb.append(") {Directives: ");
 		for(String pname: this.params.keySet()) {
 			sb.append("{");
 			sb.append(pname);

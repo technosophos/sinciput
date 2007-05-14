@@ -34,6 +34,8 @@ public class DoVelocityTemplate extends AbstractCommand {
 	 * This parameter should be present in the command configuration (e.g. in the 
 	 * command.xml file), and should indicate which velocity template will be used with
 	 * this command.  
+	 * @see CommandConfiguration
+	 * 
 	 */
 	public static final String TEMPLATE_NAME_CONF = "template_name";
 	
@@ -41,8 +43,19 @@ public class DoVelocityTemplate extends AbstractCommand {
 	 * The string "template_path".
 	 * The template path configuration param (in commands.xml or the equiv.) should
 	 * point to the directory where the velocity templates are stored.
+	 * @see CommandConfiguration
 	 */
 	public static final String TEMPLATE_PATH_CONF = "template_path";
+	
+	/**
+	 * The string "template_macro".
+	 * Velocity allows you to load template macros during initialization. To perform
+	 * macro loading, include a list of macros in the template_macro directive of the 
+	 * {@see CommandConfiguration}.
+	 * @see CommandConfiguration
+	 * @see VelocityEngine.VM_MACRO
+	 */
+	public static final String TEMPLATE_MACRO_CONF = "template_macro";
 	
 	protected VelocityEngine velen = null;
 	protected String template_name = null;
@@ -152,19 +165,19 @@ public class DoVelocityTemplate extends AbstractCommand {
 	protected void initVelocityEngine() throws Exception, CommandInitializationException {
 		
 		// Make sure that both configuration parameters are set.
-		if(!this.comConf.hasParameter(TEMPLATE_NAME_CONF)) {
+		if(!this.comConf.hasDirective(TEMPLATE_NAME_CONF)) {
 			String err = String.format(
 					"Configuration parameters %s must be set in the command configuration.",
 					TEMPLATE_NAME_CONF);
 			throw new CommandInitializationException(err);
 		}
-		this.template_name = this.comConf.getParameter(TEMPLATE_NAME_CONF)[0];
+		this.template_name = this.comConf.getDirective(TEMPLATE_NAME_CONF)[0];
 		
 		this.velen = new VelocityEngine();
 		this.velen.init();
 		
-		if(this.comConf.hasParameter(TEMPLATE_PATH_CONF)) {
-			String [] pp = this.comConf.getParameter(TEMPLATE_PATH_CONF);
+		if(this.comConf.hasDirective(TEMPLATE_PATH_CONF)) {
+			String [] pp = this.comConf.getDirective(TEMPLATE_PATH_CONF);
 			if( pp.length == 1) {
 				this.velen.setProperty(VelocityEngine.FILE_RESOURCE_LOADER_PATH, pp[0]);	
 			} else if(pp.length > 1) {
@@ -178,7 +191,16 @@ public class DoVelocityTemplate extends AbstractCommand {
 			}
 		} // else... who knows where the templates come from?
 		
-		// FIXME: Need to also do any macro loading here, too. Should check config for macros.
+		if( this.comConf.hasDirective(TEMPLATE_MACRO_CONF)) {
+			String [] mac_names = this.comConf.getDirective(TEMPLATE_MACRO_CONF);
+			StringBuffer sb = new StringBuffer();
+			for(String name: mac_names) {
+				sb.append(name);
+				sb.append(',');	
+			}
+			//FIXME: Should this be VM_LIBRARY or VM_LIBRARY_DEFAULT?
+			this.velen.setProperty(VelocityEngine.VM_LIBRARY, sb.toString());
+		}
 	}
 
 }

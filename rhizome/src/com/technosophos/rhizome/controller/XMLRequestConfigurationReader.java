@@ -188,7 +188,7 @@ public class XMLRequestConfigurationReader {
 							ppp.put(xattrs2.getAttributeValue(REQ_NAME_ATTR), txt);
 						}
 					}
-					cconf.setParameters(ppp);
+					cconf.setDirective(ppp);
 					if(xattrs.containsAttribute(REQ_FATAL_ATTR) 
 							&& "true".equalsIgnoreCase(xattrs.getAttributeValue(REQ_FATAL_ATTR)))
 						cconf.setFailOnError(true);

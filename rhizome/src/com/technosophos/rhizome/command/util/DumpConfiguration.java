@@ -24,7 +24,7 @@ public class DumpConfiguration implements RhizomeCommand {
 			List<CommandResult> results) {
 		StringBuffer sb = new StringBuffer();
 		sb.append("Command Configuration: \n");
-		Map<String, String[]> p = this.cc.getParameters();
+		Map<String, String[]> p = this.cc.getDirective();
 		String [] vals = null;
 		for (String k: p.keySet()) {
 			sb.append("Param ");
