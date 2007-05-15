@@ -10,6 +10,7 @@ import com.technosophos.rhizome.controller.CommandResult;
 import com.technosophos.rhizome.repository.RepositoryManager;
 
 import org.apache.velocity.VelocityContext;
+//import org.apache.velocity.context.Context;
 import org.apache.velocity.app.VelocityEngine;
 
 /**
@@ -124,6 +125,7 @@ public class DoVelocityTemplate extends AbstractCommand {
 			cr = this.createCommandResult(tout);
 		} catch (Exception e) {
 			String err = "Failed to get Velocity template: " + e.getMessage();
+			err += "(from "+ velen.getProperty(VelocityEngine.FILE_RESOURCE_LOADER_PATH).toString()+ ")";
 			String fri = "The serve could not properly format your information.";
 			cr = this.createErrorCommandResult(err, fri, e);
 		} finally {
@@ -217,21 +219,27 @@ public class DoVelocityTemplate extends AbstractCommand {
 		this.template_name = this.comConf.getDirective(TEMPLATE_NAME_CONF)[0];
 		
 		this.velen = new VelocityEngine();
-		this.velen.init();
 		
+		/*
+		 * All velocity properties must be set BEFORE init() is called.
+		 */
 		if(this.comConf.hasDirective(TEMPLATE_PATH_CONF)) {
 			String [] pp = this.comConf.getDirective(TEMPLATE_PATH_CONF);
+			//System.out.println("DEBUG:  Loading template path " + pp[0]);
+			String vel_file_path = ".";
 			if( pp.length == 1) {
-				this.velen.setProperty(VelocityEngine.FILE_RESOURCE_LOADER_PATH, pp[0]);	
+				vel_file_path = pp[0];
 			} else if(pp.length > 1) {
 				StringBuffer sb = new StringBuffer();
 				for(String str: pp) {
 					sb.append(str);
 					sb.append(',');
 				}
-				this.velen.setProperty(VelocityEngine.FILE_RESOURCE_LOADER_PATH, 
-						sb.toString());
+				vel_file_path = sb.toString();
 			}
+			this.velen.setProperty(VelocityEngine.FILE_RESOURCE_LOADER_PATH, vel_file_path);
+			//System.out.println("TEMPLATE PATH:" + this.velen.getProperty(VelocityEngine.FILE_RESOURCE_LOADER_PATH));
+			//System.out.println("TEMPLATE PATH:" + vel_file_path);
 		} // else... who knows where the templates come from?
 		
 		if( this.comConf.hasDirective(TEMPLATE_MACRO_CONF)) {
@@ -244,6 +252,7 @@ public class DoVelocityTemplate extends AbstractCommand {
 			//FIXME: Should this be VM_LIBRARY or VM_LIBRARY_DEFAULT?
 			this.velen.setProperty(VelocityEngine.VM_LIBRARY, sb.toString());
 		}
+		this.velen.init();
 	}
 
 }

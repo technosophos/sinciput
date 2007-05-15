@@ -4,7 +4,7 @@ import com.technosophos.rhizome.repository.RepositoryManager;
 import com.technosophos.rhizome.repository.RepositoryContext;
 import com.technosophos.rhizome.RhizomeException;
 import java.util.LinkedList;
-import java.util.Queue;
+//import java.util.Queue;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Iterator;
@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class RhizomeController {
 
-	private Map<String, Queue<CommandConfiguration>> cqMap = null;
+	private Map<String, RequestConfiguration> cqMap = null;
 	private RepositoryManager repoman = null;
 	private RepositoryContext repocxt = null;
 	
@@ -51,7 +51,7 @@ public class RhizomeController {
 	 * correctly initialized, and no commands will exist.
 	 */
 	public RhizomeController() {
-		this.cqMap = new HashMap<String, Queue<CommandConfiguration>>();
+		this.cqMap = new HashMap<String, RequestConfiguration>();
 		this.repocxt = new RepositoryContext();
 		this.repoman = new RepositoryManager(this.repocxt);
 	}
@@ -63,7 +63,7 @@ public class RhizomeController {
 	 * @param cxt A RepositoryContext with settings for operating the respository.
 	 * @see RepositoryContext()
 	 */
-	public RhizomeController(Map<String, Queue<CommandConfiguration>> cqMap, RepositoryContext cxt) {
+	public RhizomeController(Map<String, RequestConfiguration> cqMap, RepositoryContext cxt) {
 		this.cqMap = cqMap;
 		this.repocxt = cxt;
 		this.repoman = new RepositoryManager(cxt);
@@ -77,7 +77,7 @@ public class RhizomeController {
 	 * @param cqMap a command queue map of request names to a queue of command names.
 	 * @param cxt A RepositoryContext with settings for operating the repository.
 	 */
-	public void init(Map<String, Queue<CommandConfiguration>> cqMap, RepositoryContext cxt) {
+	public void init(Map<String, RequestConfiguration> cqMap, RepositoryContext cxt) {
 		this.cqMap = cqMap;
 		this.repocxt = cxt;
 		this.repoman = new RepositoryManager(cxt);
@@ -108,6 +108,20 @@ public class RhizomeController {
 	}
 	
 	/**
+	 * Get the MIME type for the request name.
+	 * <p>If no request by this name exists, the method will return <Code>null</code>. Use
+	 * the {@link #hasRequest(String)} method to verify that such a request exists.</p>
+	 * <p>Information of the default MIME type returned can be found in 
+	 * {@link RequestConfiguration.DEFAULT_MIME_TYPE}.
+	 * @param requestName the name of the request
+	 * @return The intended MIME type for the output of this request.
+	 */
+	public String getMimeType(String requestName) {
+		if(!this.cqMap.containsKey(requestName)) return null;
+		return this.cqMap.get(requestName).getMimeType();
+	}
+	
+	/**
 	 * Handle a request.
 	 * This handles a request, which is typically made up of one or more commands, and
 	 * returns the results in a List. Exceptions thrown by commands are caught and stored
@@ -125,7 +139,8 @@ public class RhizomeController {
 		if(!this.cqMap.containsKey(requestName))
 			throw new RequestNotFoundException("No match for request \"" 
 					+ requestName + "\" ");
-		Iterator<CommandConfiguration> commands = this.cqMap.get(requestName).iterator();
+		RequestConfiguration rconf = this.cqMap.get(requestName);
+		Iterator<CommandConfiguration> commands = rconf.getQueue().iterator();
 		
 		CommandConfiguration cconf = null;
 		try {

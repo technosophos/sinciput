@@ -39,6 +39,7 @@ public class DumpConfiguration implements RhizomeCommand {
 			sb.append(kk);
 			sb.append(": ");
 			sb.append(params.get(kk));
+			sb.append('\n');
 		}
 		CommandResult cr = new CommandResult(this.cc, sb);
 		//System.out.print(sb.toString());

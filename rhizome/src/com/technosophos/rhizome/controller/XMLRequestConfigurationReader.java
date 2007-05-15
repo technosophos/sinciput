@@ -38,6 +38,7 @@ public class XMLRequestConfigurationReader {
 	public static String REQ_DO_ATTR = "do";
 	public static String REQ_FATAL_ATTR = "fatal";
 	public static String REQ_PREFIX_ATTR = "prefix";
+	public static final String REQ_MIME_ATTR="mimetype";
 	//public static String REQ_DEFAULT_ATTR = "default";
 	
 	/**
@@ -83,7 +84,7 @@ public class XMLRequestConfigurationReader {
 	 * @return
 	 * @throws RhizomeException
 	 */
-	public Map<String, Queue<CommandConfiguration>> get(File file) throws RhizomeException {
+	public Map<String, RequestConfiguration> get(File file) throws RhizomeException {
 		try {
 			this.p = new XParser();
 			this.doc = p.parse(file);
@@ -99,7 +100,7 @@ public class XMLRequestConfigurationReader {
 	 * @return
 	 * @throws RhizomeException
 	 */
-	public Map<String, Queue<CommandConfiguration>> get(InputStream in) throws RhizomeException {
+	public Map<String, RequestConfiguration> get(InputStream in) throws RhizomeException {
 		try {
 			this.p = new XParser();
 			this.doc = p.parse(in);
@@ -114,9 +115,9 @@ public class XMLRequestConfigurationReader {
 	 * @param root
 	 * @return
 	 */
-	protected Map<String, Queue<CommandConfiguration>> doMapping(XElement root) {
-		HashMap<String, Queue<CommandConfiguration>> map = 
-			new HashMap<String, Queue<CommandConfiguration>>();
+	protected Map<String, RequestConfiguration> doMapping(XElement root) {
+		HashMap<String, RequestConfiguration> map = 
+			new HashMap<String, RequestConfiguration>();
 		
 		// FIRST: Load name->classname hash.
 		LinkedList<XElement> lc = root.getChildrenElements(REQ_LOADCLASS_ELE);
@@ -157,10 +158,21 @@ public class XMLRequestConfigurationReader {
 		
 		// THIRD: Get Request Queues 
 		LinkedList<XElement> req_l = reqs_ele.getChildrenElements(REQ_REQUEST_ELE);
+		String mimeType = null;
+		RequestConfiguration reqC;
 		for(XElement req_ele: req_l) {
 			xattrs = req_ele.getAttributes();
-			if(xattrs.containsAttribute(REQ_NAME_ATTR))
-				map.put(xattrs.getAttributeValue(REQ_NAME_ATTR), this.getCommands(req_ele));
+			if(xattrs.containsAttribute(REQ_NAME_ATTR)) {
+				if(xattrs.containsAttribute(REQ_MIME_ATTR))
+					mimeType = xattrs.getAttributeValue(REQ_MIME_ATTR);
+				reqC = new RequestConfiguration(
+						xattrs.getAttributeValue(REQ_NAME_ATTR), //Name
+						this.getCommands(req_ele), // Queue
+						mimeType); // MIME type
+				//System.out.println("DEBUG: Request Name loaded: " + reqC.getName());
+				// Ugly, but faster than iterating through a list of reqC objs
+				map.put(reqC.getName(), reqC);
+			}
 			//else System.err.println("Skipping element: "  + req_ele.getName());
 		}
 		
