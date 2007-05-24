@@ -1,6 +1,6 @@
 package com.technosophos.sinciput.types;
 
-public enum NotesEnum {
+public enum NotesEnum implements SinciputType {
 	TYPE ("type", "Type"),
 	TITLE ("title", "Title"),
 	SUBTITLE ("subtitle", "Subtitle"),
