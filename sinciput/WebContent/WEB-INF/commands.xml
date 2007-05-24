@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commands>
+	<loadclass name="GetDocument" class="com.technosophos.rhizome.command.GetDocument"/>
+	<loadclass name="info" class="com.technosophos.rhizome.command.http.DisplayInfo"/>
+	<loadclass name="URLInfo" class="com.technosophos.rhizome.command.http.URLInfo"/>
+	<loadclass name="DumpConfiguration" class="com.technosophos.rhizome.command.util.DumpConfiguration"/>
+	<loadclass name="template" class="com.technosophos.rhizome.command.template.DoVelocityTemplate"/>
+	<requests>
+		<global>
+			<param name="base_path">
+				<value><?path base_path ?></value>
+			</param>
+			<param name="template_path">
+				<value><?path config_path?>templates/</value>
+			</param>
+			<param name="real_css_path">
+				<value><?path resource_path?>css/</value>
+			</param>
+			<param name="base_url">
+				<value><?path url?></value>
+			</param>
+		</global>
+		<request name="default">
+			<cmd do="DumpConfiguration"/>
+			<cmd do="template">
+				<param name="template_name">test.vt</param>
+			</cmd>
+			<!-- cmd do="DisplayInfo"/ -->
+		</request>
+		<request name="info">
+			<cmd do="URLInfo" prefix="test-"/>
+			<cmd do="info"/>
+		</request>
+		<request name="doc">
+			<cmd do="GetDocument">
+			</cmd>
+		</request>	
+	</requests>
+</commands>
