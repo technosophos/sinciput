@@ -60,10 +60,17 @@ import com.technosophos.rhizome.repository.RepositoryContext;
 	 public static final String GPC_PARAM_REQUEST = "r";
 	 /** The default request to be invoked if no request is specified ("default")*/
 	 public static final String DEFAULT_REQUEST = "default";
-	 /** The name used to store teh request object in the params for the request process 
+	 /** The name used to store the request object in the params for the request process 
 	  * ("_request"). */
 	 public static final String REQ_PARAM_REQUEST_OBJ = "_request";
 	 
+	 /**
+	  * Name of base path param: "base_path".
+	  * A Base path can be passed into Sinciput as a servlet init param. 
+	  * If relative, it will
+	  * be prepended with the servlet path. If absolute, it will be left alone.
+	  */
+	 public static final String P_BASE_PATH = "base_path";
 	 
 	 /* (non-Java-doc)
 	 * @see javax.servlet.http.HttpServlet#HttpServlet()
@@ -144,6 +151,7 @@ import com.technosophos.rhizome.repository.RepositoryContext;
 	 * Initialize the Rhizome repository.
 	 */
 	public void init() throws ServletException {
+		// TODO: Fix the file separator crap.
 		this.log("Initializing Rhizome servlet...");
 		super.init();
 		String debug_str = this.getInitParameter("debug");
@@ -176,7 +184,13 @@ import com.technosophos.rhizome.repository.RepositoryContext;
 			throw new ServletException("Failed to parse command configuration file: " +e.getMessage(), e);
 		}
 		this.rc = new RhizomeController();
-		this.rc.init(cconf, rcxt);
+		
+		try {
+			this.rc.init(cconf, rcxt);
+		} catch (RhizomeException re ) {
+			String err = "Fatal error initializing Rhizome Controller: ";
+			throw new ServletException( err + re.getMessage(), re);
+		}
 	}
 	
 	/**
@@ -198,7 +212,12 @@ import com.technosophos.rhizome.repository.RepositoryContext;
 			c.addParam(n, this.getInitParameter(n));
 		}
 		if(c.hasKey("base_path")) {
-			// FIXME: Add on path info?
+			/*
+			 * If provided base path is not absolute, then prepend config path.
+			 */
+			String path = c.getParam("base_path");
+			if(!path.startsWith(System.getProperty("file.separator"))) c.addParam("base_path", this.configPath + path);
+				
 		} else {
 			c.addParam("base_path", this.configPath);
 		}
