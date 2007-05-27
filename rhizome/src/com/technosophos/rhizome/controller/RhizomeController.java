@@ -53,7 +53,8 @@ public class RhizomeController {
 	public RhizomeController() {
 		this.cqMap = new HashMap<String, RequestConfiguration>();
 		this.repocxt = new RepositoryContext();
-		this.repoman = new RepositoryManager(this.repocxt);
+		this.repoman = new RepositoryManager();
+		//this.repoman.init(this.repocxt);
 	}
 	
 	/**
@@ -63,10 +64,12 @@ public class RhizomeController {
 	 * @param cxt A RepositoryContext with settings for operating the respository.
 	 * @see RepositoryContext()
 	 */
-	public RhizomeController(Map<String, RequestConfiguration> cqMap, RepositoryContext cxt) {
+	public RhizomeController(Map<String, RequestConfiguration> cqMap, RepositoryContext cxt) 
+			throws RhizomeException {
 		this.cqMap = cqMap;
 		this.repocxt = cxt;
-		this.repoman = new RepositoryManager(cxt);
+		this.repoman = new RepositoryManager();
+		this.repoman.init(cxt);
 	}
 	
 	/**
@@ -77,10 +80,12 @@ public class RhizomeController {
 	 * @param cqMap a command queue map of request names to a queue of command names.
 	 * @param cxt A RepositoryContext with settings for operating the repository.
 	 */
-	public void init(Map<String, RequestConfiguration> cqMap, RepositoryContext cxt) {
+	public void init(Map<String, RequestConfiguration> cqMap, RepositoryContext cxt) 
+			throws RhizomeException {
 		this.cqMap = cqMap;
 		this.repocxt = cxt;
-		this.repoman = new RepositoryManager(cxt);
+		this.repoman = new RepositoryManager();
+		this.repoman.init(cxt);
 	}
 	
 	/**

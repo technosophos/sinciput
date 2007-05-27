@@ -61,21 +61,17 @@ public class RepositoryManager {
 	public static final String CXT_REPOSITORY_CLASS_NAME = "repository_class";
 	public static final String CXT_REPOSITORY_SEARCHER_CLASS_NAME = "searcher_class";
 	
-	private String indexerClassName = null;
-	private String repositoryClassName = null;
-	private String searcherClassName = null;
-	
 	private RepositoryContext context = null;
 	
 	private DocumentRepository repoInstance = null;
 	private DocumentIndexer indexerInstance = null;
 	private RepositorySearcher searchInstance = null;
 	
-	private boolean indexerInstanceCreated = false;
-	private boolean searcherInstanceCreated = false;
-	private boolean repoInstanceCreated = false;
-
-	/**
+	private Class<?> indexerClass = null;
+	private Class<?> repositoryClass = null;
+	private Class<?> searcherClass = null;
+	
+	/*
 	 * The main constructor.
 	 * This builds a new Repository Manager and initializes it.
 	 * 
@@ -83,27 +79,44 @@ public class RepositoryManager {
 	 * and repository classes will not be loaded until first requested.
 	 * However, once one is loaded, the same objects may be served repeatedly
 	 * unless they are flagged as non-reusable (via the canBeReused() method).
-	 * 
-	 * The practical import of this is that you may set the indexer and 
-	 * repository classes at any time before the first call to getIndexer() or 
-	 * getRepository() and predict the results. But if you set the classname
-	 * after these two methods has been called, you can get unpredictable 
-	 * results. 
+	 *
 	 * @param context The configuration information for this RepositoryManager.
 	 * @see DocumentIndexer
 	 * @see DocumentRepository
-	 */
+	 *//*
 	public RepositoryManager(RepositoryContext context) {
+		
+	}
+	*/
+	
+	/**
+	 * When a new Rhizome Manager is created, it must be initialized.
+	 * <p>This method initializes a new Rhizome Manager. Along with some trivial 
+	 * initialization, it performs all class loading needed for this manager, and
+	 * failures to load classes will result in an exception.</p>
+	 * @param context The new repository context.
+	 * @throws
+	 */
+	public void init(RepositoryContext context) throws RhizomeException {
 		this.context = context;
-		this.indexerClassName = context.hasKey(CXT_INDEXER_CLASS_NAME)
-			? context.getParam(CXT_INDEXER_CLASS_NAME)
-			: DEFAULT_INDEXER_CLASS_NAME;
-		this.repositoryClassName = context.hasKey(CXT_REPOSITORY_CLASS_NAME) 
-			? context.getParam(CXT_REPOSITORY_CLASS_NAME) 
-			: DEFAULT_REPOSITORY_CLASS_NAME;
-		this.searcherClassName = context.hasKey(CXT_REPOSITORY_SEARCHER_CLASS_NAME) 
-			? context.getParam(CXT_REPOSITORY_SEARCHER_CLASS_NAME) 
-			: DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME;
+		
+		try {
+			if(context.hasKey(CXT_INDEXER_CLASS_NAME))
+				indexerClass = Class.forName(context.getParam(CXT_INDEXER_CLASS_NAME));
+			else indexerClass = Class.forName(DEFAULT_INDEXER_CLASS_NAME);
+			
+			if(context.hasKey(CXT_REPOSITORY_CLASS_NAME))
+				repositoryClass = Class.forName(context.getParam(CXT_REPOSITORY_CLASS_NAME));
+			else repositoryClass = Class.forName(DEFAULT_REPOSITORY_CLASS_NAME);
+			
+			if(context.hasKey(CXT_REPOSITORY_SEARCHER_CLASS_NAME))
+				searcherClass = Class.forName(context.getParam(CXT_REPOSITORY_SEARCHER_CLASS_NAME));
+			else searcherClass = Class.forName(DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME);
+			
+		}catch (ClassNotFoundException cnfe) {
+			throw new RhizomeInitializationException("Failed to load class: " + cnfe.getMessage(), cnfe);
+		}
+
 	}
 	
 	/**
@@ -180,106 +193,45 @@ public class RepositoryManager {
 			throws DocumentNotFoundException, RhizomeException {
 		return this.getRepository().getDocument(docID);
 	}
+	
 	/*===============================================
 	 * Mutator Methods
 	 *===============================================*/
 	/**
 	 * Set the repository context.
-	 * This should not be called after getRepository, getIndexer, or getSearcher.
-	 * Doing so may return objects in an inconsistent way.
+	 * 
+	 * If instances of the repository, search, or indexer have been created, they will
+	 * be re-configured. In other words, this will make every attempt to re-initialize
+	 * all parts of the Rhizome backend with the new context.
 	 * @param context
 	 */
 	public void setContext(RepositoryContext context) {
-		this.indexerClassName = context.hasKey(CXT_INDEXER_CLASS_NAME)
-		? context.getParam(CXT_INDEXER_CLASS_NAME)
-		: DEFAULT_INDEXER_CLASS_NAME;
-	this.repositoryClassName = context.hasKey(CXT_REPOSITORY_CLASS_NAME) 
-		? context.getParam(CXT_REPOSITORY_CLASS_NAME) 
-		: DEFAULT_REPOSITORY_CLASS_NAME;
-	this.searcherClassName = context.hasKey(CXT_REPOSITORY_SEARCHER_CLASS_NAME) 
-		? context.getParam(CXT_REPOSITORY_SEARCHER_CLASS_NAME) 
-		: DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME;
+		
+		try {
+			if(this.repoInstance != null) this.repoInstance.setConfiguration(context);
+			if(this.searchInstance != null) this.searchInstance.setConfiguration(context);
+			if(this.indexerInstance != null) this.indexerInstance.setConfiguration(context);
+		} catch (RhizomeInitializationException rie) {
+			this.repoInstance = null;
+			this.searchInstance = null;
+			this.indexerInstance = null;
+		}
+			
 		this.context = context;
 	}
-	
-	/**
-	 * Set the name of the class to be used for indexing.
-	 * 
-	 * The RepositoryManager will load this class on demand for indexing
-	 * services.
-	 * 
-	 * An indexer must implement the DocumentIndexer interface
-	 * @param classname
-	 * @see com.technosophos.rhizome.repository.DocumentIndexer
-	 * @throws RhizomeClassInstanceException if the getIndexer() method has been called.
-	 * @deprecated
-	 */
-	public void setIndexerClassName(String classname) 
-			throws RhizomeClassInstanceException {
-		if(this.indexerInstanceCreated) 
-			throw new RhizomeClassInstanceException(
-					"Indexer already instantiated. Cannot change class name.");
-		
-		this.indexerClassName = classname;	
-	}
-	
-	/**
-	 * Set the name of the class to be used for indexing.
-	 * 
-	 * The RepositoryManager will load this class on demand for 
-	 * repository access requests.
-	 * 
-	 * A document repository must implement the DocumentRepository interface.
-	 * @param classname
-	 * @see DocumentRepository
-	 * @throws RhizomeClassInstanceException if the getRepository() method has been called.
-	 * @deprecated
-	 */
-	public void setRepositoryClassName(String classname)
-			throws RhizomeClassInstanceException {
-		if(this.repoInstanceCreated) 
-			throw new RhizomeClassInstanceException(
-					"Repository already instantiated. Cannot change class name."); 
-		this.repositoryClassName = classname;
-	}
-	/**
-	 * Set the name of the class to be used for searching.
-	 * 
-	 * The RepositoryManager will load this class on demand for 
-	 * repository search requests.
-	 * 
-	 * A repository searcher must implement the RepositorySearcher interface.
-	 * @param classname
-	 * @see RepositorySearcher
-	 * @throws RhizomeClassInstanceException if the getRepositorySearcher() 
-	 * method has been called.
-	 * @deprecated
-	 */
-	public void setRepositorySearcherClassName(String classname)
-			throws RhizomeClassInstanceException {
-		if(this.searcherInstanceCreated) 
-			throw new RhizomeClassInstanceException(
-					"Searcher already instantiated. Cannot change class name."); 
-		this.searcherClassName = classname;
-	}
+
 	
 	/*===============================================
 	 * Accessor Methods
 	 *===============================================*/
-	/**
-	 * Return the class name of the currently set indexer.
-	 * @return class name
-	 */
-	public String getIndexerClassName() {
-		return this.indexerClassName;
-	}
-	
-	/**
-	 * Return the class name of the currently set repository class.
-	 * @return class name
-	 */
-	public String getRepositoryClassName() {
-		return this.repositoryClassName;
+
+
+	public DocumentRepository getRepository(String repoName) 
+			throws RhizomeInitializationException {
+		
+		this.context.addParam("repository_name", repoName);
+		// FIXME: THis is broken!
+		return this.getRepository();
 	}
 	
 	/**
@@ -296,18 +248,18 @@ public class RepositoryManager {
 		if(this.repoInstance != null) return this.repoInstance;
 		DocumentRepository repoInst;
 		try {
-			Class<?> repoClass = Class.forName(this.repositoryClassName);
-			repoInst = (DocumentRepository)repoClass.newInstance();
+			repoInst = (DocumentRepository)this.repositoryClass.newInstance();
 			repoInst.setConfiguration(this.context);
-			this.repoInstanceCreated = true;
-		} catch (ClassNotFoundException e) {
-			String errmsg = "Cannot load class: " + this.repositoryClassName;
-			throw new RhizomeInitializationException(errmsg);
-		} catch (Exception e) {
+		} catch (InstantiationException e) {
 			String errmsg = "Cannot create object of class " 
-				+ this.repositoryClassName
+				+ this.repositoryClass.getCanonicalName()
 				+ "(Reason: " + e.getMessage() + ")";
-			throw new RhizomeInitializationException(errmsg);
+			throw new RhizomeInitializationException(errmsg, e);
+		} catch (IllegalAccessException e) {
+			String errmsg = "Cannot create object of class " 
+				+ this.repositoryClass.getCanonicalName()
+				+ "(Reason: Illegal access." + e.getMessage() + ")";
+			throw new RhizomeInitializationException(errmsg, e);
 		}
 		
 		// If reusable, cache.
@@ -331,16 +283,11 @@ public class RepositoryManager {
 		
 		DocumentIndexer indInst;
 		try {
-			Class<?> indClass = Class.forName(this.indexerClassName);
-			indInst = (DocumentIndexer)indClass.newInstance();
+			indInst = (DocumentIndexer)this.indexerClass.newInstance();
 			indInst.setConfiguration(this.context);
-			this.indexerInstanceCreated = true;
-		} catch (ClassNotFoundException e) {
-			String errmsg = "Cannot load class: " + this.indexerClassName;
-			throw new RhizomeInitializationException(errmsg);
 		} catch (Exception e) {
 			String errmsg = "Cannot create object of class " 
-				+ this.indexerClassName
+				+ this.indexerClass.getCanonicalName()
 				+ "(Reason: " + e.getMessage() + ")";
 			throw new RhizomeInitializationException(errmsg);
 		}
@@ -365,16 +312,11 @@ public class RepositoryManager {
 		
 		RepositorySearcher searchInst;
 		try {
-			Class<?> searchClass = Class.forName(this.searcherClassName);
-			searchInst = (RepositorySearcher)searchClass.newInstance();
+			searchInst = (RepositorySearcher)this.searcherClass.newInstance();
 			searchInst.setConfiguration(this.context);
-			this.searcherInstanceCreated = true;
-		} catch (ClassNotFoundException e) {
-			String errmsg = "Cannot load class: " + this.searcherClassName;
-			throw new RhizomeInitializationException(errmsg);
 		} catch (Exception e) {
 			String errmsg = "Cannot create object of class " 
-				+ this.searcherClassName
+				+ this.searcherClass.getCanonicalName()
 				+ "(Reason: " + e.getMessage() + ")";
 			throw new RhizomeInitializationException(errmsg);
 		}
@@ -390,11 +332,11 @@ public class RepositoryManager {
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Search: ");
-		sb.append(this.searcherClassName);
+		sb.append(this.searcherClass.getCanonicalName());
 		sb.append("\nIndex: ");
-		sb.append(this.indexerClassName);
+		sb.append(this.indexerClass.getCanonicalName());
 		sb.append("\nRepository: ");
-		sb.append(this.repositoryClassName);
+		sb.append(this.repositoryClass.getCanonicalName());
 		sb.append("\n");
 		return sb.toString();
 	}
