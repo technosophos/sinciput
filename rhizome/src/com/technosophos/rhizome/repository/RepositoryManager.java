@@ -42,20 +42,24 @@ public class RepositoryManager {
 	 * Default indexer class. 
 	 * If no alternate indexer is given, this one will be used.
 	 */
-	public static String DEFAULT_INDEXER_CLASS_NAME = 
+	public static final String DEFAULT_INDEXER_CLASS_NAME = 
 		"com.technosophos.rhizome.repository.lucene.LuceneIndexer";
 	/**
 	 * Default repository class name.
 	 * If no other repository class is given, this one will be used.
 	 */
-	public static String DEFAULT_REPOSITORY_CLASS_NAME = 
+	public static final String DEFAULT_REPOSITORY_CLASS_NAME = 
 		"com.technosophos.rhizome.repository.fs.FileSystemRepository";
 	/**
 	 * Default repository searcher class name.
 	 * If no other repository searcher class is given, this one will be used.
 	 */
-	public static String DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME = 
+	public static final String DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME = 
 		"com.technosophos.rhizome.repository.lucene.LuceneSearcher";
+	
+	public static final String CXT_INDEXER_CLASS_NAME = "indexer_class";
+	public static final String CXT_REPOSITORY_CLASS_NAME = "repository_class";
+	public static final String CXT_REPOSITORY_SEARCHER_CLASS_NAME = "searcher_class";
 	
 	private String indexerClassName = null;
 	private String repositoryClassName = null;
@@ -91,9 +95,15 @@ public class RepositoryManager {
 	 */
 	public RepositoryManager(RepositoryContext context) {
 		this.context = context;
-		this.indexerClassName = RepositoryManager.DEFAULT_INDEXER_CLASS_NAME;
-		this.repositoryClassName = RepositoryManager.DEFAULT_REPOSITORY_CLASS_NAME;
-		this.searcherClassName = RepositoryManager.DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME;
+		this.indexerClassName = context.hasKey(CXT_INDEXER_CLASS_NAME)
+			? context.getParam(CXT_INDEXER_CLASS_NAME)
+			: DEFAULT_INDEXER_CLASS_NAME;
+		this.repositoryClassName = context.hasKey(CXT_REPOSITORY_CLASS_NAME) 
+			? context.getParam(CXT_REPOSITORY_CLASS_NAME) 
+			: DEFAULT_REPOSITORY_CLASS_NAME;
+		this.searcherClassName = context.hasKey(CXT_REPOSITORY_SEARCHER_CLASS_NAME) 
+			? context.getParam(CXT_REPOSITORY_SEARCHER_CLASS_NAME) 
+			: DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME;
 	}
 	
 	/**
@@ -180,6 +190,15 @@ public class RepositoryManager {
 	 * @param context
 	 */
 	public void setContext(RepositoryContext context) {
+		this.indexerClassName = context.hasKey(CXT_INDEXER_CLASS_NAME)
+		? context.getParam(CXT_INDEXER_CLASS_NAME)
+		: DEFAULT_INDEXER_CLASS_NAME;
+	this.repositoryClassName = context.hasKey(CXT_REPOSITORY_CLASS_NAME) 
+		? context.getParam(CXT_REPOSITORY_CLASS_NAME) 
+		: DEFAULT_REPOSITORY_CLASS_NAME;
+	this.searcherClassName = context.hasKey(CXT_REPOSITORY_SEARCHER_CLASS_NAME) 
+		? context.getParam(CXT_REPOSITORY_SEARCHER_CLASS_NAME) 
+		: DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME;
 		this.context = context;
 	}
 	
@@ -193,6 +212,7 @@ public class RepositoryManager {
 	 * @param classname
 	 * @see com.technosophos.rhizome.repository.DocumentIndexer
 	 * @throws RhizomeClassInstanceException if the getIndexer() method has been called.
+	 * @deprecated
 	 */
 	public void setIndexerClassName(String classname) 
 			throws RhizomeClassInstanceException {
@@ -213,6 +233,7 @@ public class RepositoryManager {
 	 * @param classname
 	 * @see DocumentRepository
 	 * @throws RhizomeClassInstanceException if the getRepository() method has been called.
+	 * @deprecated
 	 */
 	public void setRepositoryClassName(String classname)
 			throws RhizomeClassInstanceException {
@@ -232,6 +253,7 @@ public class RepositoryManager {
 	 * @see RepositorySearcher
 	 * @throws RhizomeClassInstanceException if the getRepositorySearcher() 
 	 * method has been called.
+	 * @deprecated
 	 */
 	public void setRepositorySearcherClassName(String classname)
 			throws RhizomeClassInstanceException {
@@ -366,7 +388,7 @@ public class RepositoryManager {
 	 * Prints out information about what searcher, indexer and repository are being used.
 	 */
 	public String toString() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		sb.append("Search: ");
 		sb.append(this.searcherClassName);
 		sb.append("\nIndex: ");
