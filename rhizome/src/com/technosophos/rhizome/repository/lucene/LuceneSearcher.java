@@ -29,13 +29,15 @@ public class LuceneSearcher implements RepositorySearcher {
 
 	//public static String LUCENE_INDEX_PATH_PARAM = "indexpath";
 	
-	RepositoryContext context;
+	private RepositoryContext context;
+	private String indexName = null;
 	
-	public LuceneSearcher() {
-		this.context = new RepositoryContext();
+	public LuceneSearcher(String indexName) {
+		this(indexName, new RepositoryContext());
 	}
 	
-	public LuceneSearcher(RepositoryContext cxt) {
+	public LuceneSearcher(String indexName, RepositoryContext cxt) {
+		this.indexName = indexName;
 		this.context = cxt;
 	}
 	
@@ -492,7 +494,9 @@ public class LuceneSearcher implements RepositorySearcher {
 	}
 	
 	private IndexReader getIndexReader() throws java.io.IOException {
-		File indexDir = new File(this.context.getParam(LUCENE_INDEX_PATH_PARAM));
+		String ipath = LuceneIndexer.getIndexPath(this.indexName, this.context);
+		if(ipath == null) throw new java.io.IOException(ipath+" does not exist.");
+		File indexDir = new File(ipath);
 		return IndexReader.open(indexDir);
 	}
 }

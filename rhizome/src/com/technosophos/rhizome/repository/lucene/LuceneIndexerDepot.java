@@ -6,6 +6,7 @@ import com.technosophos.rhizome.repository.DocumentIndexerDepot;
 import com.technosophos.rhizome.repository.RepositoryAccessException;
 import com.technosophos.rhizome.repository.RepositoryContext;
 import com.technosophos.rhizome.repository.RhizomeInitializationException;
+import com.technosophos.rhizome.repository.util.FileUtils;
 
 public class LuceneIndexerDepot implements DocumentIndexerDepot {
 
@@ -26,14 +27,20 @@ public class LuceneIndexerDepot implements DocumentIndexerDepot {
 
 	public void deleteIndex(String name, RepositoryContext cxt)
 			throws RepositoryAccessException {
-		// TODO Auto-generated method stub
-
+		
+		String p = LuceneIndexer.getIndexPath(name, cxt);
+		
+		if( p == null) return;
+		File f = new File(p);
+		
+		FileUtils.recursiveDirDelete(f);
 	}
 
 	public DocumentIndexer getIndexer(String name, RepositoryContext cxt)
 			throws RhizomeInitializationException {
-		// TODO Auto-generated method stub
-		return null;
+		LuceneIndexer li = new LuceneIndexer(name, cxt);
+		
+		return li;
 	}
 
 	/**

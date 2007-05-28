@@ -6,6 +6,7 @@ import com.technosophos.rhizome.repository.DocumentRepositoryDepot;
 import com.technosophos.rhizome.repository.RepositoryContext;
 import com.technosophos.rhizome.repository.RhizomeInitializationException;
 import com.technosophos.rhizome.repository.RepositoryAccessException;
+import com.technosophos.rhizome.repository.util.FileUtils;
 
 /**
  * This implements a repository that resides in the file system.
@@ -46,29 +47,8 @@ public class FileSystemRepositoryDepot implements DocumentRepositoryDepot {
 		String delDirName = FileSystemRepository.getFullPath(name, cxt);
 		if(delDirName == null) return; // this should throw exception?
 		
-		this.recursiveDirDelete(new File(delDirName));
+		FileUtils.recursiveDirDelete(new File(delDirName));
 
-	}
-	
-	/**
-	 * Recursively deletes all dirs and files in baseDir.
-	 * @param baseDir
-	 * @throws RepositoryAccessException
-	 */
-	private void recursiveDirDelete(File baseDir) throws RepositoryAccessException {
-		if(!baseDir.exists() || !baseDir.isDirectory()) return;
-		
-		if(!baseDir.canWrite()) 
-			throw new RepositoryAccessException("Cannot remove " + baseDir.getAbsolutePath());
-		
-		File[] subfiles = baseDir.listFiles();
-		for(File file: subfiles) {
-			if(file.isDirectory()) this.recursiveDirDelete(file);
-			else {
-				boolean whacked = file.delete();
-				if(!whacked) throw new RepositoryAccessException("Cannot remove file " + file.getAbsolutePath());
-			}
-		}
 	}
 
 	public DocumentRepository getNamedRepository(String name, RepositoryContext cxt) 
