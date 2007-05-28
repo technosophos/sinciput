@@ -155,6 +155,8 @@ public class RhizomeController {
 				this.doCommand(cconf, data, results);
 				System.out.format("Command: There are %d results.\n", results.size());
 			}
+		// } catch (ReRouteRequest rrr) {
+			// Reroute a request to a new request and begin processing again.
 		} catch (FatalCommandException fce) {
 			results.clear();
 			CommandResult res;

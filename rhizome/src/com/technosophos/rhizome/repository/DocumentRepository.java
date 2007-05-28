@@ -22,6 +22,9 @@ import com.technosophos.rhizome.document.RhizomeParseException;
  */
 public interface DocumentRepository {
 	
+	
+	//public static void createRepository(String name, RepositoryContext cxt);
+	
 	/**
 	 * Set the object that will contain configuration information.
 	 * @param ctx
@@ -35,6 +38,12 @@ public interface DocumentRepository {
 	 * @return
 	 */
 	public RepositoryContext getConfiguration();
+	
+	/**
+	 * Return the name of the repository this object accesses.
+	 * @return repository name.
+	 */
+	public String getRepositoryName();
 	
 	/**
 	 * Get a RhizomeDocument, given a document ID.

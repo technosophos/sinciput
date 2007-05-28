@@ -49,7 +49,7 @@ public class RepositoryManager {
 	 * If no other repository class is given, this one will be used.
 	 */
 	public static final String DEFAULT_REPOSITORY_CLASS_NAME = 
-		"com.technosophos.rhizome.repository.fs.FileSystemRepository";
+		"com.technosophos.rhizome.repository.fs.FileSystemRepositoryDepot";
 	/**
 	 * Default repository searcher class name.
 	 * If no other repository searcher class is given, this one will be used.
@@ -66,6 +66,8 @@ public class RepositoryManager {
 	private DocumentRepository repoInstance = null;
 	private DocumentIndexer indexerInstance = null;
 	private RepositorySearcher searchInstance = null;
+	
+	private DocumentRepositoryDepot drFact = null;
 	
 	private Class<?> indexerClass = null;
 	private Class<?> repositoryClass = null;
@@ -101,13 +103,16 @@ public class RepositoryManager {
 		this.context = context;
 		
 		try {
+			Class tempClass;
 			if(context.hasKey(CXT_INDEXER_CLASS_NAME))
 				indexerClass = Class.forName(context.getParam(CXT_INDEXER_CLASS_NAME));
 			else indexerClass = Class.forName(DEFAULT_INDEXER_CLASS_NAME);
 			
+			// Create new repository factory:
 			if(context.hasKey(CXT_REPOSITORY_CLASS_NAME))
-				repositoryClass = Class.forName(context.getParam(CXT_REPOSITORY_CLASS_NAME));
-			else repositoryClass = Class.forName(DEFAULT_REPOSITORY_CLASS_NAME);
+				tempClass = Class.forName(context.getParam(CXT_REPOSITORY_CLASS_NAME));
+			else tempClass = Class.forName(DEFAULT_REPOSITORY_CLASS_NAME);
+			this.drFact = (DocumentRepositoryDepot)tempClass.newInstance();
 			
 			if(context.hasKey(CXT_REPOSITORY_SEARCHER_CLASS_NAME))
 				searcherClass = Class.forName(context.getParam(CXT_REPOSITORY_SEARCHER_CLASS_NAME));
@@ -115,6 +120,10 @@ public class RepositoryManager {
 			
 		}catch (ClassNotFoundException cnfe) {
 			throw new RhizomeInitializationException("Failed to load class: " + cnfe.getMessage(), cnfe);
+		} catch (InstantiationException ie) {
+			throw new RhizomeInitializationException("Failed to instantiate class: " + ie.getMessage(), ie);
+		} catch (IllegalAccessException iae) {
+			throw new RhizomeInitializationException("Class access problem: " + iae.getMessage(), iae);
 		}
 
 	}
@@ -224,14 +233,17 @@ public class RepositoryManager {
 	/*===============================================
 	 * Accessor Methods
 	 *===============================================*/
+	
+	public boolean hasRepository(String name) {
+		return false;
+	}
 
 
 	public DocumentRepository getRepository(String repoName) 
 			throws RhizomeInitializationException {
-		
-		this.context.addParam("repository_name", repoName);
-		// FIXME: THis is broken!
-		return this.getRepository();
+		assert repoName != null;
+		return this.drFact.getNamedRepository(repoName, this.context);
+
 	}
 	
 	/**
@@ -241,6 +253,7 @@ public class RepositoryManager {
 	 * return a fresh instance or a cached copy.
 	 * 
 	 * @return initialized document repository.
+	 * @deprecated
 	 */
 	public DocumentRepository getRepository() 
 			throws RhizomeInitializationException {

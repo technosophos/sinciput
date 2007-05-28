@@ -49,9 +49,26 @@ public class LuceneIndexer implements DocumentIndexer {
 
 	private RepositoryContext context;
 	private String indexLocation = null;
+	private String indexName = null;
 	
-	public LuceneIndexer() {
-		this.context = new RepositoryContext();
+	private LuceneIndexer(){} // No default constructor.
+	
+	/**
+	 * Main constructor.
+	 * @param indexName
+	 */
+	public LuceneIndexer(String indexName) {
+		this(indexName, new RepositoryContext());
+	}
+	
+	/**
+	 * Main constructor.
+	 * @param indexName
+	 * @param context
+	 */
+	public LuceneIndexer(String indexName, RepositoryContext context) {
+		this.indexName = indexName;
+		this.context = context;
 	}
 	
 	/**
@@ -59,6 +76,10 @@ public class LuceneIndexer implements DocumentIndexer {
 	 */
 	public boolean isReusable() {
 		return true;
+	}
+	
+	public String getIndexName() {
+		return this.indexName;
 	}
 
 	/**
@@ -253,8 +274,7 @@ public class LuceneIndexer implements DocumentIndexer {
 	
 	public void setConfiguration(RepositoryContext context) {
 		this.context = context;
-		if(context.hasKey(LUCENE_INDEX_PATH_PARAM))
-			this.indexLocation = context.getParam(LUCENE_INDEX_PATH_PARAM);
+		this.indexLocation = getIndexPath(this.indexName, context);
 	}
 	
 	/**
@@ -278,6 +298,27 @@ public class LuceneIndexer implements DocumentIndexer {
 		if(!indexDir.canRead() || !indexDir.canWrite())
 			throw new IOException("Index Dir must have read/write access: " + pathname);
 		return indexDir;
+	}
+	
+	/**
+	 * Get the path to a named index.
+	 * This path could be relative -- it depends on the path information passed in from
+	 * the Context.
+	 * @param name
+	 * @param cxt
+	 * @return
+	 */
+	public static String getIndexPath(String name, RepositoryContext cxt) {
+		if(!cxt.hasKey(LUCENE_INDEX_PATH_PARAM))
+			return null;
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append(cxt.getParam(LUCENE_INDEX_PATH_PARAM));
+		if(sb.lastIndexOf(File.separator) != sb.length() - 1) 
+			sb.append(File.separatorChar);
+		sb.append(name);
+		return sb.toString();
+		
 	}
 	
 	/**

@@ -46,6 +46,8 @@ public class FileSystemRepository implements DocumentRepository {
 	private String fileSystemPath;
 	private boolean isConfigured = false;
 	
+	private String repoName = null;
+	
 	/**
 	 * Construct a new repository.
 	 * <p>
@@ -63,11 +65,21 @@ public class FileSystemRepository implements DocumentRepository {
 	 * @param cxt
 	 * @throws RhizomeIntializationException if fileSystemPath key is not in the context, or if
 	 * the key points to a nonexistent directory.
+	 * @deprecated use {@link #FileSystemRepository(String, RepositoryContext)} instead.
 	 */
 	public FileSystemRepository(RepositoryContext cxt) throws RhizomeInitializationException {
 		this.cxt = cxt;
 		if(cxt.hasKey(FileSystemRepository.FILE_SYSTEM_PATH_NAME)) {
-			this.fileSystemPath = cxt.getParam(FileSystemRepository.FILE_SYSTEM_PATH_NAME);
+			this.fileSystemPath = getFullPath("", cxt); //cxt.getParam(FileSystemRepository.FILE_SYSTEM_PATH_NAME);
+			this.isConfigured = true;
+		}
+	}
+	
+	public FileSystemRepository(String name, RepositoryContext cxt) {
+		this.cxt = cxt;
+		this.repoName = name;
+		if(cxt.hasKey(FileSystemRepository.FILE_SYSTEM_PATH_NAME)) {
+			this.fileSystemPath = getFullPath(name, cxt); //cxt.getParam(FileSystemRepository.FILE_SYSTEM_PATH_NAME);
 			this.isConfigured = true;
 		}
 	}
@@ -116,6 +128,8 @@ public class FileSystemRepository implements DocumentRepository {
 	public RepositoryContext getConfiguration() {
 		return this.cxt;
 	}
+	
+	public String getRepositoryName() { return this.repoName; }
 
 	/**
 	 * Get a Rhizome Document from the repository.
@@ -159,7 +173,7 @@ public class FileSystemRepository implements DocumentRepository {
 		File doc = new File(this.getRepoDir(), docID);
 		if(!doc.exists()) 
 			throw new DocumentNotFoundException("File not found: " + doc.toString());
-		if(doc.isFile())
+		if(!doc.isFile())
 			throw new RepositoryAccessException("Item not a file: " + doc.toString());
 		InputStream is;
 		try {
@@ -218,20 +232,29 @@ public class FileSystemRepository implements DocumentRepository {
 	public boolean isReusable() {
 		return true;
 	}
+	
+	/**
+	 * @deprecated use {@link #setConfiguration(String, RepositoryContext)}
+	 */
+	public void setConfiguration(RepositoryContext cxt) throws RhizomeInitializationException {
+		this.setConfiguration(null, cxt);
+	}
 
 	/**
 	 * This must be called after the constructor if the Repository Context was not set.
+	 * @param name Name of the repository.
 	 * @param the repository context, which must have the fileSystemPath key, 
 	 * and a value that points to a directory on the file system.
 	 */
-	public void setConfiguration(RepositoryContext cxt) throws RhizomeInitializationException {
+	public void setConfiguration(String name, RepositoryContext cxt) throws RhizomeInitializationException {
+		this.repoName = name;
 		if(cxt == null)
 			throw new RhizomeInitializationException("RhizomeContext cannot be NULL");
 		this.cxt = cxt;
 		
 		if(!cxt.hasKey(FILE_SYSTEM_PATH_NAME))
 			throw new RhizomeInitializationException("File System Path info not found in context");	
-		this.fileSystemPath = this.cxt.getParam(FILE_SYSTEM_PATH_NAME);
+		this.fileSystemPath = getFullPath(name, cxt); //this.cxt.getParam(FILE_SYSTEM_PATH_NAME);
 		//if()
 		
 		this.isConfigured = true;
@@ -313,6 +336,9 @@ public class FileSystemRepository implements DocumentRepository {
 	}
 	*/
 	
+	/**
+	 * Get the directory (as a {@link File}) for this repository.
+	 */
 	private File getRepoDir() throws RepositoryAccessException {
 		if(!this.isConfigured)
 			throw new RepositoryAccessException("Repository is not configured.");
@@ -328,6 +354,24 @@ public class FileSystemRepository implements DocumentRepository {
 					+ this.fileSystemPath);
 		
 		return dir;
+	}
+	
+	/** 
+	 * Get the path to the named repository.
+	 * @param name
+	 * @param cxt
+	 * @return
+	 */
+	public static String getFullPath(String name, RepositoryContext cxt) {
+		if(!cxt.hasKey(FileSystemRepository.FILE_SYSTEM_PATH_NAME))
+			return null;
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append(cxt.getParam(FileSystemRepository.FILE_SYSTEM_PATH_NAME));
+		if(sb.lastIndexOf(File.separator) != sb.length() - 1) 
+			sb.append(File.separatorChar);
+		sb.append(name);
+		return sb.toString();
 	}
 
 }

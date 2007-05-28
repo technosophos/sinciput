@@ -32,6 +32,12 @@ public interface DocumentIndexer {
 	public void updateIndex(RhizomeDocument doc) throws RhizomeInitializationException;
 	
 	/**
+	 * Get the name of the index.
+	 * @return the name of the index that this object uses.
+	 */
+	public String getIndexName();
+	
+	/**
 	 * Update the index with a document already in the repository.
 	 * 
 	 * This will try to fetch a document from the repository and then index it.
