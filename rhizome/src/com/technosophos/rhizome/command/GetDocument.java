@@ -18,7 +18,8 @@ public class GetDocument extends AbstractCommand {
 	 * This command looks for the parameter "docid" (or [prefix]docid if prefix is
 	 * set in the command configuration).
 	 */
-	public static String PARAM_DOCID = "docid";
+	public static final String PARAM_DOCID = "docid";
+
 	
 	/**
 	 * Retrieve a document.
@@ -41,8 +42,19 @@ public class GetDocument extends AbstractCommand {
 			return;
 		}
 		String docID = this.getParam(params, PARAM_DOCID).toString();
+		String repoName = this.getCurrentRepositoryName(params);
+		
+		if(repoName == null) {
+			res = new CommandResult(this.comConf);
+			String errMsg = "No repository name was given in params or configuration.";
+			String friendlyErrMsg = "We cannot find the place where this document is located.";
+			res.setError(errMsg, friendlyErrMsg);
+			results.add(res);
+			return;
+		}
+		
 		try {
-			doc = this.fetchDocument(docID);
+			doc = this.fetchDocument(repoName, docID);
 			results.add(new CommandResult(this.comConf, doc));
 		} catch (RhizomeException re) {
 			res = new CommandResult(this.comConf);
@@ -61,8 +73,8 @@ public class GetDocument extends AbstractCommand {
 	 * @throws DocumentNotFoundException if the document is not found.
 	 * @throws RhizomeException if there is an error accessing the respository.
 	 */
-	protected RhizomeDocument fetchDocument(String docID) throws DocumentNotFoundException, RhizomeException {
-		return this.repoman.getDocument(docID);
+	protected RhizomeDocument fetchDocument(String repoName, String docID) throws DocumentNotFoundException, RhizomeException {
+		return this.repoman.getDocument(repoName, docID);
 	}
 
 }

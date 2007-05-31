@@ -42,7 +42,8 @@ public interface DocumentIndexer {
 	 * 
 	 * This will try to fetch a document from the repository and then index it.
 	 * @see updateIndex(RhizomeDocument) 
-	 * @param docID
+	 * @param docID ID of document to update
+	 * @param repman repository, initialized
 	 */
 	public void updateIndex(String docID, RepositoryManager repman) 
 		throws RhizomeParseException, RhizomeInitializationException, RepositoryAccessException;
@@ -52,6 +53,7 @@ public interface DocumentIndexer {
 	 * 
 	 * Re-create the index from scratch, indexing all of the documents in
 	 * the repository.
+	 * @param repman Initialized repository manager
 	 * @return number of documents indexed.
 	 */
 	public long reindex(RepositoryManager repman) 

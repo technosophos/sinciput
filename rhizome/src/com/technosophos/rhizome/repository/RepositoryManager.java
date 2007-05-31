@@ -43,7 +43,7 @@ public class RepositoryManager {
 	 * If no alternate indexer is given, this one will be used.
 	 */
 	public static final String DEFAULT_INDEXER_CLASS_NAME = 
-		"com.technosophos.rhizome.repository.lucene.LuceneIndexer";
+		"com.technosophos.rhizome.repository.lucene.LuceneIndexerDepot";
 	/**
 	 * Default repository class name.
 	 * If no other repository class is given, this one will be used.
@@ -55,7 +55,7 @@ public class RepositoryManager {
 	 * If no other repository searcher class is given, this one will be used.
 	 */
 	public static final String DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME = 
-		"com.technosophos.rhizome.repository.lucene.LuceneSearcher";
+		"com.technosophos.rhizome.repository.lucene.LuceneSearcherDepot";
 	
 	public static final String CXT_INDEXER_CLASS_NAME = "indexer_class";
 	public static final String CXT_REPOSITORY_CLASS_NAME = "repository_class";
@@ -67,56 +67,69 @@ public class RepositoryManager {
 	private DocumentIndexer indexerInstance = null;
 	private RepositorySearcher searchInstance = null;
 	
-	private DocumentRepositoryDepot drFact = null;
+	private DocumentRepositoryDepot drDepot = null;
+	private DocumentIndexerDepot diDepot = null;
+	private RepositorySearcherDepot searchDepot = null;
 	
 	private Class<?> indexerClass = null;
 	private Class<?> repositoryClass = null;
 	private Class<?> searcherClass = null;
 	
-	/*
+	/**
 	 * The main constructor.
-	 * This builds a new Repository Manager and initializes it.
+	 * <p>This builds a new Repository Manager and initializes it. Do <b>not</b>
+	 * call init after this.</p>
 	 * 
-	 * RepositoryManager uses a lazy instantiation model, so the indexers 
-	 * and repository classes will not be loaded until first requested.
-	 * However, once one is loaded, the same objects may be served repeatedly
-	 * unless they are flagged as non-reusable (via the canBeReused() method).
+	 * <p>RepositoryManager initializes the *Depot classes, which are used, in turn,
+	 * to control access to one or more backend repositories. Depots are created during
+	 * initialization and reused indefinitely.</p>
 	 *
 	 * @param context The configuration information for this RepositoryManager.
-	 * @see DocumentIndexer
-	 * @see DocumentRepository
-	 *//*
-	public RepositoryManager(RepositoryContext context) {
-		
+	 * @see DocumentIndexerDepot
+	 * @see DocumentRepositoryDepot
+	 * @see RepositorySearcherDepot
+	 */
+	public RepositoryManager(final RepositoryContext context) throws RhizomeException {
+		this.init(context);
 	}
-	*/
+	
 	
 	/**
-	 * When a new Rhizome Manager is created, it must be initialized.
+	 * Construct a new RepositoryManager.
+	 * You <b>Must</b> call {@link #init(RepositoryContext)} after this.
+	 */
+	public RepositoryManager() {}
+	
+	/**
+	 * When a new Rhizome Manager is created with an empty constructor, it must be initialized.
 	 * <p>This method initializes a new Rhizome Manager. Along with some trivial 
 	 * initialization, it performs all class loading needed for this manager, and
 	 * failures to load classes will result in an exception.</p>
 	 * @param context The new repository context.
-	 * @throws
+	 * @throws RhizomeInitializationException if the classes cannot be loaded, and 
+	 * RhizomeAccessExceptions if certain conditions obtain when initializing repositories.
+	 * @see #RepositoryManager(RepositoryContext) 
 	 */
-	public void init(RepositoryContext context) throws RhizomeException {
+	public void init(final RepositoryContext context) throws RhizomeException {
 		this.context = context;
 		
 		try {
 			Class tempClass;
 			if(context.hasKey(CXT_INDEXER_CLASS_NAME))
-				indexerClass = Class.forName(context.getParam(CXT_INDEXER_CLASS_NAME));
-			else indexerClass = Class.forName(DEFAULT_INDEXER_CLASS_NAME);
+				tempClass = Class.forName(context.getParam(CXT_INDEXER_CLASS_NAME));
+			else tempClass = Class.forName(DEFAULT_INDEXER_CLASS_NAME);
+			this.diDepot = (DocumentIndexerDepot)tempClass.newInstance();
 			
 			// Create new repository factory:
 			if(context.hasKey(CXT_REPOSITORY_CLASS_NAME))
 				tempClass = Class.forName(context.getParam(CXT_REPOSITORY_CLASS_NAME));
 			else tempClass = Class.forName(DEFAULT_REPOSITORY_CLASS_NAME);
-			this.drFact = (DocumentRepositoryDepot)tempClass.newInstance();
+			this.drDepot = (DocumentRepositoryDepot)tempClass.newInstance();
 			
 			if(context.hasKey(CXT_REPOSITORY_SEARCHER_CLASS_NAME))
-				searcherClass = Class.forName(context.getParam(CXT_REPOSITORY_SEARCHER_CLASS_NAME));
-			else searcherClass = Class.forName(DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME);
+				tempClass = Class.forName(context.getParam(CXT_REPOSITORY_SEARCHER_CLASS_NAME));
+			else tempClass = Class.forName(DEFAULT_REPOSITORY_SEARCHER_CLASS_NAME);
+			this.searchDepot = (RepositorySearcherDepot)tempClass.newInstance();
 			
 		}catch (ClassNotFoundException cnfe) {
 			throw new RhizomeInitializationException("Failed to load class: " + cnfe.getMessage(), cnfe);
@@ -149,14 +162,19 @@ public class RepositoryManager {
 	 * exists, this will be added to the repository.</p>
 	 * <p>Adding a document this way automatically puts it into the search
 	 * index, so there is no reason to interact directly with the indexer.</p>
-	 * @param document to add to repository. 
+	 * <p><b>Warning:</b> This method creates new instances of the 
+	 * {@link DocumentRepository} repository and {@link DocumentIndexer} indexer.
+	 * If you are doing lots of interactions (like storing several documents), you will
+	 * get better performance by instantiating one repository and one index, and then 
+	 * doing the updating yourself.</p>
+	 * @param repoName the name of the repository.
+	 * @param document to add to repository.
+	 * @see DocumentRepsitory.storeDocument(RhizomeDocument, boolean)
+	 * @see DocumentIndexer.updateIndex(RhizomeDocument) 
 	 */
-	public void storeDocument(RhizomeDocument doc) throws RhizomeException {
-		DocumentRepository repo = this.getRepository();
-		DocumentIndexer indexer = this.getIndexer();
-		
-		repo.setConfiguration(this.context);
-		indexer.setConfiguration(this.context);
+	public void storeDocument(String repoName, RhizomeDocument doc) throws RhizomeException {
+		DocumentRepository repo = this.getRepository(repoName);
+		DocumentIndexer indexer = this.getIndexer(repoName);
 		
 		repo.storeDocument(doc, true);
 		indexer.updateIndex(doc);
@@ -174,33 +192,52 @@ public class RepositoryManager {
 	 * <b>This behavior may change in future versions.</b></p>
 	 * <p>In both cases, if a delete fails, a 
 	 * <code>RepositoryAccessException</code> will be thrown.</p>
+	 * <p><b>Warning:</b> This method creates new instances of the 
+	 * {@link DocumentRepository} repository and {@link DocumentIndexer} indexer.
+	 * If you are doing lots of interactions (like removing several documents), you will
+	 * get better performance by instantiating one repository and one index, and then 
+	 * doing the removing with the correct methods.</p>
 	 * 
+	 * @param repoName The name of the repository from which the doc will be deleted
 	 * @param docID document to delete
 	 * @throws RepositoryAccessException, RhizomeException
+	 * @see DocumentRepository.removeDocument(String)
+	 * @see DocumentIndexer.deleteFromIndex(String)
 	 */
-	public void removeDocument(String docID) throws RhizomeException {
-		DocumentRepository repo = this.getRepository();
-		DocumentIndexer indexer = this.getIndexer();
+	public void removeDocument(String repoName, String docID) throws RhizomeException {
+		DocumentRepository repo = this.getRepository(repoName);
+		DocumentIndexer indexer = this.getIndexer(repoName);
 		
 		if (!indexer.deleteFromIndex(docID)) 
 			throw new RepositoryAccessException(
 				"Could not remove document from index. Document is still available.");
-		if(!repo.removeDocument(docID))
-			throw new RepositoryAccessException(
-				"Could not remove document from repository. Document is not in index.");
+		if(!repo.removeDocument(docID)) {
+			String err = "Could not remove document from repository. ";
+			// Oops... better re-add this to the index.
+			try {
+				indexer.updateIndex(docID, this);
+			} catch (RhizomeException e) {
+				throw new RepositoryAccessException(err + "Document is not in index.");
+			}
+			throw new RepositoryAccessException( err + "Document is still in index.");
+		}
 	}
 	
 	/**
 	 * Return a document.
 	 * <p>Given a document ID, attempt to fetch the document from the repository.</p>
+	 * <p><b>WARNING: </b> This method creates and destroys a new repository. If you are
+	 * doing multiple repository operations, it is better to get a new instance of a 
+	 * repository ({@link #getRepository(String)} and then perform manipulations on that
+	 * object.</p>
 	 * <p>If the file is not found, a <code>repositoryAccessException</code> is thrown.</p>
 	 * @param docID
 	 * @return
 	 * @throws RhizomeException
 	 */
-	public RhizomeDocument getDocument(String docID) 
+	public RhizomeDocument getDocument(String repoName, String docID) 
 			throws DocumentNotFoundException, RhizomeException {
-		return this.getRepository().getDocument(docID);
+		return this.getRepository(repoName).getDocument(docID);
 	}
 	
 	/*===============================================
@@ -209,13 +246,17 @@ public class RepositoryManager {
 	/**
 	 * Set the repository context.
 	 * 
-	 * If instances of the repository, search, or indexer have been created, they will
-	 * be re-configured. In other words, this will make every attempt to re-initialize
-	 * all parts of the Rhizome backend with the new context.
+	 * <p><b>WARNING:</b> The following caveats apply.</p>
+	 * <ul>
+	 * <li>How this method works depends largely on the backend implementation.</li>
+	 * <li>The Depot classes will not be reloaded</li>
+	 * <li>If the depots cache information, changing context may or may not have an 
+	 * impact. That is up to the depot implementors.</li>
 	 * @param context
 	 */
-	public void setContext(RepositoryContext context) {
+	public void setContext(final RepositoryContext context) {
 		
+		/*
 		try {
 			if(this.repoInstance != null) this.repoInstance.setConfiguration(context);
 			if(this.searchInstance != null) this.searchInstance.setConfiguration(context);
@@ -225,6 +266,7 @@ public class RepositoryManager {
 			this.searchInstance = null;
 			this.indexerInstance = null;
 		}
+		*/
 			
 		this.context = context;
 	}
@@ -234,16 +276,84 @@ public class RepositoryManager {
 	 * Accessor Methods
 	 *===============================================*/
 	
+	/**
+	 * Returns true if there is a full repository for this name.
+	 * This returns true iff there is a DocumentRepository and a DocumentIndex for the
+	 * given name.
+	 * @param name The name of the repository
+	 * @return true if a repository and index exists, false otherwise.
+	 */
 	public boolean hasRepository(String name) {
-		return false;
+		return this.drDepot.hasNamedRepository(name, this.context) 
+			&& this.diDepot.hasIndex(name, this.context);
+	}
+	
+	/**
+	 * Create a new repository and search index.
+	 * 
+	 * @param name Name of the new repository.
+	 * @throws RhizomeInitializationException
+	 * @throws RepositoryAccessException
+	 */
+	public void createRepository(String name) 
+			throws RhizomeInitializationException, RepositoryAccessException {
+		// FIXME: need some fault tolerance on this.
+		this.drDepot.createNamedRepository(name, this.context);
+		this.diDepot.createIndex(name, this.context);
+	}
+	
+	/**
+	 * Delete an existing repository and a search index pair.
+	 * @param name Name of the repository to be deleted.
+	 * @throws RepositoryAccessException if either of the items cannot be deleted.
+	 */
+	public void removeRepository(String name) throws RepositoryAccessException {
+		// FIXME: Need transactional support here.
+		this.diDepot.deleteIndex(name, this.context);
+		this.drDepot.deleteNamedRepository(name, this.context);
 	}
 
 
+	/**
+	 * Get a document repository.
+	 * 
+	 * Depending on the repository class's isReusable() method, this may
+	 * return a fresh instance or a cached copy.
+	 * 
+	 * @return initialized document repository.
+	 */
 	public DocumentRepository getRepository(String repoName) 
 			throws RhizomeInitializationException {
 		assert repoName != null;
-		return this.drFact.getNamedRepository(repoName, this.context);
+		return this.drDepot.getNamedRepository(repoName, this.context);
 
+	}
+	
+	/**
+	 * Get a document indexer.
+	 * 
+	 * Depending on the indexer class's isReusable() method, this may
+	 * return a fresh instance or a cached copy.
+	 * 
+	 * @return initialized indexer.
+	 */
+	public DocumentIndexer getIndexer(String indName) throws RhizomeInitializationException {
+		assert indName != null;
+		return this.diDepot.getIndexer(indName, this.context);
+	}
+	
+	/**
+	 * Get a repository searcher.
+	 * 
+	 * Depending on the Searcher class's isReusable() method, this may
+	 * return a fresh instance or a cached copy.
+	 * 
+	 * @return initialized repository searcher.
+	 */
+	public RepositorySearcher getSearcher(String searcherName) 
+			throws RhizomeInitializationException {
+		assert searcherName != null;
+		return this.searchDepot.getSearcher(searcherName, this.context);
 	}
 	
 	/**
@@ -288,6 +398,7 @@ public class RepositoryManager {
 	 * return a fresh instance or a cached copy.
 	 * 
 	 * @return initialized indexer.
+	 * @deprecated Use {@link #getIndexer(String)} instead.
 	 */
 	public DocumentIndexer getIndexer() 
 			throws RhizomeInitializationException {
@@ -317,6 +428,7 @@ public class RepositoryManager {
 	 * return a fresh instance or a cached copy.
 	 * 
 	 * @return initialized repository searcher.
+	 * @deprecated Use {@link #getRepositorySearcher()} instead.
 	 */
 	public RepositorySearcher getRepositorySearcher() 
 			throws RhizomeInitializationException {
@@ -340,16 +452,16 @@ public class RepositoryManager {
 	}
 	
 	/**
-	 * Prints out information about what searcher, indexer and repository are being used.
+	 * Prints out information about what searcher, indexer and repository depots are being used.
 	 */
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Search: ");
-		sb.append(this.searcherClass.getCanonicalName());
+		sb.append(this.searchDepot.getClass().getCanonicalName());
 		sb.append("\nIndex: ");
-		sb.append(this.indexerClass.getCanonicalName());
+		sb.append(this.diDepot.getClass().getCanonicalName());
 		sb.append("\nRepository: ");
-		sb.append(this.repositoryClass.getCanonicalName());
+		sb.append(this.drDepot.getClass().getCanonicalName());
 		sb.append("\n");
 		return sb.toString();
 	}

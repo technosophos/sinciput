@@ -25,6 +25,22 @@ public interface DocumentIndexerDepot {
 	public void createIndex(String name, RepositoryContext cxt)throws RhizomeInitializationException, RepositoryAccessException;
 	
 	/**
+	 * Create a new index.
+	 * <p>For the most part, this is the same as {@link #createIndex(String, RepositoryContext)}.
+	 * The difference is that, if the third flag, <code>shareExisting</code> is true, then this
+	 * will not throw an exception if a repository has already been created at the same place.
+	 * This is useful for repositories that use one location on disk to store the index and the
+	 * files.</p>
+	 * <p>You should always call {@link DocumentRepository.createNamedRepository(String, RepositoryContext)}
+	 * before calling this method.</p>
+	 * 
+	 * @param name
+	 * @param cst
+	 * @param shareExisting Set to true if this should share a directory if it finds one.
+	 */
+	public void createIndex(String name, RepositoryContext cst, boolean shareExisting)
+			throws RhizomeInitializationException, RepositoryAccessException;
+	/**
 	 * Get an instance of the indexer.
 	 * <p>This will return an initialized {@link DocumentIndexer}.</p>
 	 * @param name

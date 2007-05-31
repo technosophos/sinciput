@@ -29,5 +29,6 @@ public class FileUtils {
 				if(!whacked) throw new RepositoryAccessException("Cannot remove file " + file.getAbsolutePath());
 			}
 		}
+		baseDir.delete();
 	}
 }

@@ -21,6 +21,7 @@ public class FileSystemRepositoryDepot implements DocumentRepositoryDepot {
 	public void createNamedRepository(String name, RepositoryContext cxt) 
 			throws RhizomeInitializationException, RepositoryAccessException {
 		
+		if(name == null) throw new RhizomeInitializationException("The repository name cannot be null.");
 		String base = FileSystemRepository.getFullPath("", cxt);
 		if(base == null) 
 			throw new RhizomeInitializationException("Repository directory not found.");
@@ -44,6 +45,8 @@ public class FileSystemRepositoryDepot implements DocumentRepositoryDepot {
 	public void deleteNamedRepository(String name, RepositoryContext cxt) 
 			throws RepositoryAccessException {
 		
+		if(name == null) throw new RepositoryAccessException("The repository name cannot be null.");
+		
 		String delDirName = FileSystemRepository.getFullPath(name, cxt);
 		if(delDirName == null) return; // this should throw exception?
 		
@@ -54,6 +57,7 @@ public class FileSystemRepositoryDepot implements DocumentRepositoryDepot {
 	public DocumentRepository getNamedRepository(String name, RepositoryContext cxt) 
 			throws RhizomeInitializationException {
 		
+		if(name == null) throw new RhizomeInitializationException("The repository name cannot be null.");
 		FileSystemRepository r =  new FileSystemRepository(name, cxt);
 		
 		//r.getRepoDir(); // To trigger an exception if the dir does not exist.

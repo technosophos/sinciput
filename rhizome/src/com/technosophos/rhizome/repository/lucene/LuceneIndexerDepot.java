@@ -12,17 +12,55 @@ public class LuceneIndexerDepot implements DocumentIndexerDepot {
 
 	public void createIndex(String name, RepositoryContext cxt)
 			throws RhizomeInitializationException, RepositoryAccessException {
+		
 		// Quick check.
+		if(name == null || name.length() == 0)
+			throw new RhizomeInitializationException("Repository name must be specified. It cannot be empty or null.");
+		String p = LuceneIndexer.getIndexPath("", cxt);
+		// null == No key in context
+		if(p == null) throw new RhizomeInitializationException("Index directive does not exist in context. Check your configuration file.");
+		
+		// Next: check if dir already exists. If not, create.
+		File full_path = new File(LuceneIndexer.getIndexPath(name, cxt));
+		if( full_path.exists())
+			throw new RepositoryAccessException(String.format("Index %s already exists. Can't create.", full_path));
+		
+		
+		boolean b = full_path.mkdir();
+		if(!b) throw new RepositoryAccessException("Cannot create directory " + full_path.getAbsolutePath()); 
+
+	}
+	
+	/**
+	 * @deprecated This was just a bad idea to begin with.
+	 */
+	public void createIndex(String name, RepositoryContext cxt, boolean shareExisting) 
+			throws RhizomeInitializationException, RepositoryAccessException {
+		this.createIndex(name, cxt);
+		return;
+		/*
+		//		 Quick check.
 		String p = LuceneIndexer.getIndexPath("", cxt);
 		if(p == null) throw new RhizomeInitializationException("Index directory does not exist.");
 		
-		if(LuceneIndexer.getIndexPath(name, cxt) != null)
-			throw new RepositoryAccessException("Index already exists. Can't create.");
+		String full_path = LuceneIndexer.getIndexPath(name, cxt);
+		// First: check to see if this is in the same place as an existing repository:
+		
+		
+		
+		if( full_path != null) {
+			File full_path_f = new File(full_path);
+			if(shareExisting && full_path_f.isDirectory()) {
+				System.out.println(full_path + " already exists.");
+				return;
+			} else throw new RepositoryAccessException(
+					String.format("Index %s already exists. Can't create.", full_path));
+		}
 		
 		File f = new File(p, name);
 		boolean b = f.mkdir();
-		if(!b) throw new RepositoryAccessException("Cannot create directory " + f.getAbsolutePath()); 
-
+		if(!b) throw new RepositoryAccessException("Cannot create directory " + f.getAbsolutePath());
+		*/ 
 	}
 
 	public void deleteIndex(String name, RepositoryContext cxt)

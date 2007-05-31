@@ -117,13 +117,14 @@ public class DocumentCollection {
 	 * some repositories, the document can be deleted after the metadata is returned, 
 	 * resulting in a {@link DocumentNotFoundException} being thrown.
 	 * @param repoman An initialized Repository Manager.
+	 * @param repoName The name of the repository to get the doc from.
 	 * @param docID The ID of the document to fetch.
 	 * @return A Rhizome Document
 	 * @throws RhizomeException
 	 */
-	public RhizomeDocument getRhizomeDocument(RepositoryManager repoman, String docID) 
+	public RhizomeDocument getRhizomeDocument(RepositoryManager repoman, String repoName, String docID) 
 			throws RhizomeException {
-		return repoman.getDocument(docID);
+		return repoman.getDocument(repoName, docID);
 	}
 	
 	/**

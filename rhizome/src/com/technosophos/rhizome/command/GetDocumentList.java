@@ -73,11 +73,21 @@ public class GetDocumentList extends AbstractCommand {
 			return;
 		}
 		
+		String repoName = this.getCurrentRepositoryName(params);
+		if(repoName == null) {
+			res = new CommandResult(this.comConf);
+			String errMsg = "No repository name in params or in configuration directives";
+			String friendlyErrMsg = "No information was given to tell us where to look.";
+			res.setError(errMsg, friendlyErrMsg);
+			results.add(res);
+			return;
+		}
+		
 		String [] additional_md = this.comConf.getDirective(CONF_ADD_FIELDS);
 		if(additional_md == null) additional_md = new String [0];
 		
 		try {
-			doc = this.repoman.getRepositorySearcher().narrowingSearch(narrower, additional_md);
+			doc = this.repoman.getSearcher(repoName).narrowingSearch(narrower, additional_md);
 		} catch (RhizomeInitializationException rie) {
 			res = new CommandResult(this.comConf);
 			String errMsg = "Error initializing the repository.";

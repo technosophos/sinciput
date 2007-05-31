@@ -19,6 +19,16 @@ import com.technosophos.rhizome.repository.RepositoryManager;
  */
 public abstract class AbstractCommand implements RhizomeCommand {
 
+	/**
+	 * The repository name parameter: "repository_name"
+	 */
+	public static final String PARAM_REPO_NAME = "repository_name";
+	
+	/**
+	 * The repository name directive: "repository_name"
+	 */
+	public static final String DIRECTIVE_REPO_NAME = "repository_name";
+	
 	/** the CommandConfiguration */
 	protected CommandConfiguration comConf = null;
 	/** the RepositoryManager instance */
@@ -66,6 +76,24 @@ public abstract class AbstractCommand implements RhizomeCommand {
 		String pname = this.getPrefixedParamName(name);
 		if(!params.containsKey(pname)) return null;
 		return params.get(pname);
+	}
+	
+	protected String getCurrentRepositoryName(Map<String, Object> params) {
+		String repoName = this.getParam(params, PARAM_REPO_NAME).toString();
+		
+		if(repoName == null || "".equals(repoName)) {
+			if( !this.comConf.hasDirective(DIRECTIVE_REPO_NAME)) return null;
+			
+			String [] repoNames = this.comConf.getDirective(DIRECTIVE_REPO_NAME);
+			if(repoNames == null 
+					|| repoNames.length == 0 
+					|| repoNames[0] == null 
+					|| "".equals(repoNames[0])) {
+				return null;
+			}
+			return repoNames[0];
+		}
+		return repoName;
 	}
 	
 	/**

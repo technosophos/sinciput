@@ -54,8 +54,8 @@ public class LuceneIndexer implements DocumentIndexer {
 	private LuceneIndexer(){} // No default constructor.
 	
 	/**
-	 * Main constructor.
-	 * @param indexName
+	 * Use this constructor in conjunction with {@link #setConfiguration(RepositoryContext)}.
+	 * @param indexName The name of the repository. (Index Name and repository name are identical)
 	 */
 	public LuceneIndexer(String indexName) {
 		this(indexName, new RepositoryContext());
@@ -63,12 +63,13 @@ public class LuceneIndexer implements DocumentIndexer {
 	
 	/**
 	 * Main constructor.
-	 * @param indexName
+	 * @param indexName The name of the repository.
 	 * @param context
 	 */
 	public LuceneIndexer(String indexName, RepositoryContext context) {
 		this.indexName = indexName;
 		this.context = context;
+		this.indexLocation = getIndexPath(this.indexName, context);
 	}
 	
 	/**
@@ -85,12 +86,14 @@ public class LuceneIndexer implements DocumentIndexer {
 	/**
 	 * Completely rebuild the index.
 	 * <p>This should run incrementally, and not interrupt traffic too much.</p>
+	 * @param repman Initialized repository manager
+	 * @param repoName The name of teh repository to reindex.
 	 */
 	public long reindex(RepositoryManager repman) 
 			throws RepositoryAccessException, RhizomeInitializationException {
 		
 		// TODO: Make sure documents get deleted from index.
-		String [] all_docs = repman.getRepository().getAllDocumentIDs();
+		String [] all_docs = repman.getRepository(this.indexName).getAllDocumentIDs();
 		int doc_count = 0;
 		try {
 			//This should start in overwriting mode
@@ -99,7 +102,7 @@ public class LuceneIndexer implements DocumentIndexer {
 			Document doc;
 			RhizomeDocument rd;
 			for(int i = 0; i < all_docs.length; ++i ) {
-				rd = repman.getRepository().getDocument(all_docs[i]);
+				rd = repman.getRepository(this.indexName).getDocument(all_docs[i]);
 				doc = this.prepareDocument(rd);
 				indWriter.addDocument(doc);
 			}
@@ -133,7 +136,7 @@ public class LuceneIndexer implements DocumentIndexer {
 
 	public void updateIndex(String docID, RepositoryManager repman) 
 			throws RhizomeParseException, RhizomeInitializationException, RepositoryAccessException {
-		this.updateIndex(repman.getRepository().getDocument(docID));
+		this.updateIndex(repman.getRepository(this.indexName).getDocument(docID));
 	}
 	
 	/**
@@ -317,6 +320,7 @@ public class LuceneIndexer implements DocumentIndexer {
 		if(sb.lastIndexOf(File.separator) != sb.length() - 1) 
 			sb.append(File.separatorChar);
 		sb.append(name);
+		//System.out.println(sb.toString());
 		return sb.toString();
 		
 	}
