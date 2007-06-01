@@ -31,7 +31,7 @@ public class LuceneSearcher implements RepositorySearcher {
 	
 	private RepositoryContext context;
 	private String indexName = null;
-	private String indexLocation = null;
+	//private String indexLocation = null;
 	
 	public LuceneSearcher(String indexName) {
 		this(indexName, new RepositoryContext());
@@ -40,7 +40,7 @@ public class LuceneSearcher implements RepositorySearcher {
 	public LuceneSearcher(String indexName, RepositoryContext cxt) {
 		this.indexName = indexName;
 		this.context = cxt;
-		this.indexLocation = LuceneIndexer.getIndexPath(indexName, cxt);
+		//this.indexLocation = LuceneIndexer.getIndexPath(indexName, cxt);
 	}
 	
 	/**

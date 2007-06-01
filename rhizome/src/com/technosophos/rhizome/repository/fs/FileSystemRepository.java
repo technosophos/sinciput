@@ -147,7 +147,7 @@ public class FileSystemRepository implements DocumentRepository {
 		RhizomeDocument rdoc;
 		try {
 			synchronized(this) {
-				// FIXME: This is not finished!!!
+				// FIXME: Work on synchronization! This is not finished!!!
 				// Should probably migrate to java.util.concurrent.lock.*
 				if(!FileSystemLocks.getInstance().isLocked(doc.getName()))
 					rdoc = rdb.fromXMLDocument(doc);
@@ -212,7 +212,7 @@ public class FileSystemRepository implements DocumentRepository {
 		boolean isDel = false;
 		String dn = doc.getName();
 		synchronized(this) {
-			// FIXME: This is not finished!!!
+			// FIXME: Synchronization: This is not finished!!!
 			// Should probably migrate to java.util.concurrent.lock.*
 			if(FileSystemLocks.getInstance().acquireLock(dn, 4))
 				try {

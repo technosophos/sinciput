@@ -7,12 +7,10 @@ public class CommandNotFoundException extends RhizomeException {
 	
 	public CommandNotFoundException(String message) {
 		super(message);
-		// TODO Auto-generated constructor stub
 	}
 
 	public CommandNotFoundException(String message, Throwable thr) {
 		super(message, thr);
-		// TODO Auto-generated constructor stub
 	}
 
 }
