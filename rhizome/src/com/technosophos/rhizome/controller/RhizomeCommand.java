@@ -22,7 +22,7 @@ public interface RhizomeCommand {
 	 * @param comConf
 	 * @throws CommandInitializationException if the init fails.
 	 */
-	public abstract void init(CommandConfiguration comConf, RepositoryManager rm) 
+	public void init(CommandConfiguration comConf, RepositoryManager rm) 
 		throws CommandInitializationException;
 	
 	/**
@@ -36,7 +36,7 @@ public interface RhizomeCommand {
 	 * @param params The runtime parameters that this command will need to execute.
 	 * @return The result of the command, wrapped as a CommandResult object.
 	 */
-	public abstract void doCommand(Map<String, Object> params, List<CommandResult> results);
+	public void doCommand(Map<String, Object> params, List<CommandResult> results) throws ReRouteRequest;
 	
 	
 }

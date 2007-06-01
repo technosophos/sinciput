@@ -155,8 +155,25 @@ public class RhizomeController {
 				this.doCommand(cconf, data, results);
 				System.out.format("Command: There are %d results.\n", results.size());
 			}
-		// } catch (ReRouteRequest rrr) {
+		} catch (ReRouteRequest rrr) {
 			// Reroute a request to a new request and begin processing again.
+			results.clear();
+			String rrreqname = rrr.getRequestName();
+			if(!this.cqMap.containsKey(rrreqname)) {
+				//results.clear();
+				CommandResult res;
+				String errMsg = "Error forwarding " + requestName + " to "+rrreqname+".";
+				String ferrMsg = "The server cannot find a necessary component, and so cannot complete this task.";
+				if(cconf == null) cconf = new CommandConfiguration("FatalCommandException","");
+				res = new CommandResult(cconf);
+				res.setError(errMsg, ferrMsg);
+				results.add(res);
+			}
+			data.put("rerouterequest", rrr);
+			//rconf = this.cqMap.get(rrreqname);
+			//commands = rconf.getQueue().iterator();
+			return this.doRequest(rrreqname, data);
+			
 		} catch (FatalCommandException fce) {
 			results.clear();
 			CommandResult res;
@@ -180,7 +197,7 @@ public class RhizomeController {
 	 * @return
 	 */
 	protected void doCommand(CommandConfiguration cconf, Map<String, Object> data, List<CommandResult> results) 
-			throws FatalCommandException {
+			throws FatalCommandException, ReRouteRequest {
 		try {
 			RhizomeCommand command = RhizomeCommandFactory.getCommand(cconf, this.repoman);
 			command.doCommand(data, results);
