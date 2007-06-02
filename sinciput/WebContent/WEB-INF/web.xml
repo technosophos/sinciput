@@ -24,30 +24,6 @@
     project's merge dir.
     -->
 
-   <servlet>
-      <description><![CDATA[Servlet for Sinciput Web Interface]]></description>
-      <display-name>Sinciput</display-name>
-      <servlet-name>Sinciput</servlet-name>
-      <servlet-class>com.technosophos.sinciput.servlet.SinciputServlet</servlet-class>
-
-      <init-param>
-         <description><![CDATA[Path to command.xml file]]></description>
-         <param-name>command_config</param-name>
-         <param-value>commands.xml</param-value>
-      </init-param>
-      <init-param>
-         <description><![CDATA[Base path for the application. $SERVLET is the servlet base.]]></description>
-         <param-name>base_path</param-name>
-         <param-value>$SERVLET/var</param-value>
-      </init-param>
-      <init-param>
-         <description><![CDATA[If the value is true, debug info will be written to the servlet output.]]></description>
-         <param-name>debug</param-name>
-         <param-value>false</param-value>
-      </init-param>
-
-   </servlet>
-
   <!--
   To use non XDoclet servlets, create a servlets.xml file that
   contains the additional servlets (eg Struts) and place it in your
@@ -55,11 +31,6 @@
   include them in a file called servlet-mappings.xml and put that in
   the same directory.
   -->
-
-   <servlet-mapping>
-      <servlet-name>Sinciput</servlet-name>
-      <url-pattern>/Sinciput</url-pattern>
-   </servlet-mapping>
 
    <!--
    To specify mime mappings, create a file named mime-mappings.xml, put it in your project's mergedir.
