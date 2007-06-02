@@ -16,7 +16,7 @@ public class ReRouteRequest extends Throwable {
 	static final long serialVersionUID = 12312L;
 	
 	private ReRouteRequest() {
-		// TODO Auto-generated constructor stub
+		this("default");
 	}
 
 	public ReRouteRequest(String requestName) {

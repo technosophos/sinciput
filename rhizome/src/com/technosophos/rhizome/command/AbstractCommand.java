@@ -7,6 +7,7 @@ import com.technosophos.rhizome.controller.CommandConfiguration;
 import com.technosophos.rhizome.controller.CommandInitializationException;
 import com.technosophos.rhizome.controller.CommandResult;
 import com.technosophos.rhizome.controller.RhizomeCommand;
+import com.technosophos.rhizome.controller.ReRouteRequest;
 import com.technosophos.rhizome.repository.RepositoryManager;
 
 /**
@@ -35,7 +36,7 @@ public abstract class AbstractCommand implements RhizomeCommand {
 	protected RepositoryManager repoman = null;
 	
 	//inherit javadoc
-	public abstract void doCommand(Map<String, Object> params, List<CommandResult> results);
+	public abstract void doCommand(Map<String, Object> params, List<CommandResult> results) throws ReRouteRequest;
 
 	/**
 	 * This simply stores the {@link CommandConfiguration} and {@link RepositoryManager} locally.
@@ -76,6 +77,11 @@ public abstract class AbstractCommand implements RhizomeCommand {
 		String pname = this.getPrefixedParamName(name);
 		if(!params.containsKey(pname)) return null;
 		return params.get(pname);
+	}
+	
+	protected boolean hasParam(Map<String, Object> params, String name) {
+		String pname = this.getPrefixedParamName(name);
+		return params.containsKey(pname);
 	}
 	
 	protected String getCurrentRepositoryName(Map<String, Object> params) {
