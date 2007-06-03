@@ -43,7 +43,7 @@ public class RhizomeController {
 
 	private Map<String, RequestConfiguration> cqMap = null;
 	private RepositoryManager repoman = null;
-	private RepositoryContext repocxt = null;
+	protected RepositoryContext repocxt = null;
 	
 	/**
 	 * This constructor should only be used when necessary.

@@ -84,6 +84,19 @@ public abstract class AbstractCommand implements RhizomeCommand {
 		return params.containsKey(pname);
 	}
 	
+	/**
+	 * Get the repo name for this request. 
+	 * <p>First, it attempts to get the repo name
+	 * from params, and if that fails, it attempts to get one from the 
+	 * {@link CommandConfiguration} object from 
+	 * {@link #init(CommandConfiguration, RepositoryManager)}.</p>
+	 * <p>This may return null if no repo name can be found.</p>
+	 * <p>If you do not want the "failover" to the CommandConfiguration that this
+	 * method offers, you can just use the {@link #getParam(Map, String)} method
+	 * using the {@link #PARAM_REPO_NAME} constant.</p>
+	 * @param params Map of params.
+	 * @return Repository name.
+	 */
 	protected String getCurrentRepositoryName(Map<String, Object> params) {
 		String repoName = this.getParam(params, PARAM_REPO_NAME).toString();
 		
