@@ -37,9 +37,9 @@ public class FileSystemRepository implements DocumentRepository {
 	
 	/**
 	 * The name of the value in the hash map that contains the
-	 * path information for the file system path.
+	 * path information for the file system path. (fs_repo_path)
 	 */
-	public static final String FILE_SYSTEM_PATH_NAME = "fileSystemPath";
+	public static final String FILE_SYSTEM_PATH_NAME = "fs_repo_path";
 	
 	// The config for this repository
 	private RepositoryContext cxt;
