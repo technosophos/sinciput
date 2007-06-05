@@ -1,6 +1,7 @@
 package com.technosophos.sinciput.servlet;
 
 import java.io.IOException;
+import java.io.File;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.Map;
@@ -31,15 +32,13 @@ import static com.technosophos.sinciput.servlet.ServletConstants.*;
  * @web.servlet-mapping
  *   url-pattern="/Sinciput"
  *   
+ * @web.servlet-mapping
+ *   url-pattern="/Sinciput/*"
+ *   
  * @web.servlet-init-param
  *   name="command_config"
  *   value="commands.xml"
  *   description="Path to command.xml file"
- * 
- * @web.servlet-init-param
- *   name="base_path"
- *   value="$SERVLET/var"
- *   description="Base path for the application. $SERVLET is the servlet base."
  *   
  * @web.servlet-init-param
  *   name="debug"
@@ -48,7 +47,7 @@ import static com.technosophos.sinciput.servlet.ServletConstants.*;
  */
  public class SinciputServlet extends javax.servlet.http.HttpServlet implements javax.servlet.Servlet {
 	 
-	 static final long serialVersionUID = 1; 
+	 protected static final long serialVersionUID = 1; 
 	 /** The servlet's copy of the {@link RhizomeController} object. This 
 	  * controller is used for all do* methods.
 	  */
@@ -57,6 +56,8 @@ import static com.technosophos.sinciput.servlet.ServletConstants.*;
 	  * The path to the main configuration files for this servlet.
 	  */
 	 protected String configPath = "";
+	 protected String basePath = "";
+	 protected String resourcePath = "";
 	 protected boolean debug = false;
 	 
 	 /**
@@ -65,7 +66,7 @@ import static com.technosophos.sinciput.servlet.ServletConstants.*;
 	  * If relative, it will
 	  * be prepended with the servlet path. If absolute, it will be left alone.
 	  */
-	 public static final String P_BASE_PATH = "base_path";
+	 //private static final String P_BASE_PATH = "base_path";
 	 
 	 /* (non-Java-doc)
 	 * @see javax.servlet.http.HttpServlet#HttpServlet()
@@ -99,8 +100,11 @@ import static com.technosophos.sinciput.servlet.ServletConstants.*;
 		// Configure parameters for doRequest:
 		Map<String, Object> params = new java.util.HashMap<String, Object>(orig_params);
 		params.put(REQ_PARAM_REQUEST_OBJ, request);
+		params.put(BASE_PATH, this.basePath);
+		params.put(CONFIG_PATH, this.configPath);
+		params.put(RESOURCE_PATH, this.resourcePath);
 		/*
-		 * FIXME: Need to put in name of repository here.
+		 * FIXME: Need to put in name of repository here?
 		 */
 		
 		java.io.Writer out = response.getWriter();
@@ -132,7 +136,6 @@ import static com.technosophos.sinciput.servlet.ServletConstants.*;
 			}
 			else out.write(r.getResult().toString());
 		}
-		//response.getWriter().write("<html><head></head><body>"+request.getPathInfo()+"</body></html>");
 		response.flushBuffer();
 		
 		
@@ -152,43 +155,52 @@ import static com.technosophos.sinciput.servlet.ServletConstants.*;
 		// TODO: Fix the file separator crap.
 		this.log("Initializing Rhizome servlet...");
 		super.init();
+		
+		// Debug mode?
 		String debug_str = this.getInitParameter("debug");
 		if("false".equalsIgnoreCase(debug_str)) this.debug = true;
 		
-		String basePath = this.getServletContext().getRealPath("/");
-		this.configPath = basePath + "WEB-INF/";
+		// BEGIN: Init vars
+		this.basePath = this.getServletContext().getRealPath(File.separator);
+		this.configPath = basePath + "WEB-INF" + File.separator;
+		this.resourcePath = basePath + "resources" + File.separator;
 		String command_config = this.getInitParameter("command_config");
-
+		
 		// If the command config is empty, set it to WEB-INF/commands.xml
 		// Else if the path is not absolute, prepend servlet container's real path.
 		if(command_config == null || command_config.length() == 0) {
 			command_config = this.configPath + "commands.xml";
-		}else if(!command_config.startsWith("/")) {
+		}else if(!(new File(command_config).isAbsolute())) {
 			command_config = this.configPath + command_config;
 		}
+		// END: Init vars
 		
+		// BEGIN: Get the request configuration from an XML file:
 		Map<String, String> paths = new java.util.HashMap<String, String>();
-		paths.put(XMLRequestConfigurationReader.BASE_PATH, basePath);
-		paths.put(XMLRequestConfigurationReader.RESOURCE_PATH, basePath + "resources/");
+		paths.put(XMLRequestConfigurationReader.BASE_PATH, this.basePath);
+		paths.put(XMLRequestConfigurationReader.RESOURCE_PATH, this.basePath + "resources" + File.separator);
 		paths.put(XMLRequestConfigurationReader.CONFIG_PATH, this.configPath);
 		//paths.put("url", this.getServletContext().)
-		
-		RepositoryContext rcxt = this.buildRepositoryContext();
 		XMLRequestConfigurationReader r = new XMLRequestConfigurationReader(paths);
+		
 		Map<String, RequestConfiguration> cconf = null;
 		try {
 			cconf = r.get(new java.io.File(command_config));
 		} catch (RhizomeException e) {
 			throw new ServletException("Failed to parse command configuration file: " +e.getMessage(), e);
 		}
-		this.rc = new RhizomeController();
+		// END: Get the request configuration
 		
+		// BEGIN: Create the controller.
+		RepositoryContext rcxt = this.buildRepositoryContext();
+		this.rc = new RhizomeController();
 		try {
 			this.rc.init(cconf, rcxt);
 		} catch (RhizomeException re ) {
 			String err = "Fatal error initializing Rhizome Controller: ";
 			throw new ServletException( err + re.getMessage(), re);
 		}
+		// ENd: Create the controller
 	}
 	
 	/**
@@ -209,16 +221,30 @@ import static com.technosophos.sinciput.servlet.ServletConstants.*;
 			n = e.nextElement().toString();
 			c.addParam(n, this.getInitParameter(n));
 		}
-		if(c.hasKey("base_path")) {
-			/*
-			 * If provided base path is not absolute, then prepend config path.
-			 */
-			String path = c.getParam("base_path");
-			if(!path.startsWith(System.getProperty("file.separator"))) c.addParam("base_path", this.configPath + path);
+		c.addParam(CONFIG_PATH, this.configPath);
+		c.addParam(BASE_PATH, this.basePath);
+		//c.addParam(RESOURCE_PATH, this.resourcePath);
+		/*
+		 * We always want base path to be the servlet path. Repo path is set 
+		 * elsewhere.
+		 * Removed from init param:
+		* @web.servlet-init-param
+		*   name="base_path"
+		*   value="$SERVLET/var"
+		*   description="Base path for the application. $SERVLET is the servlet base."
+		if(c.hasKey(BASE_PATH)) {
+			// If provided base path is not absolute, then prepend config path.
+			String path = c.getParam(BASE_PATH);
+			File f = new File(path);
+			if(!f.isAbsolute()) {
+				File ff = new File(this.configPath, path);
+				c.addParam(BASE_PATH, ff.getAbsolutePath());
+			}
 				
 		} else {
-			c.addParam("base_path", this.configPath);
+			c.addParam(BASE_PATH, this.configPath);
 		}
+		*/
 		return c;
 	}
 

@@ -73,6 +73,10 @@ public class BasicRepositoryAuthN extends AbstractCommand {
 	}
 	
 	protected boolean doAuthN(String uid, String pw) {
+		// TODO: Finish Me!
+		/*
+		 * This should look up an entry in the default repository. 
+		 */
 		return false;
 	}
 
