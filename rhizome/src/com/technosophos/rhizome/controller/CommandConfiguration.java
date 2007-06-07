@@ -1,6 +1,7 @@
 package com.technosophos.rhizome.controller;
 
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * A Container for Command Configuration Information.
@@ -71,8 +72,8 @@ public class CommandConfiguration {
 	}
 	
 	public CommandConfiguration(String name, String classname) {
-		this.name = name;
-		this.classname = classname;
+		this(name, classname, new HashMap<String, String[]>(), false);
+		
 	}
 	
 	/**
@@ -184,6 +185,8 @@ public class CommandConfiguration {
 	 * @return Map of name/val pairs
 	 */
 	public Map<String, String[]> getDirectives() {
+		System.out.println(String.format("Map has %n keys", this.params.size()));
+		//if(this.params == null) return new HashMap<String, String[]>();
 		return this.params;
 	}
 	

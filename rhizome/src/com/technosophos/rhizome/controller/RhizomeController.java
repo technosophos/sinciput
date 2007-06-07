@@ -42,6 +42,7 @@ import java.util.List;
 public class RhizomeController {
 
 	private Map<String, RequestConfiguration> cqMap = null;
+	private Map<String, Class<?>> preloaded = null;
 	private RepositoryManager repoman = null;
 	protected RepositoryContext repocxt = null;
 	
@@ -113,6 +114,19 @@ public class RhizomeController {
 	}
 	
 	/**
+	 * Set the map of preloaded classes.
+	 * <p>Before calling a classloader to load command classes, RhizomeController will
+	 * check to see if any command classes have been preloaded. If they have, then
+	 * the preloaded version will be used instead. This is more efficient than using
+	 * a classloader each request.</p>
+	 * @param cmds
+	 */
+	public void setPreloadedCommandMap(Map<String, Class<?>> cmds) {
+		if(cmds == null || cmds.size() == 0) return;
+		this.preloaded = cmds;
+	}
+	
+	/**
 	 * Get the MIME type for the request name.
 	 * <p>If no request by this name exists, the method will return <Code>null</code>. Use
 	 * the {@link #hasRequest(String)} method to verify that such a request exists.</p>
@@ -150,8 +164,8 @@ public class RhizomeController {
 		CommandConfiguration cconf = null;
 		try {
 			while (commands.hasNext()) {
-				//System.out.println("Doing command");
 				cconf = commands.next();
+				System.out.format("Doing command %s.\n", cconf.getName());
 				this.doCommand(cconf, data, results);
 				System.out.format("Command: There are %d results.\n", results.size());
 			}
@@ -177,7 +191,7 @@ public class RhizomeController {
 		} catch (FatalCommandException fce) {
 			results.clear();
 			CommandResult res;
-			String errMsg = "Fatal Error in " + requestName + ".";
+			String errMsg = String.format("Fatal Error in %s: %s.", requestName, fce.getMessage());
 			String ferrMsg = "The server experienced a severe error, and cannot complete this task.";
 			if(cconf == null) cconf = new CommandConfiguration("FatalCommandException","");
 			res = new CommandResult(cconf);
@@ -199,8 +213,36 @@ public class RhizomeController {
 	protected void doCommand(CommandConfiguration cconf, Map<String, Object> data, List<CommandResult> results) 
 			throws FatalCommandException, ReRouteRequest {
 		try {
-			RhizomeCommand command = RhizomeCommandFactory.getCommand(cconf, this.repoman);
+			RhizomeCommand command;
+			if(this.preloaded != null && this.preloaded.containsKey(cconf.getName())) {
+				Class<?> c = this.preloaded.get(cconf.getName());
+				command = (RhizomeCommand)c.newInstance();
+				command.init(cconf, this.repoman);
+			} else
+				command = RhizomeCommandFactory.getCommand(cconf, this.repoman);
 			command.doCommand(data, results);
+		} catch (IllegalAccessException e) {
+			if (cconf.failOnError()) {
+				String err = "Fatal error in " +cconf.getName() + ".";
+				throw new FatalCommandException(err, e);
+			} else {
+				String errMsg = "Cannot access command " + cconf.getName() + ".";
+				String ferrMsg = "The server could not find the tools required to handle this request.";
+				CommandResult res = new CommandResult(cconf.getName());
+				res.setError(errMsg, ferrMsg, e);
+				results.add(res);
+			}		
+		} catch (InstantiationException e) {
+			if (cconf.failOnError()) {
+				String err = "Fatal error in " +cconf.getName() + ".";
+				throw new FatalCommandException(err, e);
+			} else {
+				String errMsg = "Command " + cconf.getName() + " initiation failure.";
+				String ferrMsg = "The server could not find the tools required to handle this request.";
+				CommandResult res = new CommandResult(cconf.getName());
+				res.setError(errMsg, ferrMsg, e);
+				results.add(res);
+			}		
 		} catch (RhizomeException re) {
 			if (cconf.failOnError()) {
 				String err = "Fatal error in " +cconf.getName() + ".";

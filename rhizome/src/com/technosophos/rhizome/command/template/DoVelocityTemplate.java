@@ -1,6 +1,7 @@
 package com.technosophos.rhizome.command.template;
 
 import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.io.StringWriter;
 import com.technosophos.rhizome.command.AbstractCommand;
@@ -160,10 +161,13 @@ public class DoVelocityTemplate extends AbstractCommand {
 		VelocityContext basic = new VelocityContext(this.params);
 		VelocityContext c = new VelocityContext(this.comConf.getDirectives(), basic);
 		Object o;
+		//ArrayList errors = new ArrayList();
+		HashMap<String, CommandResult> err = new HashMap<String, CommandResult>();
 		for(CommandResult cr: this.results) {
 			
 			if(cr.hasError()) {
-				c.put(cr.getName(), cr);
+				//c.put(cr.getName(), cr);
+				err.put(cr.getName(), cr);
 			} else {
 				o = cr.getResult();
 				/*
@@ -178,6 +182,7 @@ public class DoVelocityTemplate extends AbstractCommand {
 				c.put(cr.getName(), o);
 			}
 		}
+		c.put("ERRORS", err);
 		return c;
 	}
 	

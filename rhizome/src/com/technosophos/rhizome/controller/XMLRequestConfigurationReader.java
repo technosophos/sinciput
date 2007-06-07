@@ -111,6 +111,18 @@ public class XMLRequestConfigurationReader {
 	}
 	
 	/**
+	 * Returns a map of command names and their associated classnames.
+	 * <p>Returns empty if some version of {@link #get(String)} has not been called first.</p>
+	 * @return A map of command names and classnames. 
+	 * @see #get(File)
+	 * @see #get(InputStream)
+	 * @see #get(String)
+	 */
+	public Map<String, String> getCommandMap() {
+		return this.classes;
+	}
+	
+	/**
 	 * Traverse the XML and configure the new Map.
 	 * @param root
 	 * @return
@@ -191,7 +203,7 @@ public class XMLRequestConfigurationReader {
 		LinkedList<XElement> param_l;
 		LinkedList<XElement> value_l;
 		for(XElement cmd_ele: cmd_l) {
-			ppp = new HashMap<String, String[]>(globals);
+			ppp = new HashMap<String, String[]>(this.globals);
 			xattrs = cmd_ele.getAttributes();
 			if(xattrs.containsAttribute(REQ_DO_ATTR)) {
 				cmd_name = xattrs.getAttributeValue(REQ_DO_ATTR);

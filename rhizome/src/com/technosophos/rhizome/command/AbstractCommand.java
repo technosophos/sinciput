@@ -47,6 +47,8 @@ public abstract class AbstractCommand implements RhizomeCommand {
 	public void init(CommandConfiguration comConf, RepositoryManager rm) 
 			throws CommandInitializationException {
 		assert comConf != null;
+		if(comConf == null) 
+			throw new CommandInitializationException("Command configuration cannot be null");
 		this.comConf = comConf;
 		this.repoman = rm;
 	}

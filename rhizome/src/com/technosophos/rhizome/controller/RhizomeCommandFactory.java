@@ -1,6 +1,12 @@
 package com.technosophos.rhizome.controller;
 
 import com.technosophos.rhizome.repository.RepositoryManager;
+//import com.technosophos.sinciput.commands.install.VerifyEnvironment;
+/*
+import java.net.URLClassLoader;
+import java.net.URL;
+import java.net.MalformedURLException;
+*/
 
 /**
  * Factory for creating RhizomeCommand objects.
@@ -24,20 +30,45 @@ public class RhizomeCommandFactory {
 					+ " has no associated class.");
 		
 		try {
+			Class<?> c = Class.forName("com.technosophos.sinciput.commands.install.VerifyEnvironment");
+			System.err.println("222 SUCCESS loading VerifyEnv.");
+		} catch (Exception e) {
+			System.err.println("222 Failed test load of class.");
+		}
+		
+		try {
 			Class<?> comClass = Class.forName(classname);
+			//Class<?> comClass = altClassLoader(classname);
 			command = (RhizomeCommand)comClass.newInstance();
 			
 		} catch (ClassNotFoundException e) {
-			String errmsg = "Cannot load class: " + classname;
-			throw new CommandNotFoundException(errmsg);
+			String cpath = System.getProperty("java.class.path");
+			String errmsg = String.format("Cannot load class: %s. Class not found in %s.", classname, cpath);
+			throw new CommandNotFoundException(errmsg, e);
 		} catch (Exception e) {
-			String errmsg = "Cannot create object of class " 
-				+ classname
-				+ "(Reason: " + e.getMessage() + ")";
-			throw new CommandNotFoundException(errmsg);
+			String errmsg = String.format("Cannot create object of class %s (%s)", 
+					classname, 
+					e.getMessage());
+			throw new CommandNotFoundException(errmsg, e);
 		}
 		
 		command.init(cconf, rm);
 		return command;
 	}
+	/*
+	private static Class<?> altClassLoader(String cname) throws ClassNotFoundException {
+		String classpath = System.getProperty("java.class.path");
+		String[] paths = classpath.split(":");
+		URL [] urls = new URL[paths.length];
+		
+		for(int i = 0; i < paths.length; ++i) {
+			try {
+				urls[i] = new URL("file", null, paths[i]);
+			} catch (MalformedURLException e) {}	
+		}
+		URLClassLoader loader = new URLClassLoader(urls);
+		
+		return loader.loadClass(cname);
+	}
+	*/
 }
