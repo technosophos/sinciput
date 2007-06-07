@@ -1,8 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <commands>
-	<loadclass name="GetDocument" class="com.technosophos.rhizome.command.GetDocument"/>
-	<loadclass name="info" class="com.technosophos.rhizome.command.http.DisplayInfo"/>
-	<loadclass name="URLInfo" class="com.technosophos.rhizome.command.http.URLInfo"/>
+	<loadclass name="VerifyEnv"       class="com.technosophos.sinciput.commands.install.VerifyEnvironment"/>
+	<loadclass name="InstallRedirect" class="com.technosophos.sinciput.commands.install.InstallRedirect"/>
+	<loadclass name="GetDocument"     class="com.technosophos.rhizome.command.GetDocument"/>
+	<!--  
+	loadclass name="info" class="com.technosophos.rhizome.command.http.DisplayInfo"
+	loadclass name="URLInfo" class="com.technosophos.rhizome.command.http.URLInfo"
+	-->
 	<loadclass name="DumpConfiguration" class="com.technosophos.rhizome.command.util.DumpConfiguration"/>
 	<loadclass name="template" class="com.technosophos.rhizome.command.template.DoVelocityTemplate"/>
 	<requests>
@@ -20,7 +24,14 @@
 				<value><?path url?></value>
 			</param>
 		</global>
+		<request name="install">
+			<cmd do="VerifyEnv"/>
+			<cmd do="template">
+				<param name="template_name">install.xhtml</param>
+			</cmd>
+		</request>
 		<request name="default">
+			<cmd do="InstallRedirect" fatal="true"/>
 			<cmd do="DumpConfiguration"/>
 			<cmd do="template">
 				<param name="template_name">test.vt</param>

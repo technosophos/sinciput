@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Welcome to Sinciput</title>
+</head>
+<body>
+<h1>Welcome to Sinciput</h1>
+<p>You are now beginning the installation procedure for Sinciput.</p>
+<p>Server root: $app_url<br/>
+</p>
+<h2>Verification</h2>
+#if($ERRORS.containsKey("VerifyEnv"))
+	<p><strong>Error:</strong> $ERRORS.get("VerifyEnv")</p>
+#else
+	
+	<ul>
+	#foreach($str in $VerifyEnv )
+	<li>$str</li>
+	#end
+	</ul>
+	<p>You may need to edit the web applicacation's web.xml file to change the location of the repository.</p>
+	
+	<p>If these settings look correct, <a href="$absolute_uri/default">continue</a>.</p>
+
+#end
+</body>
+</html>

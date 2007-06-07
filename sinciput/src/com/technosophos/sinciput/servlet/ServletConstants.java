@@ -48,6 +48,20 @@ public class ServletConstants {
 	  */
 	 public static final String RESOURCE_PATH = "resource_path";
 	 
+	 /**
+	  * The base URL for this servlet.
+	  * This is the path to the servlet currently being used.
+	  */
+	 public static final String APP_URL = "app_url";
+	 
+	 /**
+	  * The absolute URI.
+	  * <p>The full path from the server root to the servlet. E.g. if the URL is
+	  * http://example.com/servlet/servlet, the absolute path is /servlet/servlet.</p>
+	  */
+	 public static final String ABSOLUTE_URI = "absolute_uri";
+	 
+	 
 	 //public static final String CXT_REPO_PATH = "";
 	 
 	 /**
