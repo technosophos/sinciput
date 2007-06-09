@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.Enumeration;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.HashMap;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -71,12 +72,6 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 	 protected String resourcePath = "";
 	 protected boolean debug = false;
 	 
-	 /**
-	  * Name of base path param: "base_path".
-	  * A Base path can be passed into Sinciput as a servlet init param. 
-	  * If relative, it will
-	  * be prepended with the servlet path. If absolute, it will be left alone.
-	  */
 	 //private static final String P_BASE_PATH = "base_path";
 	 
 	 /* (non-Java-doc)
@@ -86,24 +81,36 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 		super();
 	}   	
 	
-	/* (non-Java-doc)
+	/** 
+	 * Handles GET requests to this servlet.
+	 * <p>This does preliminary processing on a request, and then hands it over to a
+	 * {@link RhizomeController} for more processing.</p>
+	 * <h2>Parameters</h2>
+	 * <p>When the servlet passes information to the RhizomeController, it passes a Map[String, Object]
+	 * with it. This map contains the following: the request parameters, the request object itself, 
+	 * stored as "_request", and a host of important path data, including the following:</p>
+	 * <ul>
+	 * <li>base_path: The path to this webapp's root directory. This is also stored with the key "app_path" because of a problem with Velocity not recognizing base_path.</li>
+	 * <li>config_path: The path to this webapp's WEB-INF directory.</li>
+	 * <li>resource_path: The path to the webapp's static file storage (CSS, images, etc)</li>
+	 * <li>app_url: The fully-qualified URL to this application.</li>
+	 * <li>absolute_uri: The absolute URI to this application.</li>
+	 * </ul>
+	 * <h3>Tainting Parameters</h3>
+	 * <p>Any parameter that begins with an underscore (_) is considered untainted. Parameters
+	 * from the GET/POST data that begin with _ will not be added to the paramter map, and thus
+	 * cannot override other default parameters that begin with an underscore.</p>
+	 * <p>The parameters discussed above are safe (barring actual code modifications) because they are 
+	 * added AFTER the parameters from the HTTP request.</p>
+	 * <p>For all other parameters, there is a degree of uncertainty as to whether the param 
+	 * came from application internals, or from request parameters. They are TAINTED -- make sure
+	 * you evaluate them carefully before using them.</p>
 	 * @see javax.servlet.http.HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		String path_info = request.getPathInfo();
 		String request_name = ServletConstants.DEFAULT_REQUEST;
 		Map orig_params = request.getParameterMap();
-		
-		try {
-			Class<?> c = Class.forName("com.technosophos.sinciput.commands.install.VerifyEnvironment");
-			this.log("111 SUCCESS loading VerifyEnv.");
-		} catch (Exception e) {
-			this.log("111 Failed test load of class.", e);
-		}
-		
-		//String req_param = request.getParameter(GPC_PARAM_REQUEST);
-		
-		//this.log(String.format("Extra path info: %s", path_info));
 		
 		// Get param from path, or get it from params, otherwise, just use default.
 		if(path_info != null && !"/".equals(path_info) ) {
@@ -119,15 +126,19 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 		}
 		
 		// Configure parameters for doRequest:
-		Map<String, Object> params = new java.util.HashMap<String, Object>(orig_params);
+		//Map<String, Object> params = new HashMap<String, Object>(orig_params);
+		Map<String, Object> params = this.buildParamsMap(orig_params);
+		
+		// These cannot be overridden: 
 		params.put(ServletConstants.REQ_PARAM_REQUEST_OBJ, request);
 		params.put(ServletConstants.BASE_PATH, this.basePath);
 		params.put(ServletConstants.CONFIG_PATH, this.configPath);
 		params.put(ServletConstants.RESOURCE_PATH, this.resourcePath);
 		params.put(ServletConstants.APP_URL, this.getBaseUrl(request));
-		// Workaround for broken velocity:
-		params.put("app_path", this.basePath);
 		params.put(ServletConstants.ABSOLUTE_URI, request.getContextPath() + request.getServletPath());
+		// Workaround for broken velocity (var name $base_path causes problems):
+		params.put("app_path", this.basePath);
+		
 		/*
 		 * FIXME: Need to put in name of repository here?
 		 */
@@ -147,7 +158,7 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 		}
 		response.setContentType(this.rc.getMimeType(request_name));
 		
-		this.log(String.format("There are %d command results.",results.size()));
+		//this.log(String.format("There are %d command results.",results.size()));
 		for(CommandResult r: results) {
 			if(r.hasError()) {
 				out.write(r.getErrorMessage());
@@ -177,7 +188,6 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 	 * Initialize the Rhizome repository.
 	 */
 	public void init() throws ServletException {
-		// TODO: Fix the file separator crap.
 		this.log("Initializing Rhizome servlet...");
 		super.init();
 		
@@ -255,36 +265,46 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 	protected RepositoryContext buildRepositoryContext() {
 		Enumeration e = this.getInitParameterNames();
 		RepositoryContext c = new RepositoryContext();
-		String n;
+		String n,v;
+		
+		// Add servlet init params:
 		while(e.hasMoreElements()) {
 			n = e.nextElement().toString();
-			c.addParam(n, this.getInitParameter(n));
+			v = this.getInitParameter(n);
+			if( v==null ) v = "";
+			// FIXME: This is a shameless hack to adjust paths of repository.
+			if(ServletConstants.SERVPARAM_FS_REPO_PATH.equals(n))
+				v= this.makePathAbsolute(v , this.configPath);
+			if(ServletConstants.SERVPARAM_INDEX_PATH.equals(n))
+				v = this.makePathAbsolute(v , this.configPath);
+			c.addParam(n, v);
 		}
 		c.addParam(ServletConstants.CONFIG_PATH, this.configPath);
 		c.addParam(ServletConstants.BASE_PATH, this.basePath);
 		//c.addParam(ServletConstants.RESOURCE_PATH, this.resourcePath);
-		/*
-		 * We always want base path to be the servlet path. Repo path is set 
-		 * elsewhere.
-		 * Removed from init param:
-		* @web.servlet-init-param
-		*   name="base_path"
-		*   value="$SERVLET/var"
-		*   description="Base path for the application. $SERVLET is the servlet base."
-		if(c.hasKey(BASE_PATH)) {
-			// If provided base path is not absolute, then prepend config path.
-			String path = c.getParam(BASE_PATH);
-			File f = new File(path);
-			if(!f.isAbsolute()) {
-				File ff = new File(this.configPath, path);
-				c.addParam(BASE_PATH, ff.getAbsolutePath());
-			}
-				
-		} else {
-			c.addParam(BASE_PATH, this.configPath);
-		}
-		*/
 		return c;
+	}
+	
+	/**
+	 * Takes untrusted params, and filters them, adding them to a new Map.
+	 * <p>In this implementation, params that begin with an underscore character
+	 * are dropped out of the list. This is because Sinciput params that begin
+	 * with _ or __ are to be treated as untainted, and thus they should not be 
+	 * overwritable by these params.</p>
+	 * @param outside_params
+	 * @return A newly constructed Map with only legitimate params.
+	 */
+	protected Map<String, Object> buildParamsMap(Map outside_params) {
+		HashMap<String, Object> params = new HashMap<String, Object>();
+		java.util.Set keys = outside_params.keySet();
+		for(Object k: keys) {
+			if(!k.toString().startsWith("_")) {
+				// TODO: Verify that param name is legit (no weirdness)
+				// Put String/Object pair:
+				params.put(k.toString(), outside_params.get(k));
+			}
+		}
+		return params;
 	}
 	
 	protected String getBaseUrl(HttpServletRequest r) {
@@ -305,6 +325,19 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 		sb.append(r.getServletPath());
 		//this.log("BASE URL: " + sb.toString());
 		return sb.toString();
+	}
+	
+	/**
+	 * If the given String is not an absolute path, it is converted to on.
+	 * 
+	 * @return
+	 */
+	private String makePathAbsolute(String path, String prependWith) {
+		File t = new File(path);
+		if(t.isAbsolute()) return t.getAbsolutePath();
+		
+		File t2 = new File(prependWith, path);
+		return t2.getAbsolutePath();
 	}
 
 }

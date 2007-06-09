@@ -61,6 +61,17 @@ public class ServletConstants {
 	  */
 	 public static final String ABSOLUTE_URI = "absolute_uri";
 	 
+	 /**
+	  * Servlet init parameter to get for FS repository path: fs_repo_path.
+	  * @see com.technosophos.rhizome.repository.fs.FileSystemRepository
+	  */
+	 public static final String SERVPARAM_FS_REPO_PATH = "fs_repo_path";
+	 /**
+	  * Serlvet init parameter to get for FS index path: index_path
+	  * @see com.technosophos.rhizome.repository.lucene.LuceneElements
+	  */
+	 public static final String SERVPARAM_INDEX_PATH = "index_path";
+	 
 	 
 	 //public static final String CXT_REPO_PATH = "";
 	 

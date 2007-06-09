@@ -7,22 +7,34 @@
 </head>
 <body>
 <h1>Welcome to Sinciput</h1>
+#if ($rerouterequest)
+	<p>You have been re-routed from another page because Sinciput is not installed yet.</p>
+#end
 <p>You are now beginning the installation procedure for Sinciput.</p>
 <p>Server root: $app_url<br/>
 </p>
-<h2>Verification</h2>
+
 #if($ERRORS.containsKey("VerifyEnv"))
+	<h2>Error</h2>
 	<p><strong>Error:</strong> $ERRORS.get("VerifyEnv")</p>
+	<p>You will need to fix errors before proceeding with the install.</p>p>
 #else
-	
+	<h2>Verification</h2>
+	<h3>The following locations will be used:</h3>
 	<ul>
-	#foreach($str in $VerifyEnv )
-	<li>$str</li>
-	#end
+	<li>Base application: $app_path.</li>
+	<li>Static files (CSS, images): $resource_path</li>
+	<li>Configuration files: $config_path</li>
 	</ul>
-	<p>You may need to edit the web applicacation's web.xml file to change the location of the repository.</p>
+	<h3>Newly created information will be stored here:</h3>
+	<ul>
+	<li>Repository: $fs_repo_path</li>
+	<li>Index: $index_path</li>
+	</ul>
+	<p>You may need to edit the web application's web.xml file to change the 
+	location of the repository or index.</p>
 	
-	<p>If these settings look correct, <a href="$absolute_uri/default">continue</a>.</p>
+	<p>If these settings look correct, <a href="$absolute_uri/install2">continue</a>.</p>
 
 #end
 </body>
