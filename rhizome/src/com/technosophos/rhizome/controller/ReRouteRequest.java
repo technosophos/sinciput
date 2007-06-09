@@ -20,17 +20,27 @@ public class ReRouteRequest extends Throwable {
 	}
 
 	public ReRouteRequest(String requestName) {
-		this.requestName = requestName;
+		this(requestName, null);
 	}
 	
 	public ReRouteRequest(String request, String explanation) {
-		
+		this.requestName = request;
+		this.explanation = explanation;
 	}
 	
+	/**
+	 * Get the name of the request to re-route to.
+	 * @return
+	 */
 	public String getRequestName() {
 		return this.requestName;
 	}
 	
+	/**
+	 * Get an explanation string.
+	 * This might be null.
+	 * @return
+	 */
 	public String getExplanation() {
 		return this.explanation;
 	}

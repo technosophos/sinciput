@@ -156,8 +156,7 @@ public class RhizomeController {
 		LinkedList<CommandResult> results = new LinkedList<CommandResult>();
 		
 		if(!this.cqMap.containsKey(requestName))
-			throw new RequestNotFoundException("No match for request \"" 
-					+ requestName + "\" ");
+			throw new RequestNotFoundException(String.format("No match for request \"%s\".", requestName));
 		RequestConfiguration rconf = this.cqMap.get(requestName);
 		Iterator<CommandConfiguration> commands = rconf.getQueue().iterator();
 		

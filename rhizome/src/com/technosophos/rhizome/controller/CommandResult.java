@@ -1,5 +1,7 @@
 package com.technosophos.rhizome.controller;
 
+import java.util.Map;
+import java.util.HashMap;
 /**
  * This contains the result of a particular command.
  * <p>When a command (a class implementing {@link RhizomeCommand} and called during processing
@@ -25,6 +27,7 @@ public class CommandResult {
 	private String friendlyErrMsg = "An error occured while processing this request.";
 	private Exception e = null;
 	private String cmdName = null;
+	private Map<String, String> info = new HashMap<String, String>();
 	
 	/**
 	 * This will set the command name to the String value.
@@ -82,6 +85,7 @@ public class CommandResult {
 	
 	/**
 	 * Return the result from the command.
+	 * This might return null.
 	 * @return An object.
 	 */
 	public Object getResult() {
@@ -99,6 +103,38 @@ public class CommandResult {
 	
 	public String getName() {
 		return this.cmdName;
+	}
+	/**
+	 * Does this have an info map?
+	 * <p><strong>This feature is experimental.</strong></p>
+	 * @return true if an info map (of size > 0) exists.
+	 */
+	public boolean hasInfoMap() {
+		if(this.info == null || this.info.size() == 0)return false;
+		return true;
+	}
+	
+	/**
+	 * Set this results' info map.
+	 * <p><strong>This feature is experimental.</strong></p>
+	 * <p>An info map is map of string/string pairs that passes additional information 
+	 * on to other objects. Some implementations may completely ignore information in
+	 * the info maps, while others may use it for finding additional information.</p>
+	 * <p>For example, the Velocity template modules put this map directly into the
+	 * velocity context, making it easy to acces for template designers.</p>
+	 * @param info
+	 */
+	public void setInfoMap(Map<String, String> info) {
+		this.info = info;
+	}
+	
+	/**
+	 * Get the info map.
+	 * <p><strong>This feature is experimental.</strong></p>
+	 * @return
+	 */
+	public Map<String, String> getInfoMap() {
+		return this.info;
 	}
 	
 	/**

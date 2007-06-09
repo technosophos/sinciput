@@ -158,13 +158,13 @@ public class DoVelocityTemplate extends AbstractCommand {
 	 * @return An initialized VelocityContext.
 	 */
 	protected VelocityContext createContext() {
-		VelocityContext basic = new VelocityContext(this.params);
-		VelocityContext c = new VelocityContext(this.comConf.getDirectives(), basic);
+		VelocityContext basic = new VelocityContext();
 		Object o;
 		//ArrayList errors = new ArrayList();
 		HashMap<String, CommandResult> err = new HashMap<String, CommandResult>();
 		for(CommandResult cr: this.results) {
 			
+			if( cr.hasInfoMap() ) basic = new VelocityContext(cr.getInfoMap(), basic);
 			if(cr.hasError()) {
 				//c.put(cr.getName(), cr);
 				err.put(cr.getName(), cr);
@@ -179,9 +179,12 @@ public class DoVelocityTemplate extends AbstractCommand {
 					c.put(cr.getCommandName(), o);
 				}
 				*/
-				c.put(cr.getName(), o);
+				if(o != null)
+					basic.put(cr.getName(), o);
 			}
 		}
+		basic = new VelocityContext(this.params, basic);
+		VelocityContext c = new VelocityContext(this.comConf.getDirectives(), basic);
 		c.put("ERRORS", err);
 		return c;
 	}

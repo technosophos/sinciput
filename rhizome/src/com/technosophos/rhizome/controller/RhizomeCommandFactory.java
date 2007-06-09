@@ -30,13 +30,6 @@ public class RhizomeCommandFactory {
 					+ " has no associated class.");
 		
 		try {
-			Class<?> c = Class.forName("com.technosophos.sinciput.commands.install.VerifyEnvironment");
-			System.err.println("222 SUCCESS loading VerifyEnv.");
-		} catch (Exception e) {
-			System.err.println("222 Failed test load of class.");
-		}
-		
-		try {
 			Class<?> comClass = Class.forName(classname);
 			//Class<?> comClass = altClassLoader(classname);
 			command = (RhizomeCommand)comClass.newInstance();
