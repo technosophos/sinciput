@@ -129,7 +129,15 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 		//Map<String, Object> params = new HashMap<String, Object>(orig_params);
 		Map<String, Object> params = this.buildParamsMap(orig_params);
 		
-		// These cannot be overridden: 
+		/*
+		 * TODO: Session and Repository Name code 
+		 */
+		
+		// ========================================================
+		// NO MORE REQUEST STUFF!
+		// ========================================================
+		
+		// These cannot be overridden by request params: 
 		params.put(ServletConstants.REQ_PARAM_REQUEST_OBJ, request);
 		params.put(ServletConstants.BASE_PATH, this.basePath);
 		params.put(ServletConstants.CONFIG_PATH, this.configPath);
@@ -138,11 +146,7 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 		params.put(ServletConstants.ABSOLUTE_URI, request.getContextPath() + request.getServletPath());
 		// Workaround for broken velocity (var name $base_path causes problems):
 		params.put("app_path", this.basePath);
-		
-		/*
-		 * FIXME: Need to put in name of repository here?
-		 */
-		
+
 		java.io.Writer out = response.getWriter();
 		LinkedList<CommandResult> results;
 		

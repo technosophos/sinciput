@@ -44,7 +44,7 @@
 		</request>
 		<request name="install4">
 			<cmd do="template">
-				<param name="template_name">install3.xhtml</param>
+				<param name="template_name">install4.xhtml</param>
 			</cmd>
 		</request>
 		<request name="default">
