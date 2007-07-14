@@ -2,9 +2,6 @@ package com.technosophos.sinciput.commands.admin;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Date;
-//import java.util.Locale;
-import java.text.DateFormat;
 
 import com.technosophos.rhizome.command.AbstractCommand;
 import com.technosophos.rhizome.controller.CommandResult;
@@ -145,9 +142,7 @@ public class AddUser extends AbstractCommand {
 				doc.addMetadatum(new Metadatum(k, this.getParam(params, k).toString()));
 		}
 		
-		// FIXME: This should be factored into a common class!
-		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
-		String time = df.format(new Date());
+		String time = com.technosophos.rhizome.util.Timestamp.now();
 		
 		// Do protected fields:
 		doc.addMetadatum(new Metadatum(UserEnum.CREATED_ON.getKey(), time ));
