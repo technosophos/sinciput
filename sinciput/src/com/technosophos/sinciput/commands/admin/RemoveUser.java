@@ -11,6 +11,7 @@ import com.technosophos.rhizome.repository.RepositoryAccessException;
 import com.technosophos.rhizome.repository.RepositorySearcher;
 import com.technosophos.rhizome.repository.DocumentRepository;
 import com.technosophos.rhizome.repository.RhizomeInitializationException;
+import com.technosophos.rhizome.document.Metadatum;
 
 import static com.technosophos.sinciput.servlet.ServletConstants.SETTINGS_REPO;
 
@@ -38,45 +39,105 @@ public class RemoveUser extends AbstractCommand {
 			return;
 		}
 
-		if(this.hasParam(params, "uuid")){
-			// Get the user record with the given UUID.
-			/* Simply get teh document straight from the repo.
-			String [] docids = search.getDocIDsByMetadataValue(uname_field, "uuid"); // RepositoryAccessException
-			if( !(docids == null) || docids.length > 0 ) {
-				String err = String.format("User %s already exists in %s repository.", 
-						user, SETTINGS_REPO);
-				String ferr = String.format("The user %s already exists. You need to pick another user name.", user);
-				results.add( this.createErrorCommandResult(err, ferr));
+		// CASE 1: We get a document ID to delete.
+		if(this.hasParam(params, "id")){
+			/* 
+			 * Get a document, verify it is right, and delete it.
+			 */
+			String docID = this.getParam(params, "id").toString();
+			try {
+				// #1: Make sure doc exists.
+				DocumentRepository repo = this.repoman.getRepository(SETTINGS_REPO);
+				if( repo.hasDocument(docID)) {
+					// #2 Make sure the document is the correct type.
+					Metadatum m = search.getMetadatumByDocID(UserEnum.TYPE.getKey(), docID);
+					List<String> vals = m.getValues();
+					if(vals == null) {
+						String errMsg = String.format("DocID %s is not a user account: No type.", docID);
+						String friendlyErrMsg = String.format("There is no user record with the ID %s. Nothing deleted.", docID);
+						results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg));
+						return;
+					}
+					boolean isUserDoc = false;
+					// #2b: loop through and see if any value matches the "user" def. value
+					for(String v: vals) {
+						if(UserEnum.TYPE.getFieldDescription().getDefaultValue().equalsIgnoreCase(v)) {
+							isUserDoc = true;
+							break;
+						}
+					}
+					if(!isUserDoc) {
+						String errMsg = String.format("DocID %s is not a user account: Wrong type.", docID);
+						String friendlyErrMsg = String.format("There is no user record with the ID %s. Nothing deleted.", docID);
+						results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg));
+						return;
+					}
+					
+					// #3: Try to delete from index.
+					try {
+						this.repoman.getIndexer(SETTINGS_REPO).deleteFromIndex(docID);
+					} catch (RhizomeInitializationException e) {
+						String errMsg = String.format("Error deleting from indexer: %.", e.getMessage());
+						String friendlyErrMsg = String.format("The system could not access the record for %s. Nothing deleted.", docID);
+						results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg, e));
+						return;
+					}
+					// #4:  Remove record from repository.
+					repo.removeDocument(docID);
+				} else {
+					String errMsg = String.format("DocID %s not found.", docID);
+					String friendlyErrMsg = String.format("There is no user record with the ID %s. Nothing deleted.", docID);
+					results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg));
+					return;
+				}
+			} catch (RhizomeInitializationException e) {
+				String errMsg = "DocumentRepository could not be created.";
+				String friendlyErrMsg = String.format("The system could not access the record for %s. Nothing deleted.", docID);
+				results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg, e));
+				return;
+			} catch (RepositoryAccessException e) {
+				String errMsg = String.format("User %s could not be deleted from the document repository.", docID);
+				String friendlyErrMsg = String.format("The system could not remove the record for %s. Nothing deleted.", docID);
+				results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg, e));
 				return;
 			}
-			*/
-			
+			results.add(this.createCommandResult(String.format("User %s removed.")));
+			return;
+		
+		// CASE #2: Delete by user name
 		} else if(this.hasParam(params, UserEnum.USERNAME.getKey())) {
-			// Get the user record with the given username
+			// Step #1: Get the user record with the given username
 			String username_field = UserEnum.USERNAME.getKey();
 			String username = this.getParam(params, username_field).toString();
 			try {
 				String [] docids = search.getDocIDsByMetadataValue(username_field, username); // RepositoryAccessException
 				if(docids == null) {
+					// Shouldn't happen
 					String errMsg = String.format("WARNING: Unexpected null looking for user %s.", username);
 					String friendlyErrMsg = String.format("There is no user named %s. Nothing deleted.", username);
 					results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg));
 					return;
 				} else if( docids.length == 0 ) {
+					// No docs
 					String errMsg = String.format("User %s not found.", username);
 					String friendlyErrMsg = String.format("There is no user named %s. Nothing deleted.", username);
 					results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg));
 					return;
 				} else if (docids.length == 1 ) {
+					// Step #2: BINGO! Now delete document 
 					try {
-						DocumentRepository repo = this.repoman.getRepository(SETTINGS_REPO);
-						repo.removeDocument(docids[0]);
-					} catch (RhizomeInitializationException e) {
+						this.repoman.removeDocument(SETTINGS_REPO, docids[0]);
+					/*} catch (RhizomeInitializationException e) {
 						String errMsg = "DocumentRepository could not be created.";
 						String friendlyErrMsg = String.format("The system could not access the record for %s. Nothing deleted.", username);
 						results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg, e));
-						return;
+						return;*/
 					} catch (RepositoryAccessException e) {
+						String errMsg = String.format("User %s could not be deleted from the document repository.", username);
+						String friendlyErrMsg = String.format("The system could not remove the record for %s. Nothing deleted.", username);
+						results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg, e));
+						return;
+					} catch (com.technosophos.rhizome.RhizomeException e) {
 						String errMsg = String.format("User %s could not be deleted from the document repository.", username);
 						String friendlyErrMsg = String.format("The system could not remove the record for %s. Nothing deleted.", username);
 						results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg, e));
@@ -85,6 +146,7 @@ public class RemoveUser extends AbstractCommand {
 					results.add(this.createCommandResult(String.format("User %s removed.")));
 					return;
 				} else {
+					// Oops! How did we get multiple users? Better delete by docID instead!
 					String errMsg = String.format("WARNING: More than one user named %s!.", username);
 					String friendlyErrMsg = String.format("There are multiple users named %s. This is bad. Contact your system administrator. Nothing deleted.", username);
 					results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg));
@@ -96,6 +158,7 @@ public class RemoveUser extends AbstractCommand {
 				results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg, e));
 				return;
 			}
+		// CASE #3: No user at all!
 		} else {
 			String errMsg = "No user or UUID provided.";
 			String friendlyErrMsg = "You must specify a user to delete.";
