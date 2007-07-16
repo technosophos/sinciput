@@ -51,22 +51,7 @@ public class RemoveUser extends AbstractCommand {
 				if( repo.hasDocument(docID)) {
 					// #2 Make sure the document is the correct type.
 					Metadatum m = search.getMetadatumByDocID(UserEnum.TYPE.getKey(), docID);
-					List<String> vals = m.getValues();
-					if(vals == null) {
-						String errMsg = String.format("DocID %s is not a user account: No type.", docID);
-						String friendlyErrMsg = String.format("There is no user record with the ID %s. Nothing deleted.", docID);
-						results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg));
-						return;
-					}
-					boolean isUserDoc = false;
-					// #2b: loop through and see if any value matches the "user" def. value
-					for(String v: vals) {
-						if(UserEnum.TYPE.getFieldDescription().getDefaultValue().equalsIgnoreCase(v)) {
-							isUserDoc = true;
-							break;
-						}
-					}
-					if(!isUserDoc) {
+					if(!m.hasValue(UserEnum.TYPE.getFieldDescription().getDefaultValue())) {
 						String errMsg = String.format("DocID %s is not a user account: Wrong type.", docID);
 						String friendlyErrMsg = String.format("There is no user record with the ID %s. Nothing deleted.", docID);
 						results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg));
