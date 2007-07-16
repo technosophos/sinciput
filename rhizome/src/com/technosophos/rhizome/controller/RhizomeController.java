@@ -17,7 +17,7 @@ import java.util.List;
  * will handle access to data storage and searching facilities, and then handling requests
  * from "clients" (any caller from outside).
  * The controller takes requests, unpacks them into queues of commands, 
- * and then processes the commands in order.
+ * and then processes the commands in order. 
  * </p>
  * <p>
  * The request-to-command queue mapping is performed during 

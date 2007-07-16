@@ -123,6 +123,22 @@ public class Metadatum {
 	}
 	
 	/**
+	 * See if value exists.
+	 * This does a case-insensitive (equalsIgnoreCase) search through values, returning
+	 * true if at least one matches the passed-in value. If <code>null</code> is passed in,
+	 * it will always return <code>false</code>.
+	 * @param value See if this value exists in Metadatum.
+	 * @return true if value exists, false otherwise.
+	 */
+	public boolean hasValue(String value) {
+		if(this.values == null || value == null) return false;
+		for(String v: this.values) {
+			if(value.equalsIgnoreCase(v)) return true;
+		}
+		return false;
+	}
+	
+	/**
 	 * Set the data type that will be used for all values. 
 	 * See the discussion on getDataType.
 	 * @see #getDataType()
