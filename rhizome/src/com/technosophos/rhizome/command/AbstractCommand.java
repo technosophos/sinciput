@@ -80,6 +80,15 @@ public abstract class AbstractCommand implements RhizomeCommand {
 		if(!params.containsKey(pname)) return null;
 		return params.get(pname);
 	}
+	/**
+	 * This is equivalent to doing a params.get(name).
+	 * @param params
+	 * @param name
+	 * @return
+	 */
+	protected Object getParamNoPrefix(Map<String, Object> params, String name) {
+		return params.get(name);
+	}
 	
 	/**
 	 * Get a parameter value.
