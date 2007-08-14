@@ -19,6 +19,12 @@ public class ServletConstants {
 	 public static final String REQ_PARAM_REQUEST_OBJ = "_request";
 	 
 	 /**
+	  * The SinciputSession object.
+	  * @see com.technosophos.sinciput.servlet.SinciputSession.
+	  */
+	 public static final String REQ_PARAM_SESSION = "_session";
+	 
+	 /**
 	  * The parameter with the name of the repository.
 	  * "repository"
 	  */

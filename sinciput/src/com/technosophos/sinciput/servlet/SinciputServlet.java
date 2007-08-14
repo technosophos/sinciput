@@ -18,6 +18,7 @@ import com.technosophos.rhizome.controller.RequestNotFoundException;
 import com.technosophos.rhizome.controller.RhizomeController;
 import com.technosophos.rhizome.controller.XMLRequestConfigurationReader;
 import com.technosophos.rhizome.repository.RepositoryContext;
+import com.technosophos.sinciput.servlet.SinciputSession;
 
 // This fails with Xdoclet stuff
 //import static com.technosophos.sinciput.servlet.ServletConstants.*;
@@ -139,6 +140,7 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 		
 		// These cannot be overridden by request params: 
 		params.put(ServletConstants.REQ_PARAM_REQUEST_OBJ, request);
+		params.put(ServletConstants.REQ_PARAM_SESSION, new SinciputSession(request.getSession(true)));
 		params.put(ServletConstants.BASE_PATH, this.basePath);
 		params.put(ServletConstants.CONFIG_PATH, this.configPath);
 		params.put(ServletConstants.RESOURCE_PATH, this.resourcePath);
@@ -146,6 +148,8 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 		params.put(ServletConstants.ABSOLUTE_URI, request.getContextPath() + request.getServletPath());
 		// Workaround for broken velocity (var name $base_path causes problems):
 		params.put("app_path", this.basePath);
+		
+		//if(!params.containsKey(ServletConstants.REQ_PARAM_SESSION)) throw new Error("No Session!");
 
 		java.io.Writer out = response.getWriter();
 		LinkedList<CommandResult> results;

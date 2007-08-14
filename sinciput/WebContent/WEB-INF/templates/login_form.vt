@@ -1,0 +1,11 @@
+#set ($title="Login to Sinciput")
+#parse("frag/standard_header.vt")
+#if( $ERRORS.containsKey( "AuthN" ))
+	<p class="error">Invalid username or password. Please try again.</p>
+#elseif($rerouterequest)
+	<p>$rerouterequest.Explanation</p>
+#end
+#set( $action = "login" )
+#set( $next_request="default")
+#parse("frag/login_form.vt")
+#parse("frag/standard_footer.vt")

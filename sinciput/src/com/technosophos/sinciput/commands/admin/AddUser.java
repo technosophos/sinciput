@@ -7,8 +7,9 @@ import com.technosophos.rhizome.command.AbstractCommand;
 import com.technosophos.rhizome.controller.CommandResult;
 import com.technosophos.rhizome.controller.ReRouteRequest;
 import com.technosophos.rhizome.repository.RepositoryAccessException;
+import com.technosophos.rhizome.RhizomeException;
 import com.technosophos.rhizome.repository.RepositorySearcher;
-import com.technosophos.rhizome.repository.DocumentRepository;
+//import com.technosophos.rhizome.repository.DocumentRepository;
 import com.technosophos.rhizome.repository.RhizomeInitializationException;
 import com.technosophos.rhizome.document.*;
 import com.technosophos.sinciput.types.admin.UserEnum;
@@ -151,8 +152,9 @@ public class AddUser extends AbstractCommand {
 		doc.addMetadatum(new Metadatum(UserEnum.LAST_MODIFIED.getKey(), time));
 		
 		try {
-			DocumentRepository repo = this.repoman.getRepository(SETTINGS_REPO);
-			repo.storeDocument(doc);
+			//DocumentRepository repo = this.repoman.getRepository(SETTINGS_REPO);
+			//repo.storeDocument(doc);
+			this.repoman.storeDocument(SETTINGS_REPO, doc);
 		} catch (RhizomeInitializationException rie) {
 			String err = String.format("Failed to get a repository to store document %s (user: %s) in %s: %s."
 					, doc.getDocID()
@@ -170,6 +172,15 @@ public class AddUser extends AbstractCommand {
 					, rae.getMessage());
 			String ferr = "The server could store the new user entry. Try again later.";
 			results.add( this.createErrorCommandResult(err, ferr,rae ));
+			return;
+		} catch (RhizomeException re) {
+			String err = String.format("Failed to store document %s (user: %s) in %s: %s."
+					, doc.getDocID()
+					, user
+					, SETTINGS_REPO
+					, re.getMessage());
+			String ferr = "The server could store the new user entry. Try again later.";
+			results.add( this.createErrorCommandResult(err, ferr,re ));
 			return;
 		}
 

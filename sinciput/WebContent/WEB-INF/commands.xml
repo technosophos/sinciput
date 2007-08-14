@@ -5,6 +5,8 @@
 	<loadclass name="AddUser"     class="com.technosophos.sinciput.commands.admin.AddUser" />
 	<loadclass name="InstallRedirect" class="com.technosophos.sinciput.commands.install.InstallRedirect"/>
 	<loadclass name="AuthN" class="com.technosophos.sinciput.commands.auth.BasicRepositoryAuthN"/>
+	<loadclass name="AuthNLogout" class="com.technosophos.sinciput.commands.auth.BasicRepositoryAuthNLogout"/>
+	<loadclass name="RequireAuthN" class="com.technosophos.sinciput.commands.auth.BasicRepositoryRequireAuthN"/>
 	<loadclass name="GetDocument"     class="com.technosophos.rhizome.command.GetDocument"/>
 	<!--  
 	loadclass name="info" class="com.technosophos.rhizome.command.http.DisplayInfo"
@@ -42,7 +44,7 @@
 		</request>
 		<request name="loginform">
 			<cmd do="template">
-				<param name="template_name">login_form.xhtml</param>
+				<param name="template_name">login_form.vt</param>
 			</cmd>
 		</request>
 		<request name="login">
@@ -50,11 +52,17 @@
 				<param name="auth_failed">loginform</param>
 			</cmd>
 		</request>
+		<request name="logout">
+			<cmd do="AuthNLogout">
+				<param name="auth">loginform</param>
+			</cmd>
+		</request>
 		<request name="default">
 			<cmd do="InstallRedirect" fatal="true"/>
+			<cmd do="RequireAuthN" fatal="true"/>
 			<cmd do="DumpConfiguration"/>
 			<cmd do="template">
-				<param name="template_name">test.vt</param>
+				<param name="template_name">default.vt</param>
 			</cmd>
 			<!-- cmd do="DisplayInfo"/ -->
 		</request>

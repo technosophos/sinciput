@@ -1,0 +1,16 @@
+#**
+Default Sinciput template for the front page.
+
+@author mbutcher
+*#
+#set( $title="Sinciput: Augment Your Mind" )
+#parse( "frag/standard_header.vt" )
+#if($ERRORS.containsKey("RequireAuthN"))
+  <p>You must login before you can access Sinciput.</p>
+  #set( $action="login" )
+  #set( $next_request="default")
+  #parse("frag/login_form.vt")
+#else
+  <p>You are already logged in.</p>
+#end
+#parse( "frag/standard_footer.vt" )
