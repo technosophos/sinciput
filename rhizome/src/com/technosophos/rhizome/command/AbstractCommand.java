@@ -81,6 +81,30 @@ public abstract class AbstractCommand implements RhizomeCommand {
 		return params.get(pname);
 	}
 	
+	/**
+	 * Get a parameter value.
+	 * Some params (notably those that come from servlets) store objects in arrays,
+	 * even though most of the time the array only contains one value. This method 
+	 * checks to see if the item is an array. If it is, then it returns the FIRST ITEM,
+	 * If it is not, then the entire object is returned. Null is returned if no value is
+	 * found, or if the array is empty.
+	 * @param params The parameters hash
+	 * @param name The name to hunt for
+	 * @return The object (if not an array), the first element of an array (if obj is array), or null.
+	 */
+	protected Object getFirstParam(Map<String, Object> params, String name) {
+		String pname = this.getPrefixedParamName(name);
+		if(!params.containsKey(pname)) return null;
+		
+		Object o = params.get(pname);
+		if( o instanceof Object[] ) {
+			Object[] oa = (String[])o;
+			if(oa.length == 0) return null;
+			else return oa[0];
+		}
+		return o;
+	}
+	
 	protected boolean hasParam(Map<String, Object> params, String name) {
 		String pname = this.getPrefixedParamName(name);
 		return params.containsKey(pname);

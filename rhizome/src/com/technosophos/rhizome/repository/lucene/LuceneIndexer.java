@@ -82,6 +82,19 @@ public class LuceneIndexer implements DocumentIndexer {
 	public String getIndexName() {
 		return this.indexName;
 	}
+	
+	/**
+	 * Create and initialize an index.
+	 * This must be done in cases where no documents will initially be added to the 
+	 * index.
+	 * @throws IOException If the path to the index cannot be found, or does not allow read/write.
+	 */
+	public void createIndex() throws IOException {
+		
+		IndexWriter indWriter = 
+			new IndexWriter(this.getIndexDir(), new StandardAnalyzer(), true);
+		indWriter.close();
+	}
 
 	/**
 	 * Completely rebuild the index.

@@ -27,7 +27,15 @@ public class LuceneIndexerDepot implements DocumentIndexerDepot {
 		
 		
 		boolean b = full_path.mkdir();
-		if(!b) throw new RepositoryAccessException("Cannot create directory " + full_path.getAbsolutePath()); 
+		if(!b) throw new RepositoryAccessException("Cannot create directory " + full_path.getAbsolutePath());
+		
+		// Finally, we need to create and initialize the index files:
+		LuceneIndexer ind = new LuceneIndexer(name, cxt);
+		try {
+			ind.createIndex();
+		} catch (java.io.IOException e) {
+			throw new RepositoryAccessException("Cannot create index: IOException: " + e.getMessage());
+		}
 
 	}
 	
