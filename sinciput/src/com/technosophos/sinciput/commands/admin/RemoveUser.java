@@ -44,7 +44,7 @@ public class RemoveUser extends AbstractCommand {
 			/* 
 			 * Get a document, verify it is right, and delete it.
 			 */
-			String docID = this.getParam(params, "id").toString();
+			String docID = this.getFirstParam(params, "id").toString();
 			try {
 				// #1: Make sure doc exists.
 				DocumentRepository repo = this.repoman.getRepository(SETTINGS_REPO);
@@ -93,7 +93,7 @@ public class RemoveUser extends AbstractCommand {
 		} else if(this.hasParam(params, UserEnum.USERNAME.getKey())) {
 			// Step #1: Get the user record with the given username
 			String username_field = UserEnum.USERNAME.getKey();
-			String username = this.getParam(params, username_field).toString();
+			String username = this.getFirstParam(params, username_field).toString();
 			try {
 				String [] docids = search.getDocIDsByMetadataValue(username_field, username); // RepositoryAccessException
 				if(docids == null) {

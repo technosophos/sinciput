@@ -66,9 +66,9 @@ public class AddUser extends AbstractCommand {
 		}
 		
 		// Get params
-		String user = this.getParam(params, UserEnum.USERNAME.getKey()).toString();
-		String pw = this.getParam(params, UserEnum.PASSWORD.getKey()).toString();
-		String pwa = this.getParam(params, UserEnum.PASSWORD_VERIFY.getKey()).toString();
+		String user = this.getFirstParam(params, UserEnum.USERNAME.getKey()).toString();
+		String pw = this.getFirstParam(params, UserEnum.PASSWORD.getKey()).toString();
+		String pwa = this.getFirstParam(params, UserEnum.PASSWORD_VERIFY.getKey()).toString();
 		
 		// Does username already exist?
 		String uname_field = UserEnum.USERNAME.getKey();
@@ -76,7 +76,9 @@ public class AddUser extends AbstractCommand {
 		try {
 			search = this.repoman.getSearcher(SETTINGS_REPO); //RhizomeInitializationException
 			String [] docids = search.getDocIDsByMetadataValue(uname_field, user); // RepositoryAccessException
-			if( !(docids == null) || docids.length > 0 ) {
+			
+			// docids should never be null... search should always return an array.
+			if( !(docids == null) && docids.length > 0 ) {
 				String err = String.format("User %s already exists in %s repository.", 
 						user, SETTINGS_REPO);
 				String ferr = String.format("The user %s already exists. You need to pick another user name.", user);
@@ -89,7 +91,7 @@ public class AddUser extends AbstractCommand {
 			results.add( this.createErrorCommandResult(err, ferr,e ));
 			return;
 		} catch (RepositoryAccessException e) {
-			String err = String.format("Searching for %s failed: %s.", user, e.getMessage());
+			String err = String.format("Searching for %s failed: %s.", user.toString(), e.getMessage());
 			String ferr = "The server could not make sure that this user name does not already exist. Try again later.";
 			results.add( this.createErrorCommandResult(err, ferr,e ));
 			return;

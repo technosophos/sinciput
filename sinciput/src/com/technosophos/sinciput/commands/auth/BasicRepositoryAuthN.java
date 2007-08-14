@@ -43,14 +43,14 @@ public class BasicRepositoryAuthN extends AbstractCommand {
 	public void doCommand(Map<String, Object> params,
 			List<CommandResult> results) throws ReRouteRequest {
 		
-		String uid = this.getParam(params, PARAM_AUTH_UID).toString();
-		String pw = this.getParam(params, PARAM_AUTH_PASSWD).toString();
+		String uid = this.getFirstParam(params, PARAM_AUTH_UID).toString();
+		String pw = this.getFirstParam(params, PARAM_AUTH_PASSWD).toString();
 		String[] rrc = this.comConf.getDirective(DIR_AUTH_FAILED_REQ);
 		String errShell = "Authentication Failed: %s";
 		
 		// Make sure we have a command to forward to.
 		if(rrc == null || rrc.length == 0) {
-			String errMsg = String.format("Not found in command confiugration: %s", DIR_AUTH_FAILED_REQ);
+			String errMsg = String.format("Not found in command configuration: %s", DIR_AUTH_FAILED_REQ);
 			String friendlyErrMsg = "Authentication Failed: The server is misconfigured.";
 			this.createErrorCommandResult(errMsg, friendlyErrMsg);
 		}
@@ -65,8 +65,9 @@ public class BasicRepositoryAuthN extends AbstractCommand {
 			// If there is a place to forward, do the forward.
 			String next = DEFAULT_REQUEST;
 			if(this.hasParam(params, PARAM_NEXT_REQUEST))
-				next = this.getParam(params, PARAM_NEXT_REQUEST).toString();
-				
+				next = this.getFirstParam(params, PARAM_NEXT_REQUEST).toString();
+			
+			// FIXME: Before re-routing, check to make sure 'next' is a command.
 			throw new ReRouteRequest(next, "You are logged in.");
 		} else 
 			throw new ReRouteRequest(rrc[0], String.format(errShell, "username/password combination is incorrect."));

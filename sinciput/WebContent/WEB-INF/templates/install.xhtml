@@ -26,16 +26,41 @@
 	<li>Static files (CSS, images): $resource_path</li>
 	<li>Configuration files: $config_path</li>
 	</ul>
-	<h3>Newly created information will be stored here:</h3>
+	<h3>The following locations will be created:</h3>
 	<ul>
 	<li>Repository: $fs_repo_path</li>
 	<li>Index: $index_path</li>
 	</ul>
 	<p>You may need to edit the web application's web.xml file to change the 
 	location of the repository or index.</p>
-	
-	<p>If these settings look correct, <a href="$absolute_uri/install2">continue</a>.</p>
 
+#end
+
+#if($ERRORS.containsKey("InstallBase"))
+	<h2>Error</h2>
+	<p><strong>Error:</strong> $ERRORS.get("InstallBase")</p>
+	<p>You will need to fix errors, and then <a href="$absolute_uri/install">restart the installation</a>.</p>
+#else
+	<p>A new Sinciput repository is now configured. Here are the details:</p>
+	<ul>
+		<li>$repo_create</li>
+		<li>$index_create</li>
+		<li>$settings_repo_create</li>
+	</ul>
+	
+	<h2>Create a New User</h2>
+<p>It is time to create a user. This first user will have special permissions in
+Sinciput to perform maintenance tasks, backups, and so on.</p>
+<form action="$absolute_uri/install2" method="post">
+	<label for="username">User Name:</label>
+	<input type="text" name="username" id="username" value="admin" />
+	<br/>
+	<label for="password">Password:</label>
+	<input type="password" id="password" name="password" /><br/>
+	<label for="password_verify">Verify Password:</label>
+	<input type="password" name="password_verify" id="password_verify" /><br/>
+	<input type="submit" value="Create User" /><br/>
+</form>
 #end
 </body>
 </html>

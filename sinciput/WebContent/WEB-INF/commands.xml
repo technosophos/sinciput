@@ -2,7 +2,9 @@
 <commands>
 	<loadclass name="VerifyEnv"       class="com.technosophos.sinciput.commands.install.VerifyEnvironment" />
 	<loadclass name="InstallBase"     class="com.technosophos.sinciput.commands.install.InstallBase" />
+	<loadclass name="AddUser"     class="com.technosophos.sinciput.commands.admin.AddUser" />
 	<loadclass name="InstallRedirect" class="com.technosophos.sinciput.commands.install.InstallRedirect"/>
+	<loadclass name="AuthN" class="com.technosophos.sinciput.commands.auth.BasicRepositoryAuthN"/>
 	<loadclass name="GetDocument"     class="com.technosophos.rhizome.command.GetDocument"/>
 	<!--  
 	loadclass name="info" class="com.technosophos.rhizome.command.http.DisplayInfo"
@@ -26,25 +28,26 @@
 			</param>
 		</global>
 		<request name="install">
-			<cmd do="VerifyEnv"/>
+			<cmd do="VerifyEnv" fatal="true"/>
+			<cmd do="InstallBase" fatal="true"/>
 			<cmd do="template">
 				<param name="template_name">install.xhtml</param>
 			</cmd>
 		</request>
 		<request name="install2">
-			<cmd do="InstallBase"/>
+			<cmd do="AddUser" />
 			<cmd do="template">
 				<param name="template_name">install2.xhtml</param>
 			</cmd>
 		</request>
-		<request name="install3">
+		<request name="loginform">
 			<cmd do="template">
-				<param name="template_name">install3.xhtml</param>
+				<param name="template_name">login_form.xhtml</param>
 			</cmd>
 		</request>
-		<request name="install4">
-			<cmd do="template">
-				<param name="template_name">install4.xhtml</param>
+		<request name="login">
+			<cmd do="AuthN" prefix="auth-">
+				<param name="auth_failed">loginform</param>
 			</cmd>
 		</request>
 		<request name="default">
