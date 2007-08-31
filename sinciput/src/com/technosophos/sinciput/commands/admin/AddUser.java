@@ -21,11 +21,30 @@ import static com.technosophos.sinciput.servlet.ServletConstants.SETTINGS_REPO;
  * <p>Sinciput has an internal database for internal information. This command adds
  * a new user to that database. This uses the fields from {@link UserEnum}.
  * </p>
+ * <p>Required Params</p>
+ * <ul>
+ * <li>username</li>
+ * <li>password</li>
+ * <li>password_verify</li>
+ * </li>
+ * <p>Optional Params</p>
+ * <ul>
+ * <li>role</li>
+ * <li>gn (given name)</li>
+ * <li>sn (surname)</li>
+ * <li>email</li>
+ * </li>
+ * <p>Directives</p>
+ * <ul>
+ * <li>default_role</li>
+ * </ul>
  * @author mbutcher
  * @see UserEnum for the fields that this class uses.
  *
  */
 public class AddUser extends AbstractCommand {
+	
+	public static final String DIR_DEFAULT_ROLE = "default_role";
 
 	/**
 	 * Add a new user.
@@ -123,6 +142,9 @@ public class AddUser extends AbstractCommand {
 			results.add( this.createErrorCommandResult(err, ferr));
 			return;
 		}
+		
+		
+		
  
 		RhizomeDocument doc = new RhizomeDocument(DocumentID.generateDocumentID());
 		
@@ -138,11 +160,21 @@ public class AddUser extends AbstractCommand {
 		String[] e = { 
 				UserEnum.GIVENNAME.getKey(), 
 				UserEnum.SURNAME.getKey(), 
+				UserEnum.EMAIL.getKey(),
 				UserEnum.DESCRIPTION.getKey() 
 			};
 		for(String k: e ) {
 			if(this.hasParam(params, k ))
-				doc.addMetadatum(new Metadatum(k, this.getParam(params, k).toString()));
+				doc.addMetadatum(new Metadatum(k, this.getFirstParam(params, k).toString()));
+		}
+		
+		// Assign role:
+		String k = UserEnum.ROLE.getKey();
+		// FIXME: This should be able to assign mulitple roles at once.
+		if(this.hasParam(params, k)) {
+			doc.addMetadatum(new Metadatum(k, this.getFirstParam(params, k).toString()));
+		} else if( this.comConf.hasDirective(DIR_DEFAULT_ROLE)) {
+			doc.addMetadatum(new Metadatum(k, this.comConf.getDirective(DIR_DEFAULT_ROLE)));
 		}
 		
 		String time = com.technosophos.rhizome.util.Timestamp.now();

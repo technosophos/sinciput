@@ -29,6 +29,10 @@ public enum UserEnum implements SinciputType {
 			"sn", 
 			"Last Name", 
 			new FieldDescription(FieldDescription.FIELD_TEXT, 128)),
+	EMAIL (
+			"email", 
+			"Email Address", 
+			new FieldDescription(FieldDescription.FIELD_TEXT, 256)),
 	DESCRIPTION (
 			"description", 
 			"Description", 
