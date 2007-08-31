@@ -289,6 +289,20 @@ public class RhizomeDocument implements Presentable {
 	}
 	
 	/**
+	 * Replace all existing metadata of the same name with this one.
+	 * @param meta
+	 */
+	public void replaceMetadatum( Metadatum meta ) {
+		int i, j = this.metadataSize();
+		for( i = 0; i < j; ++i ) {
+			if( this.metadata.get(i).getName().equalsIgnoreCase(meta.getName())) {
+				this.metadata.remove(i);
+			}
+		}
+		this.metadata.add(meta);
+	}
+	
+	/**
 	 * Convenience method for quickly adding metadata.
 	 * @param name
 	 * @param values
