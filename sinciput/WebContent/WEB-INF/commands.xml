@@ -3,6 +3,7 @@
 	<loadclass name="VerifyEnv"       class="com.technosophos.sinciput.commands.install.VerifyEnvironment" />
 	<loadclass name="InstallBase"     class="com.technosophos.sinciput.commands.install.InstallBase" />
 	<loadclass name="AddUser"     class="com.technosophos.sinciput.commands.admin.AddUser" />
+	<loadclass name="CreateUserRepository"     class="com.technosophos.sinciput.commands.admin.CreateUserRepository" />
 	<loadclass name="AddUserRole"     class="com.technosophos.sinciput.commands.admin.AddUserRole" />
 	<loadclass name="InstallRedirect" class="com.technosophos.sinciput.commands.install.InstallRedirect"/>
 	<loadclass name="AuthN" class="com.technosophos.sinciput.commands.auth.BasicRepositoryAuthN"/>
@@ -41,6 +42,7 @@
 			<cmd do="AddUser">
 				<param name="default_role">admin</param>
 			</cmd>
+			<cmd do="CreateUserRepository"/>
 			<cmd do="template">
 				<param name="template_name">install2.xhtml</param>
 			</cmd>

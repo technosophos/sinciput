@@ -193,7 +193,7 @@ public class AddUser extends AbstractCommand {
 					, user
 					, SETTINGS_REPO
 					, rie.getMessage());
-			String ferr = "The server could store the new user entry. Try again later.";
+			String ferr = "The server could not store the new user entry. Try again later.";
 			results.add( this.createErrorCommandResult(err, ferr,rie ));
 			return;
 		} catch (RepositoryAccessException rae) {
@@ -202,7 +202,7 @@ public class AddUser extends AbstractCommand {
 					, user
 					, SETTINGS_REPO
 					, rae.getMessage());
-			String ferr = "The server could store the new user entry. Try again later.";
+			String ferr = "The server could not store the new user entry. Try again later.";
 			results.add( this.createErrorCommandResult(err, ferr,rae ));
 			return;
 		} catch (RhizomeException re) {
@@ -211,7 +211,7 @@ public class AddUser extends AbstractCommand {
 					, user
 					, SETTINGS_REPO
 					, re.getMessage());
-			String ferr = "The server could store the new user entry. Try again later.";
+			String ferr = "The server could not store the new user entry. Try again later.";
 			results.add( this.createErrorCommandResult(err, ferr,re ));
 			return;
 		}

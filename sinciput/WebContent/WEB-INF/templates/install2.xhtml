@@ -12,6 +12,10 @@
 	<h2>Error</h2>
 	<p><strong>Error:</strong> $ERRORS.get("AddUser")</p>
 	<p>You will need to fix errors, and then <a href="$absolute_uri/install">restart the installation</a>.</p>
+#elseif( $ERRORS.containsKey("CreateUserRepository"))
+<h2>Error</h2>
+	<p><strong>Error:</strong> $ERRORS.get("CreateUserRepository")</p>
+	<p>You will need to fix errors, and then <a href="$absolute_uri/install">restart the installation</a>.</p>
 #else
 	<h2>Installation Complete</h2>
 	<p>Sinciput is now configured. You can log in by going to the
