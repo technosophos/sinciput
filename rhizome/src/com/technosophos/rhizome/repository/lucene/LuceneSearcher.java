@@ -472,7 +472,7 @@ public class LuceneSearcher implements RepositorySearcher {
 	
 	/** Helper function for checking field values. */
 	private boolean checkFieldValueMatches(String key, String value, Document doc) {
-		System.err.format( "Key: %s, Val: %s, Doc: %s\n", key, value, doc.toString());
+		//System.err.format( "Key: %s, Val: %s, Doc: %s\n", key, value, doc.toString());
 		String[] vals = doc.getValues(key); //getValues can return null.
 		if( vals == null ) return false;
 		for( String val: vals ) {
