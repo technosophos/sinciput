@@ -61,8 +61,8 @@ public class DoVelocityTemplate extends AbstractCommand {
 	
 	protected VelocityEngine velen = null;
 	protected String template_name = null;
-	protected Map<String, Object> params = null;
-	protected List<CommandResult> results = null;
+	//protected Map<String, Object> params = null;
+	//protected List<CommandResult> results = null;
 	
 	public void init(CommandConfiguration comConf, RepositoryManager rm)
 			throws CommandInitializationException {
@@ -111,11 +111,13 @@ public class DoVelocityTemplate extends AbstractCommand {
 	 * and the path used is specified by the values of the {@link #TEMPLATE_PATH_CONF}
 	 * in the {@link CommandConfiguration}.</p> 
 	 */
-	public void doCommand(Map<String, Object> params,
+	/*public void doCommand(Map<String, Object> params,
 			List<CommandResult> results) {
 		
 		this.params = params;
 		this.results = results;
+	}*/
+	public void execute() {
 		
 		VelocityContext cxt = this.createContext();
 		

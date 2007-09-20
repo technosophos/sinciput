@@ -1,7 +1,7 @@
 package com.technosophos.rhizome.command;
 
-import java.util.List;
-import java.util.Map;
+//import java.util.List;
+//import java.util.Map;
 
 import com.technosophos.rhizome.controller.CommandResult;
 import com.technosophos.rhizome.controller.ReRouteRequest;
@@ -30,8 +30,9 @@ public class CreateRepository extends AbstractCommand {
 	 * Create a new repository.
 	 * This will retrive params from the Map of params. See the class description.
 	 */
-	public void doCommand(Map<String, Object> params,
-			List<CommandResult> results) throws ReRouteRequest {
+	//public void doCommand(Map<String, Object> params,
+	//		List<CommandResult> results) throws ReRouteRequest {
+	public void execute() throws ReRouteRequest {
 		String repoName = this.getCurrentRepositoryName(params);
 		if(repoName == null) {
 			String errMsg = String.format("No repository name (%s) specified in params or in configuration directives.", PARAM_REPO_NAME);

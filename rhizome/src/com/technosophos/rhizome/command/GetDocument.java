@@ -1,7 +1,7 @@
 package com.technosophos.rhizome.command;
 
-import java.util.List;
-import java.util.Map;
+//import java.util.List;
+//import java.util.Map;
 
 //import com.technosophos.rhizome.controller.CommandConfiguration;
 //import com.technosophos.rhizome.controller.RhizomeCommand;
@@ -29,7 +29,8 @@ public class GetDocument extends AbstractCommand {
 	 * repository encounters an error (including Document Not Found), then the resulting
 	 * {@link CommandResult} will have the error flag set, and error information embedded.</p>
 	 */
-	public void doCommand(Map<String, Object> params, List<CommandResult> results) {
+	//public void doCommand(Map<String, Object> params, List<CommandResult> results) {
+	public void execute() {
 		
 		CommandResult res;
 		RhizomeDocument doc;
@@ -41,7 +42,7 @@ public class GetDocument extends AbstractCommand {
 			results.add(res);
 			return;
 		}
-		String docID = this.getParam(params, PARAM_DOCID).toString();
+		String docID = this.getParam(PARAM_DOCID, null).toString();
 		String repoName = this.getCurrentRepositoryName(params);
 		
 		if(repoName == null) {

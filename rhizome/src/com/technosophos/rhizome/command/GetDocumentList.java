@@ -40,9 +40,7 @@ public class GetDocumentList extends AbstractCommand {
 	 * object, then those fields will also be stored in the returned DocumentCollection, if they exist.</p>
 	 * <p>Then, a search is executed, and the results stored in the CommandResult List.</p>
 	 */
-	@Override
-	public void doCommand(Map<String, Object> params,
-			List<CommandResult> results) {
+	public void execute() {
 		CommandResult res;
 		DocumentCollection doc;
 		/*
@@ -124,7 +122,8 @@ public class GetDocumentList extends AbstractCommand {
 		HashMap<String, String> m = new HashMap<String, String>();
 		for(String field: fields) {
 			if(params.containsKey(this.getPrefixedParamName(field)))
-				m.put(field, this.getParam(params, field).toString());
+				// FIXME: Should the default be null or empty string?
+				m.put(field, this.getParam(field,"").toString());
 		}
 		return m;
 	}
