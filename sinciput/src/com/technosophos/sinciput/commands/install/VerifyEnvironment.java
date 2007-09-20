@@ -1,6 +1,5 @@
 package com.technosophos.sinciput.commands.install;
 
-import java.util.List;
 //import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
@@ -16,8 +15,7 @@ public class VerifyEnvironment extends AbstractCommand {
 	/**
 	 * Do some basic verification.
 	 */
-	public void doCommand(Map<String, Object> params,
-			List<CommandResult> results) throws ReRouteRequest {
+	public void execute() throws ReRouteRequest {
 
 		if(this.comConf == null) {
 			String errMsg = String.format("RhizomeCommand.init() was not called on %s", this.getClass().getCanonicalName());

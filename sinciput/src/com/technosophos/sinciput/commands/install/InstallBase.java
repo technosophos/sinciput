@@ -1,7 +1,5 @@
 package com.technosophos.sinciput.commands.install;
 
-import java.util.List;
-import java.util.Map;
 import java.util.HashMap;
 import java.io.File;
 
@@ -41,8 +39,7 @@ public class InstallBase extends AbstractCommand {
 	/**
 	 * Perform base installation procedures.
 	 */
-	public void doCommand(Map<String, Object> params,
-			List<CommandResult> results) throws ReRouteRequest {
+	public void execute() throws ReRouteRequest {
 		
 		HashMap<String, String> info = new HashMap<String, String>();
 		RepositoryContext cxt = this.repoman.getContext();

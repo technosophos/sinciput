@@ -1,10 +1,10 @@
 package com.technosophos.sinciput.commands.admin;
 
-import java.util.List;
-import java.util.Map;
+//import java.util.List;
+//import java.util.Map;
 
 import com.technosophos.rhizome.command.AbstractCommand;
-import com.technosophos.rhizome.controller.CommandResult;
+//import com.technosophos.rhizome.controller.CommandResult;
 import com.technosophos.rhizome.controller.ReRouteRequest;
 import com.technosophos.rhizome.repository.RepositoryAccessException;
 import com.technosophos.rhizome.RhizomeException;
@@ -52,8 +52,7 @@ public class AddUser extends AbstractCommand {
 	 * repository. At minimum, a new user record should have a username and a 
 	 * password, but other attributes are allowed, too.</p>
 	 */
-	public void doCommand(Map<String, Object> params,
-			List<CommandResult> results) throws ReRouteRequest {
+	public void execute() throws ReRouteRequest {
 		/*
 		 * 1. Check to see if right params exist.
 		 * 2. Check to see if another user of this name exists.
@@ -66,29 +65,30 @@ public class AddUser extends AbstractCommand {
 		/*
 		 * Next three conditionals check for the existence of required params.
 		 */
-		if(! this.hasParam(params, UserEnum.USERNAME.getKey()) ) {
+		if(! this.hasParam(UserEnum.USERNAME.getKey()) ) {
 			String err = String.format("No %s found in params.", UserEnum.USERNAME.getKey());
 			String ferr = "You must specify a user name.";
 			results.add( this.createErrorCommandResult(err, ferr));
 			return;
 		}
-		if(! this.hasParam(params, UserEnum.PASSWORD.getKey()) ) {
+		if(! this.hasParam(UserEnum.PASSWORD.getKey()) ) {
 			String err = String.format("No %s found in params.", UserEnum.PASSWORD.getKey());
 			String ferr = "You must specify a password.";
 			results.add( this.createErrorCommandResult(err, ferr));
 			return;
 		}
-		if(! this.hasParam(params, UserEnum.PASSWORD_VERIFY.getKey()) ) {
+		if(! this.hasParam(UserEnum.PASSWORD_VERIFY.getKey()) ) {
 			String err = String.format("No %s found in params.", UserEnum.PASSWORD_VERIFY.getKey());
 			String ferr = "You must specify the password twice for verification.";
 			results.add( this.createErrorCommandResult(err, ferr));
 			return;
 		}
 		
-		// Get params
-		String user = this.getFirstParam(params, UserEnum.USERNAME.getKey()).toString();
-		String pw = this.getFirstParam(params, UserEnum.PASSWORD.getKey()).toString();
-		String pwa = this.getFirstParam(params, UserEnum.PASSWORD_VERIFY.getKey()).toString();
+		// Get params. Hypothetically, none of these can return null (since hasParam 
+		// checked them already).
+		String user = this.getFirstParam(UserEnum.USERNAME.getKey(),null).toString();
+		String pw = this.getFirstParam(UserEnum.PASSWORD.getKey(),null).toString();
+		String pwa = this.getFirstParam(UserEnum.PASSWORD_VERIFY.getKey(),null).toString();
 		
 		// Does username already exist?
 		String uname_field = UserEnum.USERNAME.getKey();
@@ -164,15 +164,15 @@ public class AddUser extends AbstractCommand {
 				UserEnum.DESCRIPTION.getKey() 
 			};
 		for(String k: e ) {
-			if(this.hasParam(params, k ))
-				doc.addMetadatum(new Metadatum(k, this.getFirstParam(params, k).toString()));
+			if(this.hasParam(k ))
+				doc.addMetadatum(new Metadatum(k, this.getFirstParam(k, null).toString()));
 		}
 		
 		// Assign role:
 		String k = UserEnum.ROLE.getKey();
 		// FIXME: This should be able to assign mulitple roles at once.
-		if(this.hasParam(params, k)) {
-			doc.addMetadatum(new Metadatum(k, this.getFirstParam(params, k).toString()));
+		if(this.hasParam(k)) {
+			doc.addMetadatum(new Metadatum(k, this.getFirstParam(k,null).toString()));
 		} else if( this.comConf.hasDirective(DIR_DEFAULT_ROLE)) {
 			doc.addMetadatum(new Metadatum(k, this.comConf.getDirective(DIR_DEFAULT_ROLE)));
 		}

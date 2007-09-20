@@ -13,6 +13,10 @@ public enum NotesEnum implements SinciputType {
 			"subtitle",
 			"Subtitle",
 			new FieldDescription(FieldDescription.FIELD_TEXT, 50)),
+	TAG (
+			"tag", 
+			"Tag",
+			new FieldDescription(FieldDescription.FIELD_TEXT, 256)),
 	CREATED_ON (
 			"created_on", 
 			"Created On",

@@ -1,7 +1,7 @@
 package com.technosophos.sinciput.commands.auth;
 
-import java.util.List;
-import java.util.Map;
+//import java.util.List;
+//import java.util.Map;
 import java.util.HashMap;
 
 import com.technosophos.rhizome.command.AbstractCommand;
@@ -78,9 +78,7 @@ public class BasicRepositoryAuthN extends AbstractCommand {
 	 * mode to chain this command with other commands.</p>
 	 * <p>To set passthru mode, use the "passthru" configuration directive in commands.xml.</p>
 	 */
-	public void doCommand(Map<String, Object> params,
-			List<CommandResult> results) throws ReRouteRequest {
-
+	public void execute() throws ReRouteRequest {
 		boolean passthru_mode = false;
 		String[] rrc = this.comConf.getDirective(DIR_AUTH_FAILED_REQ);
 		String[] passthru = this.comConf.getDirective(DIR_AUTH_PASSTHRU);
@@ -104,11 +102,11 @@ public class BasicRepositoryAuthN extends AbstractCommand {
 		}
 		
 		// If no login/password, redirect.
-		if( !this.hasParam(params, PARAM_AUTH_UID) || !this.hasParam(params,PARAM_AUTH_PASSWD) )
+		if( !this.hasParam(PARAM_AUTH_UID) || !this.hasParam(PARAM_AUTH_PASSWD) )
 			throw new ReRouteRequest(rrr_cmd, String.format(errShell, "username and password cannot be null."));
 		
-		String uid = this.getFirstParam(params, PARAM_AUTH_UID).toString();
-		String pw = this.getFirstParam(params, PARAM_AUTH_PASSWD).toString();
+		String uid = this.getFirstParam(PARAM_AUTH_UID, null).toString();
+		String pw = this.getFirstParam(PARAM_AUTH_PASSWD, null).toString();
 		//System.err.format("Username: %s, Password: %s\n", uid, pw);
 		
 		/*
@@ -142,8 +140,8 @@ public class BasicRepositoryAuthN extends AbstractCommand {
 			
 			// If there is a place to forward, do the forward.
 			String next = DEFAULT_REQUEST;
-			if(this.hasParam(params, PARAM_NEXT_REQUEST))
-				next = this.getFirstParam(params, PARAM_NEXT_REQUEST).toString();
+			if(this.hasParam(PARAM_NEXT_REQUEST))
+				next = this.getFirstParam(PARAM_NEXT_REQUEST, null).toString();
 			
 			// If next isn't a valid command, default will be used, anyway.
 			throw new ReRouteRequest(next, "You are logged in.");
@@ -179,6 +177,8 @@ public class BasicRepositoryAuthN extends AbstractCommand {
 		narrower.put(UserEnum.USERNAME.getKey(), uid);
 		narrower.put(UserEnum.PASSWORD.getKey(), this.preparePassword(pw));
 		narrower.put(UserEnum.TYPE.getKey(), type);
+		
+		//System.err.format( "User: %s, Password: %s, Type: %s\n", uid, pw, type);
 		
 		// This throws an access exception if error:
 		String[] res = rs.narrowingSearch(narrower);

@@ -2,13 +2,13 @@ package com.technosophos.sinciput.commands.admin;
 
 import static com.technosophos.sinciput.servlet.ServletConstants.SETTINGS_REPO;
 
-import java.util.List;
-import java.util.Map;
+//import java.util.List;
+//import java.util.Map;
 
 import com.technosophos.rhizome.RhizomeException;
 import com.technosophos.rhizome.command.AbstractCommand;
-import com.technosophos.rhizome.controller.CommandResult;
-import com.technosophos.rhizome.controller.ReRouteRequest;
+//import com.technosophos.rhizome.controller.CommandResult;
+//import com.technosophos.rhizome.controller.ReRouteRequest;
 import com.technosophos.rhizome.document.DocumentID;
 import com.technosophos.rhizome.document.Metadatum;
 import com.technosophos.rhizome.document.RhizomeDocument;
@@ -42,21 +42,21 @@ public class CreateUserRepository extends AbstractCommand {
 	 * <li>Username: This will become the owner, and will be used for generating other fields.</li>
 	 * </ul>
 	 */
-	public void doCommand(Map<String, Object> params,
-			List<CommandResult> results) throws ReRouteRequest {
+	public void execute() {
 		/*
 		 * Check for the existence of required params.
 		 * Note that we are looking for teh USERNAME field from UserEnum, and then we
 		 * are going to use this value in other places.
 		 */
-		if(! this.hasParam(params, UserEnum.USERNAME.getKey()) ) {
+		if(! this.hasParam(UserEnum.USERNAME.getKey()) ) {
 			String err = String.format("No %s found in params.", UserEnum.USERNAME.getKey());
 			String ferr = "You must specify a user name.";
 			results.add( this.createErrorCommandResult(err, ferr));
 			return;
 		}
 		
-		String owner = this.getFirstParam(params, UserEnum.USERNAME.getKey()).toString();
+		Object o = this.getFirstParam(UserEnum.USERNAME.getKey(),null);
+		String owner = o.toString();
 		String title = "Personal notes of " + owner + ".";
 		
 		// Why the '<' char? Because it is not allowed in repository names. Thus, we don't

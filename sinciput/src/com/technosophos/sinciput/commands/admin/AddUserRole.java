@@ -2,11 +2,11 @@ package com.technosophos.sinciput.commands.admin;
 
 import static com.technosophos.sinciput.servlet.ServletConstants.SETTINGS_REPO;
 
-import java.util.List;
-import java.util.Map;
+//import java.util.List;
+//import java.util.Map;
 
 import com.technosophos.rhizome.command.AbstractCommand;
-import com.technosophos.rhizome.controller.CommandResult;
+//import com.technosophos.rhizome.controller.CommandResult;
 import com.technosophos.rhizome.controller.ReRouteRequest;
 import com.technosophos.rhizome.repository.RepositoryAccessException;
 import com.technosophos.rhizome.repository.RepositorySearcher;
@@ -31,8 +31,7 @@ public class AddUserRole extends AbstractCommand {
 	/**
 	 * Add a role to a user record.
 	 */
-	public void doCommand(Map<String, Object> params,
-			List<CommandResult> results) throws ReRouteRequest {
+	public void execute() throws ReRouteRequest {
 		/*
 		 * 1. Check to see if right params exist.
 		 * 2. Check to see if user exists.
@@ -41,13 +40,13 @@ public class AddUserRole extends AbstractCommand {
 		String uname_field = UserEnum.USERNAME.getKey();
 		
 		// See if role and user exist in params.
-		if(! this.hasParam(params, UserEnum.ROLE.getKey()) ) {
+		if(! this.hasParam(UserEnum.ROLE.getKey()) ) {
 			String err = String.format("No %s found in params.", UserEnum.USERNAME.getKey());
 			String ferr = "You must specify a role name.";
 			results.add( this.createErrorCommandResult(err, ferr));
 			return;
 		}
-		if(! this.hasParam(params, uname_field) ) {
+		if(! this.hasParam(uname_field) ) {
 			String err = String.format("No %s found in params.", UserEnum.USERNAME.getKey());
 			String ferr = "You must specify a user name.";
 			results.add( this.createErrorCommandResult(err, ferr));
@@ -55,8 +54,8 @@ public class AddUserRole extends AbstractCommand {
 		}
 		
 		// Get params
-		String user = this.getFirstParam(params, uname_field).toString();
-		String role = this.getFirstParam(params, UserEnum.ROLE.getKey()).toString();
+		String user = this.getFirstParam(uname_field, null).toString();
+		String role = this.getFirstParam(UserEnum.ROLE.getKey(), null).toString();
 		
 		// Check if user exists. If not, we abort.
 		

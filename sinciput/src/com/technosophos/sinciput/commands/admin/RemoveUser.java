@@ -1,10 +1,10 @@
 package com.technosophos.sinciput.commands.admin;
 
-import java.util.List;
-import java.util.Map;
+//import java.util.List;
+//import java.util.Map;
 
 import com.technosophos.rhizome.command.AbstractCommand;
-import com.technosophos.rhizome.controller.CommandResult;
+//import com.technosophos.rhizome.controller.CommandResult;
 import com.technosophos.rhizome.controller.ReRouteRequest;
 import com.technosophos.sinciput.types.admin.UserEnum;
 import com.technosophos.rhizome.repository.RepositoryAccessException;
@@ -26,8 +26,7 @@ public class RemoveUser extends AbstractCommand {
 	 * <p>If both a UUID and username are supplied, the command will only try to delete
 	 * the UUID.</p>
 	 */
-	public void doCommand(Map<String, Object> params,
-			List<CommandResult> results) throws ReRouteRequest {
+	public void execute() throws ReRouteRequest {
 
 		RepositorySearcher search = null;
 		try {
@@ -40,11 +39,11 @@ public class RemoveUser extends AbstractCommand {
 		}
 
 		// CASE 1: We get a document ID to delete.
-		if(this.hasParam(params, "id")){
+		if(this.hasParam("id")){
 			/* 
 			 * Get a document, verify it is right, and delete it.
 			 */
-			String docID = this.getFirstParam(params, "id").toString();
+			String docID = this.getFirstParam("id",null).toString();
 			try {
 				// #1: Make sure doc exists.
 				DocumentRepository repo = this.repoman.getRepository(SETTINGS_REPO);
@@ -90,10 +89,10 @@ public class RemoveUser extends AbstractCommand {
 			return;
 		
 		// CASE #2: Delete by user name
-		} else if(this.hasParam(params, UserEnum.USERNAME.getKey())) {
+		} else if(this.hasParam(UserEnum.USERNAME.getKey())) {
 			// Step #1: Get the user record with the given username
 			String username_field = UserEnum.USERNAME.getKey();
-			String username = this.getFirstParam(params, username_field).toString();
+			String username = this.getFirstParam(username_field,null).toString();
 			try {
 				String [] docids = search.getDocIDsByMetadataValue(username_field, username); // RepositoryAccessException
 				if(docids == null) {

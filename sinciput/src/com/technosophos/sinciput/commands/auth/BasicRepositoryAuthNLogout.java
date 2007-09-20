@@ -1,7 +1,7 @@
 package com.technosophos.sinciput.commands.auth;
 
-import java.util.List;
-import java.util.Map;
+//import java.util.List;
+//import java.util.Map;
 import com.technosophos.sinciput.servlet.SinciputSession;
 import com.technosophos.rhizome.command.AbstractCommand;
 import com.technosophos.rhizome.controller.CommandResult;
@@ -23,11 +23,9 @@ public class BasicRepositoryAuthNLogout extends AbstractCommand {
 	 */
 	public static final String DIR_AUTH_REQ = "auth";
 	
-	public void doCommand(Map<String, Object> params,
-			List<CommandResult> results) throws ReRouteRequest {
-		
+	public void execute() throws ReRouteRequest {
 
-		((SinciputSession)params.get(REQ_PARAM_SESSION)).invalidate();
+		((SinciputSession)this.params.get(REQ_PARAM_SESSION)).invalidate();
 		results.add(new CommandResult("Logged Out"));
 		
 		String[] rrc = this.comConf.getDirective(DIR_AUTH_REQ);

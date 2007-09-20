@@ -5,7 +5,7 @@
 #elseif($rerouterequest)
 	<p>$rerouterequest.Explanation</p>
 #end
-#set( $action = "login" )
+#set( $action = "$absolute_uri/login" )
 #set( $next_request="default")
 #parse("frag/login_form.vt")
 #parse("frag/standard_footer.vt")
