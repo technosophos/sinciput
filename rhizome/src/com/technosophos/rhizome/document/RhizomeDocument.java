@@ -1,6 +1,7 @@
 package com.technosophos.rhizome.document;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.io.CharArrayWriter;
 import java.io.OutputStream;
 import java.io.Writer;
@@ -150,8 +151,21 @@ public class RhizomeDocument implements Presentable {
 	 * 
 	 * @return ArrayList of Metadatum items.
 	 */
-	public ArrayList<Metadatum> getMetadata() {
+	public List<Metadatum> getMetadata() {
 		return this.metadata;
+	}
+	
+	/**
+	 * Returns the Metadatum with the given name.
+	 * If no such metadatum is found, this returns null.
+	 * @param name Name of the metadatum
+	 * @return The metadatum with that name, or null.
+	 */
+	public Metadatum getMetadatum(String name) {
+		for(Metadatum m: this.metadata) {
+			if( m.getName().equals(name)) return m;
+		}
+		return null;
 	}
 	
 	/**

@@ -52,7 +52,7 @@ public abstract class AbstractCommand implements RhizomeCommand {
 	 * command processing should be done here.
 	 * @throws ReRouteRequest
 	 */
-	public abstract void execute() throws ReRouteRequest;
+	protected abstract void execute() throws ReRouteRequest;
 
 	/**
 	 * This simply stores the {@link CommandConfiguration} and {@link RepositoryManager} locally.
@@ -195,14 +195,15 @@ public abstract class AbstractCommand implements RhizomeCommand {
 	}
 	
 	/**
-	 * Returns true if there is a parameter with the given name. Note that the parameter may
-	 * exist, and still have a null value.
+	 * Returns true if there is a parameter with the given name. 
+	 * Currently, this also checks the value, so if the key exists, but the value is null, 
+	 * this will return false.
 	 * @param name Name of param to look up
 	 * @return True if the param exists, though it may have a null value.
 	 */
 	protected boolean hasParam(String name) {
 		String pname = this.getPrefixedParamName(name);
-		return this.params.containsKey(pname);
+		return this.params.containsKey(pname) && this.params.get(name) != null;
 	}
 	
 	/**
@@ -217,6 +218,7 @@ public abstract class AbstractCommand implements RhizomeCommand {
 	 * using the {@link #PARAM_REPO_NAME} constant.</p>
 	 * @param params Map of params.
 	 * @return Repository name.
+	 * @deprecated
 	 */
 	protected String getCurrentRepositoryName(Map<String, Object> params) {
 		String repoName = this.getParam(params, PARAM_REPO_NAME).toString();
