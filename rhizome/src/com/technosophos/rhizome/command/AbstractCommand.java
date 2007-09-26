@@ -203,7 +203,7 @@ public abstract class AbstractCommand implements RhizomeCommand {
 	 */
 	protected boolean hasParam(String name) {
 		String pname = this.getPrefixedParamName(name);
-		return this.params.containsKey(pname) && this.params.get(name) != null;
+		return this.params.containsKey(pname) && this.params.get(pname) != null;
 	}
 	
 	/**
