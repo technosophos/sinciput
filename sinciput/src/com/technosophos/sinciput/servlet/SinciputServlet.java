@@ -96,6 +96,7 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 	 * <li>resource_path: The path to the webapp's static file storage (CSS, images, etc)</li>
 	 * <li>app_url: The fully-qualified URL to this application.</li>
 	 * <li>absolute_uri: The absolute URI to this application.</li>
+	 * <li>resource_uri: The absolute URI to this application's static files (CSS, images, etc.).</li>
 	 * </ul>
 	 * <h3>Tainting Parameters</h3>
 	 * <p>Any parameter that begins with an underscore (_) is considered untainted. Parameters
@@ -145,6 +146,7 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 		params.put(ServletConstants.CONFIG_PATH, this.configPath);
 		params.put(ServletConstants.RESOURCE_PATH, this.resourcePath);
 		params.put(ServletConstants.APP_URL, this.getBaseUrl(request));
+		params.put(ServletConstants.RESOURCE_URI, request.getContextPath());
 		params.put(ServletConstants.ABSOLUTE_URI, request.getContextPath() + request.getServletPath());
 		// Workaround for broken velocity (var name $base_path causes problems):
 		params.put("app_path", this.basePath);
@@ -331,6 +333,26 @@ import com.technosophos.sinciput.servlet.ServletConstants;
 		}
 		sb.append(r.getContextPath());
 		sb.append(r.getServletPath());
+		//this.log("BASE URL: " + sb.toString());
+		return sb.toString();
+	}
+	
+	protected String getResourceUrl(HttpServletRequest r) {
+		String scheme = r.getScheme();
+		int p = r.getServerPort();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append(scheme);
+		sb.append("://");
+		sb.append(r.getServerName());
+		// Port conditional:
+		if( !("http".equalsIgnoreCase(scheme) && p == 80) 
+				&& !("https".equalsIgnoreCase(scheme) && p == 443)) {
+			sb.append(':');
+			sb.append(p);
+		}
+		sb.append(r.getContextPath());
+		//sb.append(r.getServletPath());
 		//this.log("BASE URL: " + sb.toString());
 		return sb.toString();
 	}

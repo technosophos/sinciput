@@ -10,6 +10,9 @@
 	<loadclass name="AuthNLogout" class="com.technosophos.sinciput.commands.auth.BasicRepositoryAuthNLogout"/>
 	<loadclass name="RequireAuthN" class="com.technosophos.sinciput.commands.auth.BasicRepositoryRequireAuthN"/>
 	<loadclass name="GetDocument"     class="com.technosophos.rhizome.command.GetDocument"/>
+	
+	<loadclass name="AddNote"     class="com.technosophos.sinciput.commands.notes.AddNote"/>
+	<loadclass name="ViewNote"     class="com.technosophos.sinciput.commands.notes.ViewNote"/>
 	<!--  
 	loadclass name="info" class="com.technosophos.rhizome.command.http.DisplayInfo"
 	loadclass name="URLInfo" class="com.technosophos.rhizome.command.http.URLInfo"
@@ -62,6 +65,20 @@
 				<param name="auth">loginform</param>
 			</cmd>
 		</request>
+		<request name="add_note">
+			<cmd do="RequireAuthN" fatal="true"/>
+			<cmd do="template">
+				<param name="template_name">add_note.vt</param>
+			</cmd>
+		</request>
+		<request name="save_note">
+			<cmd do="RequireAuthN" fatal="true"/>
+			<cmd do="AddNote"/>
+			<cmd do="template">
+				<param name="template_name">save_note.vt</param>
+			</cmd>
+		</request>
+		
 		<request name="default">
 			<cmd do="InstallRedirect" fatal="true"/>
 			<cmd do="RequireAuthN" fatal="true"/>

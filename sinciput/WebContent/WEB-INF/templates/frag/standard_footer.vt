@@ -3,7 +3,10 @@ Standard footer text.
 
 @author mbutcher
 *#
+</div><!-- close t_body -->
+<div id="t_footer" style="clear:both">
 <p class="fineprint">Sinciput is Copyright &copy; 2007, Aleph-Null, Inc. Your use of the
 product is limited by the software license.</p>
+</div>
 </body>
 </html>

@@ -1,0 +1,25 @@
+#**
+Note editor.
+
+@author mbutcher
+*#
+#set( $title="Save A Note" )
+#parse( "frag/standard_header.vt" )
+#set( $keys = $ERRORS.keySet())
+#if($keys.size() > 0 )
+	#foreach( $err in $ERRORS ) 
+		<p>ERROR: $err</p>
+		<pre>
+		#foreach( $b in $body )
+			$b
+		#end
+		</pre>
+	#end
+  #parse( "frag/standard_footer.vt" )
+  #stop
+#end
+<h1>$AddNote.getMetadatum('title')</h1>
+<p>$AddNote.getMetadatum('subtitle')</p>
+$AddNote.getData()
+<p><a href="$absolute_uri/add_note">Add Another Note</a>|<a href="$absolute_uri">Home</a></p>
+#parse( "frag/standard_footer.vt" )

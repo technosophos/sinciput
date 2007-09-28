@@ -19,8 +19,10 @@ public class SinciputSession {
 	
 	private static final String SESSION_USER_UUID = "user_uuid";
 	private static final String SESSION_USER_NAME = "user_name";
+	private static final String SESSION_REPO_NAME = "repo_name";
+	private static final String SESSION_REPO_UUID = "repo_uuid";
 
-	HttpSession ses = null;
+	private HttpSession ses = null;
 	
 	private SinciputSession() {}
 	
@@ -51,7 +53,8 @@ public class SinciputSession {
 	 * @return User's UUID.
 	 */
 	public String getUserUUID() {
-		return this.ses.getAttribute(SESSION_USER_UUID).toString();
+		Object o = this.ses.getAttribute(SESSION_USER_UUID);
+		return o == null ? null : o.toString();
 	}
 	
 	/**
@@ -59,7 +62,45 @@ public class SinciputSession {
 	 * @return The name of the user.
 	 */
 	public String getUserName() {
-		return this.ses.getAttribute(SESSION_USER_NAME).toString();
+		Object o = this.ses.getAttribute(SESSION_USER_NAME);
+		return o == null ? null : o.toString();
+	}
+	
+	/**
+	 * Set the name of the currently selected repository.
+	 * This repo will be treated as the default repository. A <b>repoName</b> is the 
+	 * name of the repository (not necessarily human readable). The UUID is the 
+	 * document ID for the RepositoryDescription.
+	 * @see com.technosophos.sinciput.types.admin.RepositoryDescriptionEnum
+	 * @param repoName The name of the repository
+	 * @param repoName The name of the repository
+	 */
+	public void setActiveRepository( String repoName, String repoUUID ){
+		this.ses.setAttribute(SESSION_REPO_NAME, repoName);
+		this.ses.setAttribute(SESSION_REPO_UUID, repoUUID);
+	}
+	
+	/**
+	 * Get the name of the current repository.
+	 * If no repository is currently selected, this will return null. With this name, you should
+	 * be able to directly access the repository. NOTE: for a human readable name (a.k.a. a
+	 * repository <i>title</i>, you should use {@link getActiveRepositoryUUID} to get the
+	 * document ID, and then access the document to get title information.
+	 * @return Name of the repository.
+	 */
+	public String getActiveRepositoryName() {
+		Object o = this.ses.getAttribute(SESSION_REPO_NAME);
+		return o == null ? null : o.toString();
+	}
+	
+	/**
+	 * Get the UUID (document ID) for the currently active repository.
+	 * The UUID can be used to get the repo description from the repository.
+	 * @return UUID for the repository.
+	 */
+	public String getActiveRepositoryUUID() {
+		Object o = this.ses.getAttribute(SESSION_REPO_UUID);
+		return o == null ? null : o.toString();
 	}
 	
 	/**

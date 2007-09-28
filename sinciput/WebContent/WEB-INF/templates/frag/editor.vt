@@ -1,0 +1,18 @@
+#**
+Support for a GUI editor.
+
+Variables:
+
+@author mbutcher
+*#
+<script language="javascript" type="text/javascript" src="$resource_uri/js/tiny_mce/tiny_mce.js"></script>
+<script language="javascript" type="text/javascript">
+tinyMCE.init({
+	mode : "textareas",
+	theme : "simple",
+	fullscreen_new_window: true
+});
+</script>
+<textarea rows="30" cols="50" name="body" id="body">
+Edit me.
+</textarea>

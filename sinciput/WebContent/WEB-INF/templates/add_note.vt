@@ -1,0 +1,28 @@
+#**
+Note editor.
+
+@author mbutcher
+*#
+#set( $title="Edit A Note" )
+#parse( "frag/standard_header.vt" )
+#if($ERRORS.containsKey("RequireAuthN"))
+  <p>You must login before you can access Sinciput.</p>
+  #set( $action="login" )
+  #set( $next_request="default")
+  #parse("frag/login_form.vt")
+  #parse( "frag/standard_footer.vt" )
+  #stop
+#end
+<form method="POST" action="$absolute_uri/save_note">
+	<label for="title">Title</label>
+	<input type="text" name="title" id="title"/><br/>
+	<label for="subtitle">Subitle</label>
+	<input type="text" name="subtitle" id="subtitle"/><br/>
+	<label for="tag">Tags</label>
+	<input type="text" name="tag" id="tag"/><br/>
+	#parse( "frag/editor.vt" )
+	<br/>
+	<input type="submit" value="Save Note"/><br/>
+</form>
+
+#parse( "frag/standard_footer.vt" )

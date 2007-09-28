@@ -1,9 +1,15 @@
 package com.technosophos.sinciput.util;
 
+//import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.net.URLDecoder;
 import java.util.Arrays;
+
+//import org.xml.sax.SAXException;
+
+import com.technosophos.sinciput.xml.RHTML;
+import com.technosophos.sinciput.SinciputException;
 
 /**
  * This class provides a number of input cleaning tools.
@@ -85,7 +91,8 @@ public class Scrubby {
 	 * @return
 	 */
 	public static String cleanText(String text) {
-		return text;
+		//FIXME: !!!! This needs work.
+		return encodeHTMLChars( text, false );
 	}
 	
 	/**
@@ -94,21 +101,41 @@ public class Scrubby {
 	 * @param html
 	 * @return
 	 */
+	/*
 	public static String cleanHTML(String html) {
 		return html;
 	}
+	*/
 	
 	
 	/**
 	 * Make a clean and safe HTML fragment.
-	 * This does deXSS stuff as well as basic HTML cleaning.
-	 * @param html
-	 * @return
+	 * This does deXSS stuff as well as basic HTML cleaning. Troublesome stuff may be removed.
+	 * @param html Dirty HTML string.
+	 * @return Clean HTML string.
+	 * @throws SinciputException Thrown when HTML cannot be parsed (or if a parser cannot be created).
 	 */
-	public static String cleanSafeHTML( String html) {
-		return html;
+	public static String cleanSafeHTML( String html) throws SinciputException {
+		html = "<span>" + html + "</span>"; // Ensure that we have a wrapper tag.
+		RHTML r = new RHTML(html);
+		
+		String clean = null;
+		try {
+			clean =  r.getRHTMLString();
+		} catch (Exception e) {
+			throw new SinciputException("Failed to parse HTML: " + e.getMessage(), e);
+		}
+		//trim added span tag.
+		return clean.substring(6, clean.length() - 7);
+		//return clean;
 	}
 	
+	/**
+	 * Encode HTML in XML entities.
+	 * @param cdata
+	 * @param only_necessary
+	 * @return
+	 */
 	public static String encodeHTMLChars( String cdata, boolean only_necessary) {
 		StringBuilder sb = new StringBuilder(cdata.length() * 5);
 		char[] chars = cdata.toCharArray();
@@ -117,14 +144,14 @@ public class Scrubby {
 			if(Arrays.binarySearch(HTML_NECESSARY_ENTITIES, chars[i]) >= 0) {
 			// Stopped here
 				sb.append("&#");
-				sb.append(chars[i]);
+				sb.append((int)chars[i]);
 				sb.append(';');
 			}else if(!only_necessary && Arrays.binarySearch(HTML_OPTIONAL_ENTITIES, chars[i]) >= 0) {
 			// Stopped here
 				sb.append("&#");
-				sb.append(chars[i]);
+				sb.append((int)chars[i]);
 				sb.append(';');
-			}
+			} else sb.append(chars[i]);
 		}
 		return sb.toString();
 	}

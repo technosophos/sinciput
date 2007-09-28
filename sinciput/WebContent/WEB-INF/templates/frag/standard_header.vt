@@ -14,4 +14,12 @@ $title: document title.
 <title>$!title</title>
 </head>
 <body>
+<div id="t_header">
+User: $_session.getUserName()<br/>
+Repository: $_session.getActiveRepositoryName()
+</div>
+<div id="menu" style="float:left">
+<a href="$absolute_uri/add_note">Add Note</a><br/>
+</div>
+<div id="t_body" style="float:left">
 <h1>$title</h1>

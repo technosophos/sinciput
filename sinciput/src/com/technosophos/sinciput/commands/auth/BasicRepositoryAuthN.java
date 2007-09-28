@@ -107,7 +107,7 @@ public class BasicRepositoryAuthN extends AbstractCommand {
 		
 		String uid = this.getFirstParam(PARAM_AUTH_UID, null).toString();
 		String pw = this.getFirstParam(PARAM_AUTH_PASSWD, null).toString();
-		//System.err.format("Username: %s, Password: %s\n", uid, pw);
+		System.err.format("Username: %s, Password: %s\n", uid, pw);
 		
 		/*
 		 * Do login stuff here:

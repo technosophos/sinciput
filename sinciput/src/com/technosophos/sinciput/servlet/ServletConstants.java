@@ -68,6 +68,15 @@ public class ServletConstants {
 	 public static final String ABSOLUTE_URI = "absolute_uri";
 	 
 	 /**
+	  * The resource URI.
+	  * <p>The full path from the server root the location of supporting files, such as
+	  * js, images, and so on. 
+	  * E.g. if the URL is
+	  * http://example.com/servlet/js/, the absolute path is /servlet/js.</p>
+	  */
+	 public static final String RESOURCE_URI = "resource_uri";
+	 
+	 /**
 	  * Servlet init parameter to get for FS repository path: fs_repo_path.
 	  * @see com.technosophos.rhizome.repository.fs.FileSystemRepository
 	  */

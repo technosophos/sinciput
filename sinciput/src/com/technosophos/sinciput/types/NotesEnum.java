@@ -21,7 +21,7 @@ public enum NotesEnum implements SinciputType {
 			"created_on", 
 			"Created On",
 			new FieldDescription(FieldDescription.FIELD_TEXT, 50)),
-	MODIFIED_ON (
+	LAST_MODIFIED (
 			"last_modified", 
 			"Last Modified",
 			new FieldDescription(FieldDescription.FIELD_TEXT, 50)),
