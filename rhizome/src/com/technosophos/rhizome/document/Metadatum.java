@@ -112,6 +112,19 @@ public class Metadatum {
 	}
 	
 	/**
+	 * Get the first value for this metadatum.
+	 * <p>This is a convenience method for quickly getting the first value
+	 * in a metadatum. This will return null under the two following conditions: (a)
+	 * there are no values at all in the metadatum, or (b) the value of this metadatum has
+	 * been explicitly assigned the null value.</p>
+	 * @return String value or null if no value is found.
+	 */
+	public String getFirstValue() {
+		if(this.values == null) return null;
+		return this.values.get(0);
+	}
+	
+	/**
 	 * Check whether there are any values.
 	 * This returns true if there is at least one value
 	 * for this metadatum item.
