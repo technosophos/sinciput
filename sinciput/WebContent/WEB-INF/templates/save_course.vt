@@ -3,7 +3,7 @@ Note editor.
 
 @author mbutcher
 *#
-#set( $title="Save A Note" )
+#set( $title="Save A Course" )
 #parse( "frag/standard_header.vt" )
 #parse("frag/login_trap.vt")
 
@@ -20,8 +20,8 @@ Note editor.
   #parse( "frag/standard_footer.vt" )
   #stop
 #end
-<h1>$AddNote.getMetadatum('title').FirstValue</h1>
-<p>$AddNote.getMetadatum('subtitle').FirstValue</p>
-$AddNote.getData()
-<p><a href="$absolute_uri/add_note">Add Another Note</a> | <a href="$absolute_uri">Home</a></p>
+<h1>$AddCourse.getMetadatum('title').FirstValue</h1>
+<p>$AddCourse.getMetadatum('description').FirstValue</p>
+$AddCourse.getData()
+<p><a href="$absolute_uri/add_course">Add Another Course</a> | <a href="$absolute_uri">Home</a></p>
 #parse( "frag/standard_footer.vt" )

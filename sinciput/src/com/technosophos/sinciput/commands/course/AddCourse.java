@@ -1,4 +1,4 @@
-package com.technosophos.sinciput.commands.notes;
+package com.technosophos.sinciput.commands.course;
 
 import com.technosophos.rhizome.RhizomeException;
 import com.technosophos.rhizome.controller.ReRouteRequest;
@@ -7,8 +7,7 @@ import com.technosophos.rhizome.repository.RepositorySearcher;
 import com.technosophos.rhizome.repository.DocumentRepository;
 import com.technosophos.rhizome.repository.RhizomeInitializationException;
 import com.technosophos.sinciput.SinciputException;
-//import com.technosophos.sinciput.types.CourseEnum;
-import com.technosophos.sinciput.types.NotesEnum;
+import com.technosophos.sinciput.types.CourseEnum;
 import com.technosophos.sinciput.commands.SinciputCommand;
 import com.technosophos.sinciput.util.Scrubby;
 
@@ -20,29 +19,36 @@ import com.technosophos.sinciput.servlet.SinciputSession;
 import com.technosophos.sinciput.types.admin.RepoDescriptionEnum;
 import com.technosophos.rhizome.command.AbstractCommand;
 //import com.technosophos.rhizome.repository.DocumentNotFoundException;
-//import com.technosophos.sinciput.types.NotesEnum;
+//import com.technosophos.sinciput.types.CourseEnum;
  */
 
 /**
- * Add a note to a given repository.
- * <p>At the heart of Sinciput is the note. This command is used for taking user input
- * and creating a new note in a given repository.</p>
- * <p>This default addNote class assumes that the note is in HTML. For other body types, you
+ * Add a course to a given repository.
+ * <p>A Course represents a class, course, or seminar.</p>
+ * <p>This default AddCourse class assumes that the note is in HTML. For other body types, you
  * can simply override {@link prepareBody(RhizomeDocument)}.</p>
  * <p>What this object expects in parameters:</p>
  * <ul>
- * <li>title: Title of the note</li>
- * <li>subtitle: Subtitle of the note</li>
+ * <li>title (REQUIRED): Title of the course</li>
+ * <li>description: Description of the course</li>
+ * <li>instructor: name of instructor(s)</li>
+ * <li>instructor_email: Email of the instructor(s)</li>
+ * <li>location: Course location</li>
+ * <li>course_number: The organizational number assigned. This is free-form: Phil 479 or 
+ * 89796-002 should both work.</li>
+ * <li>course_times: Day/time info on when the course meets. Free form.</li>
+ * <li>start_date: Date course starts</li>
+ * <li>end_date: Date course ends</li>
  * <li>tag(s): Zero or more tags</li>
- * <li>body: The text of the note</li>
+ * <li>body: A place to put a syllabus or so on.</li>
  * </ul> 
  * <p>Additionally, it expects to be able to fetch a username from the session.</p>
  * @author mbutcher
  *
  */
-public class AddNote extends SinciputCommand {
+public class AddCourse extends SinciputCommand {
 	
-	public final static String NOTE_BODY = "body";
+	public final static String COURSE_BODY = "body";
 
 	/**
 	 * Store the note as a document in the repository.
@@ -95,12 +101,26 @@ public class AddNote extends SinciputCommand {
 		
 		// Create required fields
 		RhizomeDocument doc = new RhizomeDocument(DocumentID.generateDocumentID());
+		String title = this.getFirstParam(CourseEnum.TITLE.getKey(), null).toString();
+		if( title == null ) {
+			String err = "No title specified";
+			String ferr = "You need to give a title. Course titles are required.";
+			results.add(this.createErrorCommandResult(err, ferr));
+			return;
+		}
 		
 		// Fetch optional fields
 		// - get all fields
-		String title = this.getFirstParam(NotesEnum.TITLE.getKey(), "Untitled").toString();
-		String subtitle = this.getFirstParam(NotesEnum.TITLE.getKey(), "").toString();
-		Object tags = this.getParam(NotesEnum.TAG.getKey(), null);
+		
+		String description = this.getFirstParam(CourseEnum.DESCRIPTION.getKey(), "").toString();
+		String location = this.getFirstParam(CourseEnum.LOCATION.getKey(), "").toString();
+		String startDate = this.getFirstParam(CourseEnum.START_DATE.getKey(), "").toString();
+		String endDate = this.getFirstParam(CourseEnum.END_DATE.getKey(), "").toString();
+		String instructor = this.getFirstParam(CourseEnum.INSTRUCTOR.getKey(), "").toString();
+		String instructorEmail = this.getFirstParam(CourseEnum.INSTRUCTOR_EMAIL.getKey(), "").toString();
+		String courseNumber = this.getFirstParam(CourseEnum.COURSE_NUMBER.getKey(), "").toString();
+		String courseTimes = this.getFirstParam(CourseEnum.COURSE_TIMES.getKey(), "").toString();
+		Object tags = this.getParam(CourseEnum.TAG.getKey(), null);
 		
 		// - find out how tags are stored
 		String[] ta;
@@ -109,31 +129,46 @@ public class AddNote extends SinciputCommand {
 		} else if( tags instanceof String[] ) {
 			 ta = (String[])tags;
 			
-		} else ta = new String[]{ tags.toString() };
+		} else ta = tags.toString().split(",");//new String[]{ tags.toString() };
 		
 		// - clean fields
 		title = Scrubby.cleanText(title);
-		subtitle = Scrubby.cleanText(subtitle);
+		description = Scrubby.cleanText(description);
+		location = Scrubby.cleanText(location);
+		startDate = Scrubby.cleanText(startDate);
+		endDate = Scrubby.cleanText(endDate);
+		instructor = Scrubby.cleanText(instructor);
+		instructorEmail = Scrubby.cleanText(instructorEmail);
+		courseNumber = Scrubby.cleanText(courseNumber);
+		courseTimes = Scrubby.cleanText(courseTimes);
+		
 		int i, j = ta.length;
 		for( i = 0; i < j; ++i) {
 			ta[i] = ta[i] != null ? Scrubby.cleanText(ta[i]) : "Empty";
 		}
 		// - put em in metadata objects:
-		doc.addMetadatum(new Metadatum(NotesEnum.TITLE.getKey(), title));
-		doc.addMetadatum(new Metadatum(NotesEnum.SUBTITLE.getKey(), subtitle));
-		doc.addMetadatum(new Metadatum(NotesEnum.TAG.getKey(), ta));
+		doc.addMetadatum(new Metadatum(CourseEnum.TITLE.getKey(), title));
+		doc.addMetadatum(new Metadatum(CourseEnum.DESCRIPTION.getKey(), description));
+		doc.addMetadatum(new Metadatum(CourseEnum.LOCATION.getKey(), location));
+		doc.addMetadatum(new Metadatum(CourseEnum.START_DATE.getKey(), startDate));
+		doc.addMetadatum(new Metadatum(CourseEnum.END_DATE.getKey(), endDate));
+		doc.addMetadatum(new Metadatum(CourseEnum.INSTRUCTOR.getKey(), instructor));
+		doc.addMetadatum(new Metadatum(CourseEnum.INSTRUCTOR_EMAIL.getKey(), instructorEmail));
+		doc.addMetadatum(new Metadatum(CourseEnum.COURSE_NUMBER.getKey(), courseNumber));
+		doc.addMetadatum(new Metadatum(CourseEnum.COURSE_TIMES.getKey(), courseTimes));
+		doc.addMetadatum(new Metadatum(CourseEnum.TAG.getKey(), ta));
 		
 		// - set automatic fields
 		String time = com.technosophos.rhizome.util.Timestamp.now();
-		doc.addMetadatum(new Metadatum(NotesEnum.TYPE.getKey(), 
-				NotesEnum.TYPE.getFieldDescription().getDefaultValue()));
-		doc.addMetadatum(new Metadatum(NotesEnum.CREATED_ON.getKey(), time ));
-		doc.addMetadatum(new Metadatum(NotesEnum.LAST_MODIFIED.getKey(), time));
-		doc.addMetadatum(new Metadatum(NotesEnum.CREATED_BY.getKey(), uname ));
-		doc.addMetadatum(new Metadatum(NotesEnum.MODIFIED_BY.getKey(), uname ));
+		doc.addMetadatum(new Metadatum(CourseEnum.TYPE.getKey(), 
+					CourseEnum.TYPE.getFieldDescription().getDefaultValue()));
+		doc.addMetadatum(new Metadatum(CourseEnum.CREATED_ON.getKey(), time ));
+		doc.addMetadatum(new Metadatum(CourseEnum.LAST_MODIFIED.getKey(), time));
+		doc.addMetadatum(new Metadatum(CourseEnum.CREATED_BY.getKey(), uname ));
+		doc.addMetadatum(new Metadatum(CourseEnum.MODIFIED_BY.getKey(), uname ));
 
 		// Do the body:
-		String body = this.getFirstParam(NOTE_BODY, "").toString();
+		String body = this.getFirstParam(COURSE_BODY, "").toString();
 		
 		try {
 			this.prepareBody(body, doc);

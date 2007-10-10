@@ -18,6 +18,7 @@ import com.technosophos.rhizome.repository.RepositoryAccessException;
 import com.technosophos.rhizome.repository.util.RepositoryUtils;
 import com.technosophos.rhizome.document.*;
 import com.technosophos.sinciput.SinciputException;
+import com.technosophos.sinciput.commands.auth.AuthenticationException;
 import com.technosophos.sinciput.servlet.SinciputSession;
 import com.technosophos.sinciput.types.admin.RepoDescriptionEnum;
 
@@ -61,7 +62,8 @@ public abstract class SinciputCommand extends AbstractCommand {
 		if( !this.checkAuth() ) {
 			String friendlyErrMsg = "You must login first.";
 			String errMsg = "SinciputCommand: Unauthenticated user access.";
-			results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg));
+			System.err.println("User not logged in.");
+			results.add(this.createErrorCommandResult(errMsg, friendlyErrMsg, new AuthenticationException("No Auth")));
 			return;
 		}
 		

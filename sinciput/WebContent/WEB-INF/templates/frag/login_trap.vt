@@ -1,0 +1,20 @@
+#** 
+Print a pretty login error message.
+
+WARNING WARNING WARNING!!!! This does not prevent Sinciput from performing 
+actions when a user has not authenticated!!!!
+
+Remember, the template is always evaluated at the END of the command chain.
+That means that all other commands are processed first. Make sure you do 
+not inadvertantly give an attacker the ability to execute commands: CHECK
+FOR AUTH IN THE COMMAND CLASS ITSELF!
+
+@author mbutcher
+*#
+#if( $isLoggedIn == false )
+  <h2>You must first login</h2>
+  <p>You canot use this page without 
+  <a href="$absolute_uri/login" title="login form">logging in</a> first.</p>
+  #parse("frag/standard_footer.vt")
+  #stop
+#end

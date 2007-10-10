@@ -155,4 +155,31 @@ public class Scrubby {
 		}
 		return sb.toString();
 	}
+	
+	/**
+	 * Given a string represenging a decimal integer, return the integer value.
+	 * If the string cannot be converted, this will return the value in defaultVal.
+	 * @param txt String representing a decimal integer.
+	 * @param defaultVal Default return value (if the string cannot be converted)
+	 * @return An integer representation of txt, or defaultVal.
+	 */
+	public static int asInt(String txt, int defaultVal) {
+		int r;
+		try {
+			r = Integer.parseInt(txt);
+		} catch (NumberFormatException e) {
+			r = defaultVal;
+		}
+		return r;
+	}
+	/**
+	 * Given a string representing a decimal integer, return the integer value.
+	 * This returns -1 if the value cannot be determined.
+	 * @see asInt(String, int)
+	 * @param txt String representing a decimal integer.
+	 * @return An integer representation of txt, or -1.
+	 */
+	public static int asInt(String txt) {
+		return asInt(txt, -1);
+	}
  }

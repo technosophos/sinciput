@@ -26,6 +26,7 @@ public class BasicRepositoryAuthNLogout extends AbstractCommand {
 	public void execute() throws ReRouteRequest {
 
 		((SinciputSession)this.params.get(REQ_PARAM_SESSION)).invalidate();
+		this.params.remove(REQ_PARAM_SESSION);
 		results.add(new CommandResult("Logged Out"));
 		
 		String[] rrc = this.comConf.getDirective(DIR_AUTH_REQ);

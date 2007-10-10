@@ -4,22 +4,39 @@ Standard header for XHTML-based output.
 Variables:
 $title: document title.
 
+This sets the following variables:
+$isLoggedIn: True if a user is logged in, false otherwise.
+
 @author mbutcher
 *#
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-<title>$!title</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <title>$!title</title>
 </head>
 <body>
-<div id="t_header">
-User: $_session.getUserName()<br/>
-Repository: $_session.getActiveRepositoryName()
-</div>
-<div id="menu" style="float:left">
-<a href="$absolute_uri/add_note">Add Note</a><br/>
-</div>
-<div id="t_body" style="float:left">
-<h1>$title</h1>
+  <div id="t_header" style="float:right;">
+    #set( $isLoggedIn = $_session.userLoggedIn() )
+    #if( $isLoggedIn )
+      User: $_session.getUserName()<br/>
+      Repository: $!_session.getActiveRepositoryName()<br/>
+      <a href="$absolute_uri/logout" title="logout">Log out</a>
+    #else
+      You are not currently logged in.<br/>
+      <strong><a href="login" title="Login page">Log in now.</a></strong>
+    #end
+  </div>
+  <div id="menu" style="float:left">
+    ## Public items:
+    ## <none>
+  
+    ## Items that require login:
+    #if( $isLoggedIn )
+      <a href="$absolute_uri/add_note">Add Note</a><br/>
+      <a href="$absolute_uri/add_course">Add Course</a><br/>
+    #end
+  </div>
+  <div id="t_body" style="float:left">
+    <h1>$title</h1>

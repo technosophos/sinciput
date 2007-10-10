@@ -1,24 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <commands>
+	<!-- Sinciput Installation Commands -->
 	<loadclass name="VerifyEnv"       class="com.technosophos.sinciput.commands.install.VerifyEnvironment" />
 	<loadclass name="InstallBase"     class="com.technosophos.sinciput.commands.install.InstallBase" />
+	<loadclass name="InstallRedirect" class="com.technosophos.sinciput.commands.install.InstallRedirect"/>
+	
+	<!-- Sinciput Admin Commands -->
 	<loadclass name="AddUser"     class="com.technosophos.sinciput.commands.admin.AddUser" />
 	<loadclass name="CreateUserRepository"     class="com.technosophos.sinciput.commands.admin.CreateUserRepository" />
 	<loadclass name="AddUserRole"     class="com.technosophos.sinciput.commands.admin.AddUserRole" />
-	<loadclass name="InstallRedirect" class="com.technosophos.sinciput.commands.install.InstallRedirect"/>
+
+	<!-- Sinciput Auth Commands -->
 	<loadclass name="AuthN" class="com.technosophos.sinciput.commands.auth.BasicRepositoryAuthN"/>
 	<loadclass name="AuthNLogout" class="com.technosophos.sinciput.commands.auth.BasicRepositoryAuthNLogout"/>
 	<loadclass name="RequireAuthN" class="com.technosophos.sinciput.commands.auth.BasicRepositoryRequireAuthN"/>
-	<loadclass name="GetDocument"     class="com.technosophos.rhizome.command.GetDocument"/>
 	
+	<!-- Sinciput User Commands -->
 	<loadclass name="AddNote"     class="com.technosophos.sinciput.commands.notes.AddNote"/>
 	<loadclass name="ViewNote"     class="com.technosophos.sinciput.commands.notes.ViewNote"/>
-	<!--  
-	loadclass name="info" class="com.technosophos.rhizome.command.http.DisplayInfo"
-	loadclass name="URLInfo" class="com.technosophos.rhizome.command.http.URLInfo"
-	-->
-	<loadclass name="DumpConfiguration" class="com.technosophos.rhizome.command.util.DumpConfiguration"/>
+	<loadclass name="AddCourse"     class="com.technosophos.sinciput.commands.course.AddCourse"/>
+	<loadclass name="ViewCourse"     class="com.technosophos.sinciput.commands.course.ViewCourse"/>
+	
+	<!-- View Layer Commands -->
 	<loadclass name="template" class="com.technosophos.rhizome.command.template.DoVelocityTemplate"/>
+
+	<!-- To Be Removed -->
+	<loadclass name="DumpConfiguration" class="com.technosophos.rhizome.command.util.DumpConfiguration"/>
+	<loadclass name="GetDocument"     class="com.technosophos.rhizome.command.GetDocument"/>
+	
 	<requests>
 		<global>
 			<param name="base_path">
@@ -78,7 +87,19 @@
 				<param name="template_name">save_note.vt</param>
 			</cmd>
 		</request>
-		
+		<request name="add_course">
+			<cmd do="RequireAuthN" fatal="true"/>
+			<cmd do="template">
+				<param name="template_name">add_course.vt</param>
+			</cmd>
+		</request>
+		<request name="save_course">
+			<cmd do="RequireAuthN" fatal="true"/>
+			<cmd do="AddCourse"/>
+			<cmd do="template">
+				<param name="template_name">save_course.vt</param>
+			</cmd>
+		</request>
 		<request name="default">
 			<cmd do="InstallRedirect" fatal="true"/>
 			<cmd do="RequireAuthN" fatal="true"/>
