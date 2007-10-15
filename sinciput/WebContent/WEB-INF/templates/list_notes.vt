@@ -1,0 +1,52 @@
+#**
+List all notes.
+
+@author mbutcher
+*#
+#set( $title="Notes" )
+#parse( "frag/standard_header.vt" )
+#parse("frag/login_trap.vt")
+
+#set( $keys = $ERRORS.keySet())
+#if($keys.size() > 0 )
+	#foreach( $err in $ERRORS ) 
+		<p>ERROR: $err</p>
+		<pre>
+		#foreach( $b in $body )
+			$b
+		#end
+		</pre>
+	#end
+  #parse( "frag/standard_footer.vt" )
+  #stop
+#end
+
+## What we get back from ListNotes command is a DocumentCollection:
+#set( $size = $ListNotes.size() )
+#set( $docs = $ListNotes.getDocumentIDs() )
+<h2>There are $size Notes</h2>
+<table style="border: 1px solid black">
+<thead>
+	<tr>
+		<th>Title</th>
+		<th>Subtitle</th>
+		<th>Tags</th>
+		<th>Last Modified</th>
+	</tr>
+</thead>
+<tbody>
+#foreach( $id in $docs )
+	<tr>
+		<td>$ListNotes.getMetadatum( $id, 'title' ).FirstValue</td>
+		<td>$ListNotes.getMetadatum( $id, 'subtitle' ).FirstValue</td>
+		<td>$ListNotes.getMetadatum( $id, 'tag' ).FirstValue</td>
+		<td>$ListNotes.getMetadatum( $id, 'last_modified' ).FirstValue</td>
+	</tr>
+#end
+</tbody>
+</table>
+
+
+
+<p><a href="$absolute_uri/add_note">Add Another Note</a> | <a href="$absolute_uri">Home</a></p>
+#parse( "frag/standard_footer.vt" )

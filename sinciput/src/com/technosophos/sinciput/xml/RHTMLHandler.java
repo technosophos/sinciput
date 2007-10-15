@@ -223,10 +223,10 @@ public class RHTMLHandler extends DefaultHandler2 {
 		else name = qname.toLowerCase();
 		
 		// Check on status of this element:
-		System.out.println("Name: " + name);
+		//System.out.println("Name: " + name);
 		if( Arrays.binarySearch(this.sorted_elements_blacklist, name) >= 0 ) {
 			// blacklist
-			System.out.println("Skip children ++ for " + name);
+			//System.out.println("Skip children ++ for " + name);
 			++this.skip_children;
 		} else if(Arrays.binarySearch(this.sorted_elements_replace, name) >= 0) {
 			// Replace element with span.
@@ -243,7 +243,7 @@ public class RHTMLHandler extends DefaultHandler2 {
 			}
 			this.addElement(qname, sbAttr.toString());
 		}
-		System.out.println(this.skip_children);
+		//System.out.println(this.skip_children);
 	}
 	
 	public void endElement(String uri, String lname, String qname ) {
@@ -259,7 +259,7 @@ public class RHTMLHandler extends DefaultHandler2 {
 		// FIXME: With depth + element name, should be able to skip this.
 		if( Arrays.binarySearch(this.sorted_elements_blacklist, name) >= 0 ) {
 			// blacklist
-			System.out.println("Skip children -- for " + name);
+			//System.out.println("Skip children -- for " + name);
 			--this.skip_children;
 		} else if(Arrays.binarySearch(this.sorted_elements_replace, name) >= 0) {
 			//this.addElement("span");
@@ -269,20 +269,25 @@ public class RHTMLHandler extends DefaultHandler2 {
 			this.sb.append(qname);
 			this.sb.append('>');
 		}
-		System.out.println(this.skip_children);
+		//System.out.println(this.skip_children);
 	}
 
 	public void characters(char[] ch, int start, int len) {
 		
 		if(this.skip_children < 1) {
-			String str = new String(ch, start, len);
-			System.out.println("Characters was called with " + str);
-			// According to XML spec, these chars have to be resolved by parser.
-			// Now we need to reverse that:
-			if( len == 1 ) { 
-				// FIXME: Is this parser-specific behavior? Or do all parsers report decoded
-				// entities as single char pcdata?
-				switch(ch[start]) {
+			//String str = new String(ch, start, len);
+			//System.out.println("Characters was called with " + str);
+			
+			/*
+			 * Iterate through the char array and see if any of the characters need
+			 * to be replaced:
+			 */
+			int j;
+			for(int i = 0; i< len; ++i ) {
+				j = start + i;
+				// According to XML spec, these chars have to be resolved by parser.
+				// Now we need to reverse that:
+				switch(ch[j]) {
 				case '<':
 					//System.out.println("Got an LT");
 					sb.append("&lt;");
@@ -293,12 +298,32 @@ public class RHTMLHandler extends DefaultHandler2 {
 				case '>':
 					sb.append("&gt;");
 					break;
-				// MORE...
-				}
-			// else just append string:
-			} else sb.append(ch, start, len);
-		}
+				// Encode other entities.
+				default:
+					// Note: How this behaves is dependent on the selected charset. For example,
+					// grave-accented letters will not be encoded if charset is UTF-8.
+					if( Character.isLetterOrDigit(ch[j]) || (int)ch[j] <= 126 )
+						sb.append( ch[j] );
+					else { // If char is above 126 and not a letter, I guess we encode it.
+						sb.append("&#");
+						sb.append((int)ch[j]);
+						sb.append(';');
+					}
+				}// Done with switch.
+			} // Done with for()
+		} // Done with keep childrend.
+		// If not keep children, do nothing.
 	}
+	
+	/*
+	public void resovleEntity(String name, String pubID, String uri, String sysID ) {
+		System.out.format("RESOLVE name: %s, uri: %s", name, uri);
+	}
+	
+	public void resovleEntity(String pubID, String sysID ) {
+		System.out.format("RESOLVE name: %s, uri: %s", pubID, sysID);
+	}
+	*/
 	
 	public void startCDATA() {
 		++this.skip_children;
@@ -312,9 +337,11 @@ public class RHTMLHandler extends DefaultHandler2 {
 		
 	}
 	
+	/*
 	public void startEntity(String n) {
 		System.out.println("Starting entity.");
 	}
+	*/
 	// // // // // // // // Utilities // // // // // // // // //
 	protected String cleanAttr(String name, String val) {
 		

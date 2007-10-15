@@ -18,8 +18,10 @@
 	<!-- Sinciput User Commands -->
 	<loadclass name="AddNote"     class="com.technosophos.sinciput.commands.notes.AddNote"/>
 	<loadclass name="ViewNote"     class="com.technosophos.sinciput.commands.notes.ViewNote"/>
+	<loadclass name="ListNotes"     class="com.technosophos.sinciput.commands.notes.ListNotes"/>
 	<loadclass name="AddCourse"     class="com.technosophos.sinciput.commands.course.AddCourse"/>
 	<loadclass name="ViewCourse"     class="com.technosophos.sinciput.commands.course.ViewCourse"/>
+	<loadclass name="ListCourses"     class="com.technosophos.sinciput.commands.course.ListCourses"/>
 	
 	<!-- View Layer Commands -->
 	<loadclass name="template" class="com.technosophos.rhizome.command.template.DoVelocityTemplate"/>
@@ -87,6 +89,13 @@
 				<param name="template_name">save_note.vt</param>
 			</cmd>
 		</request>
+		<request name="list_notes">
+			<cmd do="RequireAuthN" fatal="true"/>
+			<cmd do="ListNotes"/>
+			<cmd do="template">
+				<param name="template_name">list_notes.vt</param>
+			</cmd>
+		</request>
 		<request name="add_course">
 			<cmd do="RequireAuthN" fatal="true"/>
 			<cmd do="template">
@@ -98,6 +107,13 @@
 			<cmd do="AddCourse"/>
 			<cmd do="template">
 				<param name="template_name">save_course.vt</param>
+			</cmd>
+		</request>
+		<request name="list_courses">
+			<cmd do="RequireAuthN" fatal="true"/>
+			<cmd do="ListCourses"/>
+			<cmd do="template">
+				<param name="template_name">list_courses.vt</param>
 			</cmd>
 		</request>
 		<request name="default">

@@ -1,0 +1,52 @@
+#**
+List courses.
+
+@author mbutcher
+*#
+#set( $title="Courses" )
+#parse( "frag/standard_header.vt" )
+#parse("frag/login_trap.vt")
+
+#set( $keys = $ERRORS.keySet())
+#if($keys.size() > 0 )
+	#foreach( $err in $ERRORS ) 
+		<p>ERROR: $err</p>
+		<pre>
+		#foreach( $b in $body )
+			$b
+		#end
+		</pre>
+	#end
+  #parse( "frag/standard_footer.vt" )
+  #stop
+#end
+
+## What we get back from ListCourses command is a DocumentCollection:
+#set( $size = $ListCourses.size() )
+#set( $docs = $ListCourses.getDocumentIDs() )
+<h2>There are $size classes</h2>
+<table style="border: 1px solid black">
+<thead>
+	<tr>
+		<th>Course</th>
+		<th>Title</th>
+		<th>Instructor</th>
+		<th>Times</th>
+	</tr>
+</thead>
+<tbody>
+#foreach( $id in $docs )
+	<tr>
+		<td>$ListCourses.getMetadatum( $id, 'course_number' ).FirstValue</td>
+		<td>$ListCourses.getMetadatum( $id, 'title' ).FirstValue</td>
+		<td>$ListCourses.getMetadatum( $id, 'instructor' ).FirstValue</td>
+		<td>$ListCourses.getMetadatum( $id, 'course_times' ).FirstValue</td>
+	</tr>
+#end
+</tbody>
+</table>
+
+
+
+<p><a href="$absolute_uri/add_note">Add Another Note</a> | <a href="$absolute_uri">Home</a></p>
+#parse( "frag/standard_footer.vt" )
