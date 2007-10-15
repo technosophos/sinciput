@@ -45,7 +45,7 @@ public interface RepositorySearcher {
 	 * </ul>
 	 * </p>
 	 * <p>This sort of thing is the same operation that could be achived running 
-	 * {@see narrowingSearch(Map)}, and using getDocCollection() on the results.
+	 * {@see narrowingSearch(Map<String, String>)}, and using getDocCollection() on the results.
 	 * This, however, is far more efficient.</p>
 	 * 
 	 * 

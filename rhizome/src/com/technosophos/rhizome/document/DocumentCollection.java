@@ -3,6 +3,7 @@ package com.technosophos.rhizome.document;
 import com.technosophos.rhizome.RhizomeException;
 import com.technosophos.rhizome.repository.RepositoryManager;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import java.util.Set;
 
@@ -71,7 +72,7 @@ public class DocumentCollection {
 	 * underlying system tried to retrieve title and subtitle information for this 
 	 * document.
 	 * </p><p>
-	 * However, not entries will contain a Metadatum entry for each hint. If a given 
+	 * However, not all entries will contain a Metadatum entry for each hint. If a given 
 	 * document (docID) does not have the requested Metdatum -- for instance, if a document
 	 * does not have a title -- no title Metadatum is added.
 	 * </p><p>
@@ -154,7 +155,7 @@ public class DocumentCollection {
 	 * <b>WARNING:</b> This method may be deprecated or removed.
 	 * @return hash map representation of String: List<Metadatum>
 	 */
-	protected HashMap<String, List<Metadatum>> getHashMap() {
+	protected Map<String, List<Metadatum>> getItemsMap() {
 		return this.entries;
 	}
 	
