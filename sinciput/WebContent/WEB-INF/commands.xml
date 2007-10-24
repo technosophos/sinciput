@@ -19,9 +19,14 @@
 	<loadclass name="AddNote"     class="com.technosophos.sinciput.commands.notes.AddNote"/>
 	<loadclass name="ViewNote"     class="com.technosophos.sinciput.commands.notes.ViewNote"/>
 	<loadclass name="ListNotes"     class="com.technosophos.sinciput.commands.notes.ListNotes"/>
+	
 	<loadclass name="AddCourse"     class="com.technosophos.sinciput.commands.course.AddCourse"/>
 	<loadclass name="ViewCourse"     class="com.technosophos.sinciput.commands.course.ViewCourse"/>
 	<loadclass name="ListCourses"     class="com.technosophos.sinciput.commands.course.ListCourses"/>
+	
+	<loadclass name="AddJournal"     class="com.technosophos.sinciput.commands.journal.AddJournal"/>
+	<loadclass name="ViewJournal"     class="com.technosophos.sinciput.commands.journal.ViewJournal"/>
+	<loadclass name="ListJournals"     class="com.technosophos.sinciput.commands.journal.ListJournals"/>
 	
 	<!-- View Layer Commands -->
 	<loadclass name="template" class="com.technosophos.rhizome.command.template.DoVelocityTemplate"/>
@@ -109,11 +114,38 @@
 				<param name="template_name">save_course.vt</param>
 			</cmd>
 		</request>
+		<request name="view_course">
+			<cmd do="RequireAuthN" fatal="true"/>
+			<cmd do="ViewCourse"/>
+			<cmd do="template">
+				<param name="template_name">view_course.vt</param>
+			</cmd>
+		</request>
 		<request name="list_courses">
 			<cmd do="RequireAuthN" fatal="true"/>
 			<cmd do="ListCourses"/>
 			<cmd do="template">
 				<param name="template_name">list_courses.vt</param>
+			</cmd>
+		</request>
+		<request name="add_journal">
+			<cmd do="RequireAuthN" fatal="true"/>
+			<cmd do="template">
+				<param name="template_name">add_journal.vt</param>
+			</cmd>
+		</request>
+		<request name="save_journal">
+			<cmd do="RequireAuthN" fatal="true"/>
+			<cmd do="AddJournal"/>
+			<cmd do="template">
+				<param name="template_name">save_journal.vt</param>
+			</cmd>
+		</request>
+		<request name="list_journals">
+			<cmd do="RequireAuthN" fatal="true"/>
+			<cmd do="ListJournals"/>
+			<cmd do="template">
+				<param name="template_name">list_journals.vt</param>
 			</cmd>
 		</request>
 		<request name="default">

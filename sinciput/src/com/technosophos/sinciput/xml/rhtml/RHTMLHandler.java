@@ -1,4 +1,4 @@
-package com.technosophos.sinciput.xml;
+package com.technosophos.sinciput.xml.rhtml;
 
 import java.util.Arrays;
 import org.xml.sax.ext.DefaultHandler2;

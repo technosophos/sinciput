@@ -19,8 +19,8 @@ public abstract class ViewDocument extends SinciputCommand {
 	 * </ul>
 	 */
 	protected void execute() throws ReRouteRequest {
-		String docID = this.getParam("doc", null).toString();
-		if( docID == null ) {
+		String docID = this.getFirstParam("doc", "").toString();
+		if( docID.length() == 0 ) {
 			String ferr = "You must supply a document identifier before we can retrieve the requested information.";
 			String err = "No 'doc' parameter found.";
 			this.results.add(this.createErrorCommandResult(err, ferr));

@@ -8,7 +8,7 @@ import java.util.Arrays;
 
 //import org.xml.sax.SAXException;
 
-import com.technosophos.sinciput.xml.RHTML;
+import com.technosophos.sinciput.xml.rhtml.RHTML;
 import com.technosophos.sinciput.SinciputException;
 
 /**

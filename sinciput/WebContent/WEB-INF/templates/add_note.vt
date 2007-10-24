@@ -23,6 +23,7 @@ Note editor.
 	#parse( "frag/editor.vt" )
 	<br/>
 	<input type="submit" value="Save Note"/><br/>
+	<input type="hidden" name="parent" value="cc963b45-8143-4b0d-acd3-7b6197bd2be2"/>
 </form>
 
 #parse( "frag/standard_footer.vt" )

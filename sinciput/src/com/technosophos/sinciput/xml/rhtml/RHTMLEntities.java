@@ -1,4 +1,4 @@
-package com.technosophos.sinciput.xml;
+package com.technosophos.sinciput.xml.rhtml;
 
 //import java.util.ArrayList;
 

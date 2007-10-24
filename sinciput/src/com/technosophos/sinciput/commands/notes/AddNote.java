@@ -3,6 +3,8 @@ package com.technosophos.sinciput.commands.notes;
 import com.technosophos.rhizome.RhizomeException;
 import com.technosophos.rhizome.controller.ReRouteRequest;
 import com.technosophos.rhizome.document.*;
+import com.technosophos.rhizome.repository.DocumentNotFoundException;
+import com.technosophos.rhizome.repository.RepositoryAccessException;
 import com.technosophos.rhizome.repository.RepositorySearcher;
 import com.technosophos.rhizome.repository.DocumentRepository;
 import com.technosophos.rhizome.repository.RhizomeInitializationException;
@@ -43,6 +45,8 @@ import com.technosophos.rhizome.command.AbstractCommand;
 public class AddNote extends SinciputCommand {
 	
 	public final static String NOTE_BODY = "body";
+	public final static String NOTE_PARENT_DOCID = "parent";
+	public final static String SINCIPUT_PARENT_RELATION = "parentOf";
 
 	/**
 	 * Store the note as a document in the repository.
@@ -99,7 +103,7 @@ public class AddNote extends SinciputCommand {
 		// Fetch optional fields
 		// - get all fields
 		String title = this.getFirstParam(NotesEnum.TITLE.getKey(), "Untitled").toString();
-		String subtitle = this.getFirstParam(NotesEnum.TITLE.getKey(), "").toString();
+		String subtitle = this.getFirstParam(NotesEnum.SUBTITLE.getKey(), "").toString();
 		Object tags = this.getParam(NotesEnum.TAG.getKey(), null);
 		
 		// - find out how tags are stored
@@ -154,6 +158,9 @@ public class AddNote extends SinciputCommand {
 			return;
 		}
 		
+		// - Check for relations:
+		this.addNoteToParent(doc, repoName);
+		
 		// Might as well pass the doc on
 		this.results.add(this.createCommandResult(doc));
 	}
@@ -172,6 +179,41 @@ public class AddNote extends SinciputCommand {
 		
 		// 2. Set the type and store the document
 		doc.setBody("text/html", body);
+	}
+	
+	protected void addNoteToParent( RhizomeDocument doc, String repoName ) {
+		String parentID = this.getFirstParam(NOTE_PARENT_DOCID, "").toString();
+		if( parentID.length() > 0 ) {
+			System.err.println("Adding note to parent.");
+			try {
+				// Every line here throws one or more exceptions:
+				DocumentRepository repo = this.repoman.getRepository(repoName);
+				RhizomeDocument parent = repo.getDocument(parentID);
+				parent.addRelation(new Relation(SINCIPUT_PARENT_RELATION, doc.getDocID()));
+				this.repoman.storeDocument(this.getCurrentRepository(), parent);
+			} catch (DocumentNotFoundException e) {
+				String  em = "Parent document not found: " + e.getMessage();
+				String fem = "The document was created, but we can't relate it correctly.";
+				this.results.add(this.createErrorCommandResult(em, fem, e));
+				return;
+			} catch (RepositoryAccessException e) {
+				String  em = "Accessing repo to find parent failed: " + e.getMessage();
+				String fem = "The document was created, but we can't relate it correctly.";
+				this.results.add(this.createErrorCommandResult(em, fem, e));
+				return;
+			} catch (RhizomeParseException e) {
+				String  em = "The parent document is not valid: " + e.getMessage();
+				String fem = "The document was created, but we can't relate it correctly.";
+				this.results.add(this.createErrorCommandResult(em, fem, e));
+				return;
+			} catch (RhizomeException e) {
+				String  em = "The parent document could not be saved: " + e.getMessage();
+				String fem = "The document was created, but we can't relate it correctly.";
+				this.results.add(this.createErrorCommandResult(em, fem, e));
+				return;
+			}
+			System.err.println("Done adding note to parent.");
+		}
 	}
 
 }

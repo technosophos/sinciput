@@ -1,4 +1,4 @@
-package com.technosophos.sinciput.xml;
+package com.technosophos.sinciput.xml.rhtml;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
@@ -6,7 +6,7 @@ import javax.xml.parsers.SAXParser;
 //import org.xml.sax.ContentHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import com.technosophos.sinciput.xml.RHTMLHandler;
+
 import java.io.StringReader;
 
 /**
@@ -117,7 +117,7 @@ public class RHTML {
 		} catch(Exception e) {
 			e.printStackTrace(System.err);
 		}
-		//System.out.println(RHTMLEntities.summaryString());
+		//System.out.println(RHTMLEntities.summaryString());  
 	}
 	
 }

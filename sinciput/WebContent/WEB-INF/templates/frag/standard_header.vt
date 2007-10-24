@@ -35,9 +35,11 @@ $isLoggedIn: True if a user is logged in, false otherwise.
     ## Items that require login:
     #if( $isLoggedIn )
       <a href="$absolute_uri/list_notes">List Notes</a><br/>
-      <a href="$absolute_uri/list_courses">List Courses</a><br/>
       <a href="$absolute_uri/add_note">Add Note</a><br/>
+      <a href="$absolute_uri/list_courses">List Courses</a><br/>
       <a href="$absolute_uri/add_course">Add Course</a><br/>
+      <a href="$absolute_uri/list_journals">List Journals</a><br/>
+      <a href="$absolute_uri/add_journals">Add Journals</a><br/>
     #end
   </div>
   <div id="t_body" style="float:left">
