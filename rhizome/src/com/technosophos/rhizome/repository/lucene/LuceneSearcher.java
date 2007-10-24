@@ -152,6 +152,70 @@ public class LuceneSearcher implements RepositorySearcher {
 		return md;
 	}
 	
+	public String[] getReverseRelatedDocuments(String docID) throws RepositoryAccessException {
+		// We want to search for any docs that contain a relation to DocID.
+		ArrayList<String> docIDs = new ArrayList<String>();
+		String [] fields = {LUCENE_RELATION_FIELD, LUCENE_DOCID_FIELD};
+		
+		MapFieldSelector fieldSelector = new MapFieldSelector(fields);
+		IndexReader lreader = null;
+		
+		try {
+			lreader = this.getIndexReader();
+			int last = lreader.maxDoc();
+			Document d;
+			for(int i = 0; i < last; ++i) {
+				if(!lreader.isDeleted(i)) {
+					d = lreader.document(i, fieldSelector);
+					if(this.checkFieldValueMatches(LUCENE_RELATION_FIELD, docID, d))
+						docIDs.add(d.get(LUCENE_DOCID_FIELD));	
+				}
+			}
+			lreader.close();
+		} catch (java.io.IOException ioe) {
+			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		} finally {
+			if(lreader != null) {
+				try{ lreader.close(); } catch (java.io.IOException ioe) {}
+			}
+		}
+		
+		return docIDs.toArray(new String[docIDs.size()]);
+	}
+	
+	public String[] getReverseRelatedDocuments(String docID, String relationType)  
+			throws RepositoryAccessException {
+		ArrayList<String> docIDs = new ArrayList<String>();
+		String [] fields = {LUCENE_RELATION_FIELD, LUCENE_DOCID_FIELD};
+		
+		String value = docID + RELATION_SEPARATOR + docID;
+		
+		MapFieldSelector fieldSelector = new MapFieldSelector(fields);
+		IndexReader lreader = null;
+		
+		try {
+			lreader = this.getIndexReader();
+			int last = lreader.maxDoc();
+			Document d;
+			for(int i = 0; i < last; ++i) {
+				if(!lreader.isDeleted(i)) {
+					d = lreader.document(i, fieldSelector);
+					if(this.checkFieldValueMatches(LUCENE_RELATION_FIELD, value, d))
+						docIDs.add(d.get(LUCENE_DOCID_FIELD));	
+				}
+			}
+			lreader.close();
+		} catch (java.io.IOException ioe) {
+			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		} finally {
+			if(lreader != null) {
+				try{ lreader.close(); } catch (java.io.IOException ioe) {}
+			}
+		}
+		
+		return docIDs.toArray(new String[docIDs.size()]);
+	}
+	
 	/**
 	 * Returns a map of document IDs and values.
 	 * Given a metadata name, this returns a map where the key is the document

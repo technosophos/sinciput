@@ -122,6 +122,17 @@ public interface RepositorySearcher {
 	public Metadatum getMetadatumByDocID(String name, String docID) 
 				throws RepositoryAccessException;
 	
+	public String[] getReverseRelatedDocuments(String docID) throws RepositoryAccessException;
+	
+	/**
+	 * Get all of the docIDs that report having a relationship with this document.
+	 * @param docID target document
+	 * @param relationType The target relation type.
+	 * @return Array of document IDs that point to the given document
+	 * @throws RepositoryAccessException
+	 */
+	public String[] getReverseRelatedDocuments(String docID, String relationType)  throws RepositoryAccessException;
+	
 	/**
 	 * Get all docIDs that have the specified name and value.
 	 * Get an array of document IDs for documents that contain the metadatum
