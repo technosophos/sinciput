@@ -565,8 +565,12 @@ public class RhizomeDocument implements Presentable {
 	public void toXML(Writer output) throws ParserConfigurationException {
 		Document d = this.getDOM();
 		
+		if(d == null) System.err.println("WARNING: RhizomeDocument.toXML() doc is null.");
+		if(output == null) System.err.println("WARNING: RhizomeDocument.toXML() output is null.");
+		
 		try {
 			Transformer t = TransformerFactory.newInstance().newTransformer();
+			//System.err.println("Transformer created.");
 			t.transform(new DOMSource(d), new StreamResult(output));
 		} catch (Exception e) {
 			throw new ParserConfigurationException("Could not create Transformer: " + 

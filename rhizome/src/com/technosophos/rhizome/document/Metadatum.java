@@ -121,7 +121,7 @@ public class Metadatum {
 	 * @return String value or null if no value is found.
 	 */
 	public String getFirstValue() {
-		if(this.values == null) return null;
+		if(this.values == null || this.values.size() == 0) return null;
 		return this.values.get(0);
 	}
 	
