@@ -1,6 +1,7 @@
 package com.technosophos.rhizome.document;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Arrays;
 
 /** 
@@ -18,7 +19,7 @@ public class Metadatum {
 	public static String METADATUM_DEFAULT_TYPE = "string";
 	
 	private String name = null;
-	private ArrayList<String> values = null;
+	private List<String> values = null;
 	private String dataType = METADATUM_DEFAULT_TYPE;
 
 	/**
@@ -41,7 +42,7 @@ public class Metadatum {
 	 * @param name
 	 * @param value
 	 */
-	public Metadatum(String name, ArrayList<String> value) {
+	public Metadatum(String name, List<String> value) {
 		this.name = name;
 		this.values = value;
 	}
@@ -105,7 +106,7 @@ public class Metadatum {
 	 * This will return an empty array list if no values have been set.
 	 * @return List of values (or null if no list exists).
 	 */
-	public ArrayList<String> getValues() {
+	public List<String> getValues() {
 		if(this.values == null)
 			return new ArrayList<String>();
 		return this.values;
@@ -167,7 +168,7 @@ public class Metadatum {
 	 * That means that any existing values will be lost.
 	 * @param vals
 	 */
-	public void setValues(ArrayList<String> vals) {
+	public void setValues(List<String> vals) {
 		this.values = vals;
 	}
 	
