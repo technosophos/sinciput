@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import com.technosophos.rhizome.controller.CommandResult;
-import com.technosophos.rhizome.document.DocumentCollection;
+import com.technosophos.rhizome.document.DocumentList;
 import com.technosophos.rhizome.repository.RepositoryAccessException;
 import com.technosophos.rhizome.repository.RhizomeInitializationException;
 
@@ -42,7 +42,7 @@ public class GetDocumentList extends AbstractCommand {
 	 */
 	public void execute() {
 		CommandResult res;
-		DocumentCollection doc;
+		DocumentList doc;
 		/*
 		 * What this command needs to do:
 		 * 1. Get from conf the list of fields that should be in params
@@ -85,7 +85,7 @@ public class GetDocumentList extends AbstractCommand {
 		if(additional_md == null) additional_md = new String [0];
 		
 		try {
-			doc = this.repoman.getSearcher(repoName).narrowingSearch(narrower, additional_md);
+			doc = this.repoman.getSearcher(repoName).fetchDocumentList(narrower, additional_md, this.repoman.getRepository(repoName));
 		} catch (RhizomeInitializationException rie) {
 			res = new CommandResult(this.comConf);
 			String errMsg = "Error initializing the repository.";
@@ -108,7 +108,7 @@ public class GetDocumentList extends AbstractCommand {
 	
 	/**
 	 * Create a Map that can be used as a narrower in a narrowing search.
-	 * <p>This version is <i>not strict</i>. If a field from the filds[] array is not present
+	 * <p>This version is <i>not strict</i>. If a field from the fields[] array is not present
 	 * in the params {@link Map}, it is simply skipped. Note, however, that the result of
 	 * this is that the Map returned could be empty.</p>
 	 * <p>This is prefix aware, and if a prefix is present, it will be prepended to each 

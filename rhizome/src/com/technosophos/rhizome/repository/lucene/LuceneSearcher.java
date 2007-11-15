@@ -61,9 +61,9 @@ public class LuceneSearcher implements RepositorySearcher {
 			lreader = IndexReader.open(indexDir);
 			*/
 			lreader = this.getIndexReader();
-			Collection c = lreader.getFieldNames(IndexReader.FieldOption.ALL);
+			Collection<String> c = lreader.getFieldNames(IndexReader.FieldOption.ALL);
 			fields = new String[c.size()];
-			Iterator it = c.iterator();
+			Iterator<String> it = c.iterator();
 			for(int i = 0; i < c.size(); ++i) {
 				fields[i] = it.next().toString();
 			}
@@ -269,47 +269,30 @@ public class LuceneSearcher implements RepositorySearcher {
 	 * @see com.technosophos.rhizome.document.DocumentCollection
 	 * @param name metadatum name to search for
 	 * @param docs array of document IDs to search
+	 * @deprecated Use {@link getMetadataByName(String, String[], DocumentRepository)}.
 	 * @return DocumentCollection with entries for docs, each with a Metadatum for name.
 	 */
-	public DocumentCollection getMetadataByName(String name, String[] docs)  
+	/*public DocumentCollection getMetadataByName(String name, String[] docs)  
 			throws RepositoryAccessException {
 		
 		String[] names = {name};
 		return this.getDocCollection(names, docs);
-		
-		/*
-		HashMap<String, String[]> vals = new HashMap<String, String[]>();
-		
-		HashSet<String> activeFields = new HashSet<String>();
-		HashSet<String> lazyFields = new HashSet<String>();
-		
-		activeFields.add(LUCENE_DOCID_FIELD);
-		lazyFields.add(name);
-		
-		SetBasedFieldSelector fsel = new SetBasedFieldSelector(activeFields, lazyFields);
-		IndexReader lreader;
-		
-		try {
-			lreader = this.getIndexReader();
-			int last = lreader.maxDoc();
-			Document d;
-			String docID;
-			for(int i = 0; i < last; ++i) {
-				if(!lreader.isDeleted(i)) {
-					d = lreader.document(i, fsel);
-					docID = d.get(LUCENE_DOCID_FIELD);
-					for(String did: docs)
-						if(did.equals(docID)) vals.put(docID, d.getValues(name));
-				}
-				
-			}
-			lreader.close();
-		} catch (java.io.IOException ioe) {
-			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
-		}
-		
-		return vals;
-		*/
+	}*/
+	/**
+	 * Returns a DocumentList of ProxyRhizomeDocuments.
+	 * <p>Given a metadata name and an array of document IDs, 
+	 * this returns a DocumentList.</p>
+	 * <p>This search ONLY checks for metadata in the document IDs given in the 
+	 * <code>docs[]</code> array.</p>
+	 * @see com.technosophos.rhizome.document.DocumentList
+	 * @param name metadatum name to search for
+	 * @param docs array of document IDs to search
+	 * @param repo Initialized Document repository for use generating documents.
+	 * @return DocumentList with entries for docs, each with a Metadatum for name.
+	 */
+	public DocumentList getMetadataByName(String name, String[] docs, DocumentRepository repo) throws RepositoryAccessException {
+		String[] names = {name};
+		return this.getDocumentList(names, docs, repo);
 	}
 	
 	/**
@@ -323,7 +306,7 @@ public class LuceneSearcher implements RepositorySearcher {
 	 * @param docIDs
 	 * @return a DocumentCollection containing docs from docIDs, each with metadata.
 	 */
-	public DocumentCollection getDocCollection(String[] names, String[] docIDs) 
+	/*public DocumentCollection getDocCollection(String[] names, String[] docIDs) 
 			throws RepositoryAccessException {
 		DocumentCollection dc = new DocumentCollection(names);
 		
@@ -362,6 +345,58 @@ public class LuceneSearcher implements RepositorySearcher {
 		
 		return dc;
 		
+	}*/
+	
+	/**
+	 * This retrieves a {@link DocumentList} of {@link ProxyRizomeDocument} objects.
+	 * <p>The collection will have an entry for every member of docIDs that exists in 
+	 * the directory. An entry in the list will have a Metadatum item for every item
+	 * in the names array.</p>
+	 * <p>This method is used to grab a subset of available metadata for a select
+	 * batch of document IDs.</p>
+	 * @param names
+	 * @param docIDs
+	 * @return a DocumentCollection containing docs from docIDs, each with metadata.
+	 */
+	public DocumentList getDocumentList(String[] names, String[] docIDs, DocumentRepository repo) 
+			throws RepositoryAccessException {
+		DocumentList dl = new DocumentList(names);
+		
+		HashSet<String> activeFields = new HashSet<String>();
+		HashSet<String> lazyFields = new HashSet<String>();
+		
+		activeFields.add(LUCENE_DOCID_FIELD);
+		lazyFields.addAll(Arrays.asList(names));
+		SetBasedFieldSelector fsel = new SetBasedFieldSelector(activeFields, lazyFields);
+		IndexReader lreader = null;
+		
+		try {
+			lreader = this.getIndexReader();
+			int last = lreader.maxDoc();
+			Document d;
+			String docID;
+			for(int i = 0; i < last; ++i) {
+				if(!lreader.isDeleted(i)) {
+					d = lreader.document(i, fsel);
+					docID = d.get(LUCENE_DOCID_FIELD);
+					// This should be optimized:
+					for(String did: docIDs)
+						if(did.equals(docID)) 
+							dl.add(new ProxyRhizomeDocument(docID, this.fetchMetadata(d, names), repo));
+				}
+				
+			}
+			//lreader.close();
+		} catch (java.io.IOException ioe) {
+			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		} finally {
+			if(lreader != null) {
+				try{ lreader.close(); } catch (java.io.IOException ioe) {}
+			}
+		}
+		
+		return dl;
+		
 	}
 	
 	/**
@@ -388,6 +423,7 @@ public class LuceneSearcher implements RepositorySearcher {
 	 * @param additional_md
 	 * @return DocumentCollection with all docs that match the narrower.
 	 * @throws RepositoryAccessException
+	 * @deprecated Use fetchDocumentList()
 	 */
 	public DocumentCollection narrowingSearch(Map<String, String> narrower, String[] additional_md)
 			throws RepositoryAccessException {

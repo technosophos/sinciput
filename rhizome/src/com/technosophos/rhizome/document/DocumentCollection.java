@@ -25,7 +25,7 @@ import java.util.Comparator;
  *
  * 
  * @author mbutcher
- *
+ * @deprecated See DocumentList as a replacement
  */
 public class DocumentCollection implements Comparator<String> {
 

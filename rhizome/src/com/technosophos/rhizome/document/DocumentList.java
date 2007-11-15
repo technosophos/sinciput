@@ -1,7 +1,5 @@
 package com.technosophos.rhizome.document;
 
-import static com.technosophos.rhizome.document.XMLElements.RHIZOME_DOC_ATTR_DOCID;
-import static com.technosophos.rhizome.document.XMLElements.RHIZOME_DOC_ROOT;
 import static com.technosophos.rhizome.document.XMLElements.RHIZOME_DOC_XMLNS;
 
 import java.io.CharArrayWriter;
@@ -10,7 +8,7 @@ import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import com.technosophos.rhizome.repository.RepositoryManager;
+//import com.technosophos.rhizome.repository.RepositoryManager;
 import static com.technosophos.rhizome.document.XMLElements.*;
 
 import org.w3c.dom.*;
@@ -26,7 +24,7 @@ import javax.xml.transform.stream.StreamResult;
  *
  */
 public class DocumentList extends ArrayList<RhizomeDocument> {
-	private RepositoryManager repoman = null;
+	public static final long serialVersionUID = 11L;
 	private String[] fields = null;
 	
 	public DocumentList(String[] fields) {

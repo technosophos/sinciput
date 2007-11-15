@@ -54,6 +54,7 @@ public interface RepositorySearcher {
 	 * @param additional_md
 	 * @return DocumentCollection with all docs that match the narrower.
 	 * @throws RepositoryAccessException
+	 * @deprecated
 	 */
 	public DocumentCollection narrowingSearch(Map<String, String> narrower, String[] additional_md)
 			throws RepositoryAccessException;
@@ -93,8 +94,9 @@ public interface RepositorySearcher {
 	 * @param docIDs
 	 * @return a DocumentCollection containing docs from docIDs, each with metadata.
 	 */
-	public DocumentCollection getDocCollection(String[] names, String[] docIDs) 
-			throws RepositoryAccessException;
+	//public DocumentCollection getDocCollection(String[] names, String[] docIDs) 
+	//		throws RepositoryAccessException;
+	public DocumentList getDocumentList(String[] names, String[] docIDs, DocumentRepository repo) throws RepositoryAccessException;
 	
 	/**
 	 * Returns a DocumentCollection of document IDs and metadata.
@@ -109,9 +111,10 @@ public interface RepositorySearcher {
 	 * @param docs array of document IDs to search
 	 * @return DocumentCollection with entries for docs, each with a Metadatum for name.
 	 */
-	public DocumentCollection getMetadataByName(String name, String[] docs)  
-			throws RepositoryAccessException;
-	
+	//public DocumentCollection getMetadataByName(String name, String[] docs)  
+	//		throws RepositoryAccessException;
+	public DocumentList getMetadataByName(String name, String[] docs, DocumentRepository repo)  
+	throws RepositoryAccessException;
 	/**
 	 * Returns a map of document IDs and values.
 	 * Given a metadata name, this returns a map where the key is the document

@@ -98,7 +98,7 @@ public class FileSystemLocks {
 	 * Get an iterator of the list of locks.
 	 * @return
 	 */
-	public java.util.Iterator getLockIterator() {
+	public java.util.Iterator<String> getLockIterator() {
 		return this.locks.iterator();
 	}
 }
