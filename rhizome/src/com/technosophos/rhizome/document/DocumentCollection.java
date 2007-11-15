@@ -6,9 +6,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.Set;
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
- * Contains a list of document IDs and (otional) metadata.
+ * Contains a list of document IDs and (optional) metadata.
  * <p>A DocumentCollection is a representation of a collection of document information,
  * including the document id (docID) and a {@code java.util.List<Metadatum>} of Metadatum objects.</p>
  *
@@ -25,10 +27,11 @@ import java.util.Set;
  * @author mbutcher
  *
  */
-public class DocumentCollection {
+public class DocumentCollection implements Comparator<String> {
 
 	private HashMap<String, List<Metadatum>> entries;
 	private String[] md_hints;
+	private String sortKey = null;
 	
 	/**
 	 * Create a document collection with metadata hints.
@@ -150,10 +153,34 @@ public class DocumentCollection {
 	}
 	
 	/**
+	 * Comparator function.
+	 * <p>This class can also act as a comparator for comparing items in a DocumentCollection.</p>
+	 */
+	public int compare(String keyA, String keyB) {
+		if(this.sortKey == null) this.sortKey = this.md_hints[0];
+		try {
+			String vA = this.getMetadatum(keyA, sortKey).getFirstValue();
+			String vB = this.getMetadatum(keyB, sortKey).getFirstValue();
+			//return vA.compareTo(vB);
+			return vA.compareToIgnoreCase(vB);
+		} catch (NameNotStoredException e) {
+			return 0;
+		}
+	}
+	
+	public String[] getSortedDocumentIDs(String metadatumName) {
+		this.sortKey = metadatumName;
+		String[] s = this.getDocumentIDs();
+		Arrays.sort( s, (Comparator<String>)this );
+		return s;
+	}
+	
+	/**
 	 * Get the DocumentList as a {@code java.util.HashMap}.
 	 * Note that the hints are not preserved in the hash map.
 	 * <b>WARNING:</b> This method may be deprecated or removed.
 	 * @return hash map representation of String: List<Metadatum>
+	 * @deprecated
 	 */
 	protected Map<String, List<Metadatum>> getItemsMap() {
 		return this.entries;

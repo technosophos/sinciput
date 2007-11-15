@@ -3,8 +3,11 @@ package com.technosophos.rhizome.repository.lucene;
 import com.technosophos.rhizome.repository.RepositorySearcher;
 import com.technosophos.rhizome.repository.RepositoryContext;
 import com.technosophos.rhizome.repository.RepositoryAccessException;
+import com.technosophos.rhizome.repository.DocumentRepository;
 import com.technosophos.rhizome.document.DocumentCollection;
+import com.technosophos.rhizome.document.DocumentList;
 import com.technosophos.rhizome.document.Metadatum;
+import com.technosophos.rhizome.document.ProxyRhizomeDocument;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
@@ -465,6 +468,72 @@ public class LuceneSearcher implements RepositorySearcher {
 	}
 	
 	/**
+	 * Create a list of ProxyRhizomeDocuments from a narrowing search.
+	 * <p>This performs a narrowing search, but returns the results as DocumentList containing
+	 * {@link ProxyRhizomeDocument} instances. This is more suited to daily use.</p>
+	 */
+	public DocumentList fetchDocumentList(Map<String, String> narrower, String[] additional_md, DocumentRepository r)
+			throws RepositoryAccessException {
+		
+		String [] all_fields;
+		Set<String> narrower_keys = narrower.keySet();
+		String [] fields = narrower_keys.toArray(new String[narrower_keys.size()]);
+		HashSet<String> activeFields = new HashSet<String>();
+		HashSet<String> lazyFields = new HashSet<String>();
+		
+		activeFields.addAll(narrower_keys);
+		activeFields.add(LUCENE_DOCID_FIELD);
+		
+		if (additional_md.length > 0) {
+			// If there are additional fields, we need to add those to all_fields.
+			List<String> add_md = Arrays.asList(additional_md);
+			ArrayList<String> allFields = new ArrayList<String>();
+			allFields.addAll(narrower_keys);
+			allFields.addAll(add_md);
+			
+			all_fields = allFields.toArray(new String[allFields.size()]);
+			
+			// Additional fields should be lazily loaded.
+			lazyFields.addAll(add_md);
+		} else {
+			all_fields = fields;
+		}
+		
+		//DocumentCollection dc = new DocumentCollection(all_fields);
+		DocumentList dl = new DocumentList(all_fields);
+		SetBasedFieldSelector fsel = new SetBasedFieldSelector(activeFields, lazyFields);
+		IndexReader lreader = null;
+		
+		// Do the work....
+		try {
+			lreader = this.getIndexReader();
+			int last = lreader.maxDoc();
+			Document d;
+			String docID;
+			for(int i = 0; i < last; ++i) {
+				if(!lreader.isDeleted(i)) {
+					d = lreader.document(i, fsel);
+					docID = d.get(LUCENE_DOCID_FIELD);
+					if(this.checkANDFieldMatches(fields, narrower, d))
+						dl.add(new ProxyRhizomeDocument(docID, 
+														this.fetchMetadata(d, all_fields),
+														r));
+				}
+				
+			}
+		} catch (java.io.IOException ioe) {
+			throw new RepositoryAccessException("IOException: " + ioe.getMessage());
+		} finally {
+			if(lreader != null) {
+				try{ lreader.close(); } catch (java.io.IOException ioe) {}
+			}
+		}
+		
+		return dl;
+	
+	}
+	
+	/**
 	 * Perform a search for documents with multiple metadata names.
 	 * Given a <code>Map</code> of metadatum names and values, 
 	 * this searches for documents that have *all* of
@@ -480,7 +549,7 @@ public class LuceneSearcher implements RepositorySearcher {
 		ArrayList<String> docIDs = new ArrayList<String>();
 		
 		// Get String[] of names for MapFieldSelector
-		Iterator keys = narrower.keySet().iterator();
+		Iterator<String> keys = narrower.keySet().iterator();
 		int l = narrower.size();
 		String [] fields = new String[l];
 		for(int i = 0; i < l; ++i) fields[i] = (String)keys.next();

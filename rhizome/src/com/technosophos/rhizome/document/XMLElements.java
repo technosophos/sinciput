@@ -9,6 +9,7 @@ package com.technosophos.rhizome.document;
  *
  */
 public class XMLElements {
+	public static String RHIZOME_DOCLIST_ROOT = "rhizomelist";
 	public static String RHIZOME_DOC_XMLNS = "http://technosophos.com/xml/rhizome/document";
 	public static String RHIZOME_DOC_QUALIFIER = "rhizome";
 	public static String RHIZOME_DOC_ROOT = "rhizome";

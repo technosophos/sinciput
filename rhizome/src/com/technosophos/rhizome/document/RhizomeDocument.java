@@ -63,7 +63,7 @@ public class RhizomeDocument implements Presentable {
 	
 	
 	
-	private ArrayList<Metadatum> metadata = null;
+	private List<Metadatum> metadata = null;
 	private RhizomeData body = null;
 	private ArrayList<Extension> extensions = null;
 	private ArrayList<Relation> relations = null;
@@ -107,6 +107,14 @@ public class RhizomeDocument implements Presentable {
 				new RhizomeData(data), 
 				new ArrayList<Extension>());
 	}
+	
+	public RhizomeDocument(String docID, List<Metadatum> meta) {
+		this(docID, 
+				meta, 
+				new ArrayList<Relation>(), 
+				new RhizomeData(""), 
+				new ArrayList<Extension>());
+	}
 
 	/**
 	 * This is the full constructor.
@@ -117,7 +125,7 @@ public class RhizomeDocument implements Presentable {
 	 * @param extensions
 	 */
 	public RhizomeDocument(String docID, 
-			ArrayList<Metadatum> metadata, 
+			List<Metadatum> metadata, 
 			ArrayList<Relation> relations, 
 			RhizomeData body, 
 			ArrayList<Extension> extensions) 

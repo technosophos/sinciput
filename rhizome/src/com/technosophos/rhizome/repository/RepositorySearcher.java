@@ -3,6 +3,7 @@ package com.technosophos.rhizome.repository;
 import java.util.Map;
 
 import com.technosophos.rhizome.document.DocumentCollection;
+import com.technosophos.rhizome.document.DocumentList;
 import com.technosophos.rhizome.document.Metadatum;
 
 /**
@@ -55,6 +56,17 @@ public interface RepositorySearcher {
 	 * @throws RepositoryAccessException
 	 */
 	public DocumentCollection narrowingSearch(Map<String, String> narrower, String[] additional_md)
+			throws RepositoryAccessException;
+	
+	/**
+	 * Replacement for narrowingSearch().
+	 * @param narrower
+	 * @param additional_md
+	 * @param r
+	 * @return
+	 * @throws RepositoryAccessException
+	 */
+	public DocumentList fetchDocumentList(Map<String, String> narrower, String[] additional_md, DocumentRepository r)
 			throws RepositoryAccessException;
 	/**
 	 * Perform a search for documents with multiple metadata names.
