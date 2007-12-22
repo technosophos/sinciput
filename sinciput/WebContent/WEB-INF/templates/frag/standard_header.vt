@@ -9,38 +9,99 @@ $isLoggedIn: True if a user is logged in, false otherwise.
 
 @author mbutcher
 *#
+#set( $isLoggedIn = $_session.userLoggedIn() )
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <title>$!title</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>$!title</title>
+<style>
+#parse("frag/style.css")
+</style>
+<script type="text/javascript" language="javascript" src="$resource_uri/js/jquery-1.2.1.js">
+</script>
+<script type="text/javascript" language="javascript" src="$resource_uri/js/sinciput-ui.js">
+</script>
+<script language="javascript" type="text/javascript" src="$resource_uri/js/tiny_mce/tiny_mce.js">
+</script>
+<script type="text/javascript" language="javascript">
+// Global vars.
+jQuery.extend(Sinciput.settings, {
+	absolute_uri: "$absolute_uri", 
+	resource_uri: "$resource_uri", 
+	app_url: "$app_url", 
+	defaultPaint: Sinciput.sections.paintCourses,
+});
+
+var isLoggedIn = $isLoggedIn;
+$().ready(function() {
+	Sinciput.sections.paintCourses();
+});
+
+tinyMCE.init(Sinciput.settings.tinyMCE);
+</script>
 </head>
 <body>
-  <div id="t_header" style="float:right;">
-    #set( $isLoggedIn = $_session.userLoggedIn() )
-    #if( $isLoggedIn )
-      User: $_session.getUserName()<br/>
-      Repository: $!_session.getActiveRepositoryName()<br/>
-      <a href="$absolute_uri/logout" title="logout">Log out</a>
-    #else
-      You are not currently logged in.<br/>
-      <strong><a href="login" title="Login page">Log in now.</a></strong>
-    #end
-  </div>
-  <div id="menu" style="float:left">
-    ## Public items:
-    ## <none>
-  
-    ## Items that require login:
-    #if( $isLoggedIn )
-      <a href="$absolute_uri/list_notes">List Notes</a><br/>
-      <a href="$absolute_uri/add_note">Add Note</a><br/>
-      <a href="$absolute_uri/list_courses">List Courses</a><br/>
-      <a href="$absolute_uri/add_course">Add Course</a><br/>
-      <a href="$absolute_uri/list_journals">List Journals</a><br/>
-      <a href="$absolute_uri/add_journals">Add Journals</a><br/>
-    #end
-  </div>
-  <div id="t_body" style="float:left">
-    <h1>$title</h1>
+<div id="headerBox">
+	<form action="javascript:void(null)" id="searchForm">
+	<div id="headerLeft">
+	<ul>
+		<li id="classesTab"><a href="javascript:void(0);" onclick="return Sinciput.sections.paintCourses();">Classes</a></li>
+		<li id="booksTab"><a href="javascript:void(0);" onclick="return Sinciput.sections.paintResources();">Resources</a></li>
+		<li id="journalsTab"><a href="javascript:void(0);" onclick="return Sinciput.sections.paintJournals();">Journals</a></li>
+		<li id="whateverTab"><a href="">Whatever</a></li>
+	</ul>
+	</div>
+	<div id="headerRight">
+	<span id="searchTab">
+		<input type="text" id="searchBox" class="secondaryForm" name="searchBox"/>
+		<input type="button" value="Search"/>
+	</span>
+	</div>
+	</form>
+</div>
+<div id="centralBox">
+	<div id="navPane">
+		<div id="navPaneTitle">
+		<h2 class="navTitle">Classes</h2>
+		</div>
+	
+		<div id="navPaneMenu">
+			<ul>
+			## Public items:
+    		## <none>
+		    ## Items that require login:
+		    #if( $isLoggedIn )
+	    		<li><a href="$absolute_uri/list_notes">List Notes</a></li>
+    			<li><a href="$absolute_uri/add_note">Add Note</a></li>
+      			##<li><a href="$absolute_uri/list_courses">List Courses</a></li>
+      			##<li><a href="$absolute_uri/add_course">Add Course</a></li>
+      			##<li><a href="$absolute_uri/list_journals">List Journals</a></li>
+      			##<li><a href="$absolute_uri/add_journal">Add Journals</a></li>
+      			##<li><a href="$absolute_uri/lookup_source">Lookup Resource</a></li>
+      		#else
+      		## Items that show up only if user is NOT logged in.
+      			<li><a href="login" title="Login page">Log in now.</a></li>
+    		#end
+    		</ul>
+		</div>
+		<div id="navPaneFooter">
+		
+    	#if( $isLoggedIn )
+    		User: $_session.getUserName()<br/>
+   	   		<a href="$absolute_uri/logout" title="logout">Log out</a>
+		#else
+   	   		You are not currently logged in.<br/>
+   	   		<strong><a href="javascript:void(0)" onclick="Sinciput.showLogin()" title="Login page">Log in now.</a></strong>
+  		#end
+
+		</div>
+	</div>
+	<div id="loginPane">
+	#set( $action = $absolute_uri + "/login")
+	#parse("frag/login_form.vt")
+	</div>
+	<div id="bodyPane">	
+		
+		<h2>$!title</h2>

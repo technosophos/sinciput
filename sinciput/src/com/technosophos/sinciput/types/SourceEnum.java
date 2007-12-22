@@ -27,7 +27,11 @@ public enum SourceEnum implements SinciputType {
 	TITLE (
 			"title", 
 			"Title", 
-			new FieldDescription(FieldDescription.FIELD_TEXT, 50)),
+			new FieldDescription(FieldDescription.FIELD_TEXT, 512)),
+	SORTABLE_TITLE (
+			"sortable_title", 
+			"Title", 
+			new FieldDescription(FieldDescription.FIELD_TEXT,512)),
 	/*
 	 SUBTITLE (
 			"subtitle",

@@ -371,26 +371,26 @@ public class MODS {
 			//NON-SORT
 			String q = "titleInfo/nonSort";
 			NodeList l = xEvalNL(q);
-			nonSort = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : null ;
+			nonSort = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : "" ;
 			
 			//TITLE
 			q = "titleInfo/title";
 			l = xEvalNL(q);
-			title = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : null ;
+			title = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : "" ;
 			
 			//SUBTITLE
 			q = "titleInfo/subTitle";
 			l = xEvalNL(q);
-			subTitle = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : null ;
+			subTitle = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : "" ;
 			
 			//PART NUMBER & NAME
 			q = "titleInfo/partNumber";
 			l = xEvalNL(q);
-			partNumber = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : null ;
+			partNumber = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : "" ;
 			
 			q = "titleInfo/partName";
 			l = xEvalNL(q);
-			partName = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : null ;
+			partName = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : "" ;
 		}
 		/**
 		 * Get the full title.
@@ -398,11 +398,29 @@ public class MODS {
 		 */
 		public String getFullTitle() {
 			StringBuilder sb = new StringBuilder();
-			if( nonSort != null ) sb.append(nonSort).append(" ");
+			if( nonSort.length() > 0 ) sb.append(nonSort).append(" ");
 			sb.append(title);
-			if( subTitle != null ) sb.append(": ").append(subTitle);
-			if( partNumber != null ) sb.append(" (").append(partNumber).append(") ");
-			if( partName != null ) sb.append("--").append(partName).append(" ");
+			if( subTitle.length() > 0 ) sb.append(": ").append(subTitle);
+			if( partNumber.length() > 0 ) sb.append(" (").append(partNumber).append(") ");
+			if( partName.length() > 0 ) sb.append("--").append(partName).append(" ");
+			
+			return sb.toString();
+		}
+		
+		/**
+		 * Title suitable for natural sorting.
+		 * <p>Leading articles such as 'A' and 'The' are appended after subtitle, instead of prefixed
+		 * to the front. The accuracy of this is dependent on the categorization in the MODS
+		 * document. If articles are not categorized as non-sort, then this will not catche them.</p>
+		 * @return
+		 */
+		public String getSortableTitle() {
+			StringBuilder sb = new StringBuilder();
+			sb.append(title);
+			if( subTitle.length() > 0 ) sb.append(": ").append(subTitle);
+			if( nonSort.length() > 0 ) sb.append(", ").append(nonSort);
+			if( partNumber.length() > 0l ) sb.append(" (").append(partNumber).append(") ");
+			if( partName.length() > 0 ) sb.append(" -- ").append(partName).append(" ");
 			
 			return sb.toString();
 		}
@@ -521,32 +539,32 @@ public class MODS {
 				// Try again...
 				q = "originInfo/place/placeTerm";
 				l = xEvalNL(q);
-				place =  l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : null ;
+				place =  l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : "" ;
 			}
 			
 			// PUBLISHER
 			q = "originInfo/publisher";
 			l = xEvalNL(q);
-			publisher = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : null ;
+			publisher = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : "" ;
 			
 			// DATE ISSUED
 			q = "originInfo/dateIssued";
 			l = xEvalNL(q);
-			dateIssued = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : null ;
+			dateIssued = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : "" ;
 			
 			// ISSUENCE
 			q = "originInfo/issuance";
 			l = xEvalNL(q);
-			issuance = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : null ;
-			if(issuance != null) {
+			issuance = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : "" ;
+			if(issuance.length() > 0) {
 				q = "originInfo/frequency";
 				l = xEvalNL(q);
-				frequency = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : null ;
+				frequency = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : "" ;
 			}
 			// Edition
 			q = "originInfo/edition";
 			l = xEvalNL(q);
-			edition = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : null ;
+			edition = l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : "" ;
 		}
 		
 		/**
@@ -626,7 +644,7 @@ public class MODS {
 		String cauth = null;
 		public Classification(Element e) {
 			String authstr = "authority";
-			cauth = e.hasAttribute(authstr) ? e.getAttribute(authstr) : null;
+			cauth = e.hasAttribute(authstr) ? e.getAttribute(authstr) : "";
 			cvalue = e.getTextContent().trim();
 		}
 		public String getValue(){return cvalue;}
@@ -755,8 +773,8 @@ public class MODS {
 		private String value = null;
 		
 		public Identifier(Element e) {
-			type = e.hasAttribute(TYPE_NAME) ? e.getAttribute(TYPE_NAME) : null; 
-			label = e.hasAttribute(LABEL_NAME) ? e.getAttribute(LABEL_NAME) : null;
+			type = e.hasAttribute(TYPE_NAME) ? e.getAttribute(TYPE_NAME) : ""; 
+			label = e.hasAttribute(LABEL_NAME) ? e.getAttribute(LABEL_NAME) : "";
 			value = e.getTextContent().trim();
 		}
 		public String getType(){return this.type;}
@@ -775,7 +793,7 @@ public class MODS {
 		private String displayLabel = null;
 		private String urlString = null;
 		public LocationURL(Element e) {
-			displayLabel = e.hasAttribute("displayLabel") ? e.getAttribute("displayLabel") : null;
+			displayLabel = e.hasAttribute("displayLabel") ? e.getAttribute("displayLabel") : "";
 			urlString = e.getTextContent().trim();
 		}
 		public String getURL(){return this.urlString;}
@@ -790,7 +808,7 @@ public class MODS {
 	
 	private String firstEContents(String expr, Node start) {
 		NodeList l = this.xEvalNL(expr, start);
-		return l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : null;
+		return l.getLength() > 0 ? ((Element)l.item(0)).getTextContent().trim() : "";
 	}
 	
 	private NodeList xEvalNL(String expr) {

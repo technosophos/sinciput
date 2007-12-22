@@ -4,42 +4,77 @@ Course editor.
 @author mbutcher
 *#
 #set( $title="Edit A Course" )
-#parse( "frag/standard_header.vt" )
+##parse( "frag/standard_header.vt" )
 #if($ERRORS.containsKey("RequireAuthN"))
   <p>You must login before you can access Sinciput.</p>
   #set( $action="login" )
   #set( $next_request="default")
   #parse("frag/login_form.vt")
-  #parse( "frag/standard_footer.vt" )
+  ##parse( "frag/standard_footer.vt" )
   #stop
 #end
+<h1>Create a Course</h1>
+<p class="helptext">Add a new course to your list. Once the course is created, you can add course notes.</p>
 <form method="POST" action="$absolute_uri/save_course">
-	<label for="title">Title</label>
-	<input type="text" name="title" id="title"/><br/>
-	<label for="course_number">Course Number</label>
-	<input type="text" name="course_number" id="course_number"/><br/>
-	<label for="course_times">Course Times (When does it meet?)</label>
-	<input type="text" name="course_times" id="course_times"/><br/>
-	<label for="description">Description</label>
-	<input type="text" name="description" id="Description"/><br/>
-	<label for="location">Location</label>
-	<input type="text" name="location" id="location"/><br/>
-	<label for="start_date">First Day</label>
-	<input type="text" name="start_date" id="start_date"/><br/>
-	<label for="end_date">Last Day</label>
-	<input type="text" name="end_date" id="end_date"/><br/>
-	<label for="instructor">Instructor</label>
-	<input type="text" name="instructor" id="instructor"/><br/>
-	<label for="instructor_email">Instructor's Email Address</label>
-	<input type="text" name="instructor_email" id="instructor_email"/><br/>
-	<label for="tag">Tags</label>
-	<input type="text" name="tag" id="tag"/><br/>
+	<fieldset>
+		<legend>Course Basics</legend>
+		<ol class="form-list">
+		<li class="form-item">
+		<label class="standard-label" for="title">Title:</label>
+		<input type="text" name="title" id="title" class="standard-field title-field" size="56"/><br/>
+		</li>
+		<li class="form-item">
+		<label class="standard-label" for="course_number">Course Number:</label>
+		<input type="text" name="course_number" id="course_number" class="standard-field" size="10"/><br/>
+		</li>
+		<li class="form-item">
+		<label class="standard-label" for="instructor">Instructor:</label>
+		<input type="text" name="instructor" id="instructor" class="standard-field" size="25"/><br/>
+		</li>
+		<li class="form-item">
+		<label class="standard-label" for="instructor_email">Instructor's Email Address:</label>
+		<input type="text" name="instructor_email" id="instructor_email" class="standard-field" size="50"/><br/>
+		</li>
+		<li class="form-item">
+		<label for="tag" class="standard-label">Tags:</label>
+		<input type="text" name="tag" id="tag" class="standard-field"/><br/>
+		</li>
+		</ol>
+	</fieldset>
+#* SKIP: This is ugly and probably redundant
+	<h2>Description:</h2>
+	<p class="helptext">The catalog description of this course.</p>
+	<textarea name="description" id="description" class="standard-field" cols="50" rows="4"></textarea><br/>
+*#
+	<fieldset>
+		<legend>Time and Place</legend>
+		<ol class="form-list">
+		<li class="form-item">
+		<label class="standard-label" for="location">Location:</label>
+		<input type="text" name="location" id="location" class="standard-field" size="30"/><br/>
+		</li>
+		<li class="form-item">
+		<label class="standard-label" for="course_times">Course Times:</label>
+		<input type="text" name="course_times" id="course_times" class="standard-field"/><br/>
+		</li>
+		<li class="form-item">
+		<label class="standard-label" for="start_date">First Day of Class:</label>
+		<input type="text" name="start_date" id="start_date" class="standard-field"/><br/>
+		</li>
+		<li class="form-item">
+		<label class="standard-label" for="end_date">Last Day of Class:</label>
+		<input type="text" name="end_date" id="end_date" class="standard-field"/><br/>
+		</li>
+		</ol>
+	</fieldset>
 	
-	<input type="submit" value="Save Note"/><br/>
-	<h2>Course Syllabus</h2>
+	
+	
+	<!-- input type="submit" value="Create Course"/><br/ -->
+	<h2>Course Description &amp; Syllabus</h2>
 	#parse( "frag/editor.vt" )
 	<br/>
-	<input type="submit" value="Save Note"/><br/>
+	<input type="submit" value="Create Course"/><br/>
 </form>
 
-#parse( "frag/standard_footer.vt" )
+##parse( "frag/standard_footer.vt" )

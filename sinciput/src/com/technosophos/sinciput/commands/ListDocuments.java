@@ -3,7 +3,8 @@ package com.technosophos.sinciput.commands;
 import java.util.Map;
 
 import com.technosophos.rhizome.controller.ReRouteRequest;
-import com.technosophos.rhizome.document.DocumentCollection;
+//import com.technosophos.rhizome.document.DocumentCollection;
+import com.technosophos.rhizome.document.DocumentList;
 import com.technosophos.rhizome.repository.RepositoryAccessException;
 import com.technosophos.rhizome.repository.RepositorySearcher;
 import com.technosophos.rhizome.repository.RhizomeInitializationException;
@@ -40,6 +41,15 @@ public abstract class ListDocuments extends SinciputCommand {
 	}
 	
 	/**
+	 * Sort the returned document collection.
+	 * <p>By default this does nothing.</p>
+	 * @param col
+	 */
+	protected void sortResults(DocumentList dl) {
+		return;
+	}
+	
+	/**
 	 * List Documents.
 	 * Fetch a {@link DocumentCollection} in the given repository.
 	 */
@@ -51,12 +61,14 @@ public abstract class ListDocuments extends SinciputCommand {
 		String[] additional_md = this.additionalMetadata();
 		
 		RepositorySearcher s = null;
-		DocumentCollection col = null;
+		//DocumentCollection col = null;
+		DocumentList dl = null;
 		
 		// Create searcher and do search:
 		try {
 			s = this.repoman.getSearcher(this.getCurrentRepository());
-			col = s.narrowingSearch(narrower, additional_md);
+			//col = s.narrowingSearch(narrower, additional_md);
+			dl = s.fetchDocumentList(narrower, additional_md, this.repoman.getRepository(this.getCurrentRepository()));
 		} catch (RhizomeInitializationException e) {
 			String err = "Failed to initialize: " + e.getMessage();
 			String ferr = "We could not retrieve your list. Try again later.";
@@ -72,13 +84,15 @@ public abstract class ListDocuments extends SinciputCommand {
 		}
 		
 		// What did we get back?
-		if( col == null ) {
+		if( dl == null ) {
 			// Handle empty collection...
-			String err = "Narrowing Search produceds NULL return value. That was not expected.";
+			String err = "Search produced NULL return value. That was not expected.";
 			String ferr = "No items were found.";
 			this.results.add(this.createErrorCommandResult(err, ferr));
 		}
 		
-		this.results.add(this.createCommandResult(col));
+		this.sortResults(dl);
+		
+		this.results.add(this.createCommandResult(dl));
 	}
 }

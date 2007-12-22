@@ -1,0 +1,52 @@
+#**
+List all journals.
+
+@author mbutcher
+*#
+#set( $title="Journals" )
+##parse( "frag/standard_header.vt" )
+#parse("frag/login_trap.vt")
+
+#set( $keys = $ERRORS.keySet())
+#if($keys.size() > 0 )
+	#foreach( $err in $ERRORS ) 
+		<p>ERROR: $err</p>
+		<pre>
+		#foreach( $b in $body )
+			$b
+		#end
+		</pre>
+	#end
+  ##parse( "frag/standard_footer.vt" )
+  #stop
+#end
+
+## What we get back from ListJournals command is a DocumentCollection:
+#set( $size = $ListJournals.size() )
+#set( $docs = $ListJournals.getDocumentIDs() )
+<h2>There are $size Journals</h2>
+<table style="border: 1px solid black">
+<thead>
+	<tr>
+		<th>Title</th>
+		<th>Description</th>
+		<th>Tags</th>
+		<th>Created</th>
+	</tr>
+</thead>
+<tbody>
+#foreach( $id in $docs )
+	<tr>
+		<td>$ListJournals.getMetadatum( $id, 'title' ).FirstValue</td>
+		<td>$ListJournals.getMetadatum( $id, 'description' ).FirstValue</td>
+		<td>$ListJournals.getMetadatum( $id, 'tag' ).FirstValue</td>
+		<td>$ListJournals.getMetadatum( $id, 'created_on' ).FirstValue</td>
+	</tr>
+#end
+</tbody>
+</table>
+
+
+
+<p><a href="$absolute_uri/add_note">Add Another Note</a> | <a href="$absolute_uri">Home</a></p>
+##parse( "frag/standard_footer.vt" )

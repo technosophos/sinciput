@@ -4,7 +4,7 @@ Note editor.
 @author mbutcher
 *#
 #set( $title="Save A Note" )
-#parse( "frag/standard_header.vt" )
+##parse( "frag/standard_header.vt" )
 #parse("frag/login_trap.vt")
 
 #set( $keys = $ERRORS.keySet())
@@ -24,4 +24,4 @@ Note editor.
 <p>$AddNote.getMetadatum('subtitle').FirstValue</p>
 $AddNote.getData()
 <p><a href="$absolute_uri/add_note">Add Another Note</a> | <a href="$absolute_uri">Home</a></p>
-#parse( "frag/standard_footer.vt" )
+##parse( "frag/standard_footer.vt" )

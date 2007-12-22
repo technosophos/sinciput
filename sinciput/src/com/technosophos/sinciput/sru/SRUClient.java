@@ -199,9 +199,10 @@ public class SRUClient {
 		
 		SRUClient c = new SRUClient(base);
 		
-		CQL cql = CQL.query(CQL.INDEX_TITLE, "lilith", CQL.REL_SCR)
+		CQL cql = CQL.query(CQL.INDEX_TITLE, "river runs through it", CQL.REL_ALL)
 		  //.and().clause("bath.lccn", "0802860613", "=")
-		  .and().clause(CQL.INDEX_AUTHOR, "George Macdonald", CQL.REL_ALL);
+		  //.or().clause(CQL.INDEX_AUTHOR, "seamus heaney", CQL.REL_ALL)
+		;
 		
 		System.out.println(cql.toString());
 		

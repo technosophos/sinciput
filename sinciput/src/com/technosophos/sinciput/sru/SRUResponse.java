@@ -65,7 +65,7 @@ public class SRUResponse {
 		if( version_nl == null || numrec_nl == null || rec_nl == null )
 			throw new SRUException("This record does not appear to be an SRU record.");
 		
-		System.out.println(r.getTagName());
+		//System.out.println(r.getTagName());
 		if( diag_nl.getLength() != 0 ) {
 			System.out.println("Found error.");
 			this.err = true;

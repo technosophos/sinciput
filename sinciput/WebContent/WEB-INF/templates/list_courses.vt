@@ -4,8 +4,8 @@ List courses.
 @author mbutcher
 *#
 #set( $title="Courses" )
-#parse( "frag/standard_header.vt" )
-#parse("frag/login_trap.vt")
+##parse( "frag/standard_header.vt" )
+##parse("frag/login_trap.vt")
 
 #set( $keys = $ERRORS.keySet())
 #if($keys.size() > 0 )
@@ -17,13 +17,14 @@ List courses.
 		#end
 		</pre>
 	#end
-  #parse( "frag/standard_footer.vt" )
+  ##parse( "frag/standard_footer.vt" )
   #stop
 #end
 
 ## What we get back from ListCourses command is a DocumentCollection:
 #set( $size = $ListCourses.size() )
-#set( $docs = $ListCourses.getDocumentIDs() )
+##set( $docs = $ListCourses.getSortedDocumentIDs("title") )
+<h2 class="subsectionTitle">$title</h2>
 <h2>There are $size classes</h2>
 <table style="border: 1px solid black">
 <thead>
@@ -35,12 +36,12 @@ List courses.
 	</tr>
 </thead>
 <tbody>
-#foreach( $id in $docs )
+#foreach( $d in $ListCourses )
 	<tr>
-		<td>$ListCourses.getMetadatum( $id, 'course_number' ).FirstValue</td>
-		<td><a href="$absolute_uri/view_course?doc=$id">$ListCourses.getMetadatum( $id, 'title' ).FirstValue</a></td>
-		<td>$ListCourses.getMetadatum( $id, 'instructor' ).FirstValue</td>
-		<td>$ListCourses.getMetadatum( $id, 'course_times' ).FirstValue</td>
+		<td>$d.getMetadatum('course_number' ).FirstValue</td>
+		<td><a href="$absolute_uri/view_course?doc=$d.getDocID()">$d.getMetadatum( 'title' ).FirstValue</a></td>
+		<td>$d.getMetadatum('instructor' ).FirstValue</td>
+		<td>$d.getMetadatum('course_times' ).FirstValue</td>
 	</tr>
 #end
 </tbody>
@@ -49,4 +50,4 @@ List courses.
 
 
 <p><a href="$absolute_uri/add_note">Add Another Note</a> | <a href="$absolute_uri">Home</a></p>
-#parse( "frag/standard_footer.vt" )
+##parse( "frag/standard_footer.vt" )

@@ -1,0 +1,62 @@
+#**
+Course viewer.
+
+@author mbutcher
+*#
+#set( $title=$ViewCourse.getMetadatum("title").FirstValue )
+#set( $relations=$ViewCourse.getRelations() )
+##parse( "frag/standard_header.vt" )
+#parse("frag/login_trap.vt")
+
+#set( $keys = $ERRORS.keySet())
+#if($keys.size() > 0 )
+	#foreach( $err in $ERRORS ) 
+		<p>ERROR: $err</p>
+		<pre>
+		#foreach( $b in $body )
+			$b
+		#end
+		</pre>
+	#end
+  ##parse( "frag/standard_footer.vt" )
+  #stop
+#end
+#set($courseTitle = $ViewCourse.getMetadatum('title').FirstValue)
+#set($instructor = $ViewCourse.getMetadatum('instructor').FirstValue)
+#set($instructorEmail = $ViewCourse.getMetadatum('instructor_email').FirstValue)
+#set($location = $ViewCourse.getMetadatum('location').FirstValue)
+#set($startDate = $ViewCourse.getMetadatum('start_date').FirstValue)
+#set($endDate = $ViewCourse.getMetadatum('end_date').FirstValue)
+#set($courseNumber = $ViewCourse.getMetadatum('course_number').FirstValue)
+#set($courseTimes = $ViewCourse.getMetadatum('course_times').FirstValue)
+#set($courseDesc = $ViewCourse.getMetadatum('description').FirstValue)
+#set($createdOn = $ViewCourse.getMetadatum('created_on').FirstValue)
+#set($createdBy = $ViewCourse.getMetadatum('created_by').FirstValue)
+#set($lastModified = $ViewCourse.getMetadatum('last_modified').FirstValue)
+#set($modifiedBy = $ViewCourse.getMetadatum('modified_by').FirstValue)
+#set($modifiedBy = $ViewCourse.getMetadatum('modified_by').FirstValue)
+## Outliers:
+#set($tags = $ViewCourse.getMetadatum('tags').Values)
+#set($courseData = $ViewCourse.getData())
+<h1 class="course-title">#if($courseNumber.length > 0)$courseNumber:#end $courseTitle</h1>
+<h2 class="course-instructor">$instructor#if($instructorEmail.length > 0) ($instructorEmail)#end</h2>
+<div class="view-details">
+	<p><strong>When:</strong> $courseTimes#if($startDate.length > 0) ($startDate to $endDate)#end</p>
+	<p><strong>Location:</strong> $location</p>
+	<p><strong>Description:</strong> $courseDesc</p>
+	<p><a href="$absolute_uri/edit_course">Edit Information about This Course</a></p>
+</div>
+#if($courseData)<h2>Syllabus/General Notes</h2><p>$courseData</p>#end
+	
+<table>
+<tbody>
+	<tr>
+		<th>Notes for this Course</th>
+	</tr>
+#foreach( $rel in $relations ) 
+	<tr>
+		<td><a href="view_note?doc=$rel.DocID">$rel.DocID</a></td>
+	</tr>
+#end
+</tbody>
+</table>

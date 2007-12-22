@@ -24,7 +24,7 @@ import com.technosophos.sinciput.types.admin.RepoDescriptionEnum;
 
 /**
  * Sinciput command abstraction.
- * <p>An abstract class that provides a variety of convencience methods and
+ * <p>An abstract class that provides a variety of convenience methods and
  * helper functions used by commands in Sinciput.</p>
  * @author mbutcher
  *
@@ -36,7 +36,7 @@ public abstract class SinciputCommand extends AbstractCommand {
 	/**
 	 * Command configuration directive for authentication.
 	 * If the no-auth directive is set to 'no', 'false', or 'off', then the {@link doCommand(Map, List)}
-	 * will not require authentication before proceeding. By default, doCommand() requires authetnication.
+	 * will not require authentication before proceeding. By default, doCommand() requires authentication.
 	 * Value: 'no-auth'
 	 */
 	public final static String DIR_NO_AUTH = "no-auth";

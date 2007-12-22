@@ -1,0 +1,29 @@
+#**
+Journal editor.
+
+@author mbutcher
+*#
+#set( $title="Edit A Journal" )
+##parse( "frag/standard_header.vt" )
+#if($ERRORS.containsKey("RequireAuthN"))
+  <p>You must login before you can access Sinciput.</p>
+  #set( $action="login" )
+  #set( $next_request="default")
+  #parse("frag/login_form.vt")
+  ##parse( "frag/standard_footer.vt" )
+  #stop
+#end
+<h2 class="subsectionTitle">$title</h2>
+<form method="POST" action="$absolute_uri/save_journal">
+	<label for="title">Title</label>
+	<input type="text" name="title" id="title"/><br/>
+	<label for="description">Description</label>
+	<input type="text" name="description" id="description"/><br/>
+	<label for="tag">Tags</label>
+	<input type="text" name="tag" id="tag"/><br/>
+	#parse( "frag/editor.vt" )
+	<br/>
+	<input type="submit" value="Save Journal"/><br/>
+</form>
+
+##parse( "frag/standard_footer.vt" )
