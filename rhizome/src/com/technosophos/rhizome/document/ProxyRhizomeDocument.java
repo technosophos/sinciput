@@ -93,7 +93,8 @@ public class ProxyRhizomeDocument extends RhizomeDocument {
 	 */
 	public Metadatum getMetadatum(String name) {
 		Metadatum m = super.getMetadatum(name);
-		return (m == null) ? this.realDoc.getMetadatum(name) : m;
+		if(m != null) return m;
+		return this.getRealDoc() != null ? this.realDoc.getMetadatum(name) : null;
 	}
 
 	public ArrayList<Relation> getRelations() {
