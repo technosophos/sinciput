@@ -27,9 +27,13 @@ public class Timestamp {
 	 * @return the timestamp for the given date
 	 */
 	public static String getTimeStamp(Date d) {
-		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
+		DateFormat df = getDateFormatter();
 		String time = df.format(d);
 		return time;
+	}
+	
+	public static DateFormat getDateFormatter() {
+		return DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG);
 	}
 	
 }
