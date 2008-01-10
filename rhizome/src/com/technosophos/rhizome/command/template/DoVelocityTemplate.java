@@ -13,6 +13,7 @@ import com.technosophos.rhizome.repository.RepositoryManager;
 import org.apache.velocity.VelocityContext;
 //import org.apache.velocity.context.Context;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.Template;
 
 /**
  * Performs velocity template rendering.
@@ -161,6 +162,7 @@ public class DoVelocityTemplate extends AbstractCommand {
 	 */
 	protected VelocityContext createContext() {
 		VelocityContext basic = new VelocityContext();
+		//System.err.format("There are %d Items in context.", basic.getKeys().length);
 		Object o;
 		//ArrayList errors = new ArrayList();
 		HashMap<String, CommandResult> err = new HashMap<String, CommandResult>();
@@ -188,7 +190,12 @@ public class DoVelocityTemplate extends AbstractCommand {
 		basic = new VelocityContext(this.params, basic);
 		VelocityContext c = new VelocityContext(this.comConf.getDirectives(), basic);
 		c.put("ERRORS", err);
-		return c;
+		/*
+		 * If the final context contains a Map, then Velocity uses that Map to cache
+		 * variables. This leads to variable bleeding between templates. To resolve
+		 * this, we have to wrap the context inside of another context. Weird....
+		 */
+		return new VelocityContext(c);
 	}
 	
 	/**
@@ -205,7 +212,8 @@ public class DoVelocityTemplate extends AbstractCommand {
 	 */
 	protected String processTemplate(VelocityContext c) throws Exception {
 		StringWriter w = new StringWriter();
-		this.velen.mergeTemplate(this.template_name, c, w);
+		
+		this.velen.mergeTemplate(this.template_name, "UTF-8", c, w);
 		return w.toString();
 	}
 	
@@ -247,6 +255,11 @@ public class DoVelocityTemplate extends AbstractCommand {
 				}
 				vel_file_path = sb.toString();
 			}
+			
+			//MPB: Allows a template $var to be set to NULL:
+			this.velen.setProperty(VelocityEngine.SET_NULL_ALLOWED, true);
+			this.velen.setProperty(VelocityEngine.ENCODING_DEFAULT, "UTF-8");
+			
 			this.velen.setProperty(VelocityEngine.FILE_RESOURCE_LOADER_PATH, vel_file_path);
 			//System.out.println("TEMPLATE PATH:" + this.velen.getProperty(VelocityEngine.FILE_RESOURCE_LOADER_PATH));
 			//System.out.println("TEMPLATE PATH:" + vel_file_path);

@@ -325,6 +325,13 @@ public class RhizomeDocument implements Presentable {
 	}
 	
 	/**
+	 * Remove all metadata from this document.
+	 */
+	public void clearMetadata() {
+		this.metadata.clear();
+	}
+	
+	/**
 	 * Convenience method for quickly adding metadata.
 	 * @param name
 	 * @param values

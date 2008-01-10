@@ -84,15 +84,18 @@ public interface RepositorySearcher {
 			throws RepositoryAccessException;
 	
 	/**
-	 * This retrieves a DocumentCollection.
-	 * <p>The collection will have an entry for every member of docIDs that exists in 
-	 * the directory. An entry in the list will have a Metadatum item for every item
+	 * This retrieves a DocumentList.
+	 * <p>The list will have a document for every member of docIDs passed in docIDs. 
+	 * A document in the list will have a Metadatum item for every item
 	 * in the names array.</p>
-	 * <p>This method is used to grab a subset of available metadata for a select
-	 * batch of document IDs.</p>
-	 * @param names
-	 * @param docIDs
-	 * @return a DocumentCollection containing docs from docIDs, each with metadata.
+	 * <p>Implementations of this command may returned proxied documents, which will 
+	 * cache the metadata in <code>names</code>, but will proxy access to the rest of the metadata.
+	 * Other implementations may return FULL document objects, with all metadata (effectively ignoring names)</p>
+	 * @param names Metadata items that should definitely be returned
+	 * @param docIDs Array of IDs to look for.
+	 * @param repo An initialized repository used to get documents
+	 * @return a DocumentList containing docs from docIDs, each with metadata.
+	 * @see DocumentList
 	 */
 	//public DocumentCollection getDocCollection(String[] names, String[] docIDs) 
 	//		throws RepositoryAccessException;

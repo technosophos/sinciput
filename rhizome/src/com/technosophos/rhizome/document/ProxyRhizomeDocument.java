@@ -118,6 +118,8 @@ public class ProxyRhizomeDocument extends RhizomeDocument {
 	/** Does nothing. */
 	public void setBody(String txt) {
 	}
+	/** Does nothing. */
+	public void clearMetadata(){}
 	public String toString() {
 		return this.getRealDoc() != null ? this.realDoc.toString() : null;
 	}
