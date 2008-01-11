@@ -191,7 +191,8 @@ public class LuceneSearcher implements RepositorySearcher {
 		ArrayList<String> docIDs = new ArrayList<String>();
 		String [] fields = {LUCENE_RELATION_FIELD, LUCENE_DOCID_FIELD};
 		
-		String value = docID + RELATION_SEPARATOR + docID;
+		//String value = docID + RELATION_SEPARATOR + docID;
+		String value = docID + RELATION_SEPARATOR + relationType;
 		
 		MapFieldSelector fieldSelector = new MapFieldSelector(fields);
 		IndexReader lreader = null;

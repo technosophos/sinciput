@@ -147,6 +147,7 @@ public class Metadatum {
 	public boolean hasValue(String value) {
 		if(this.values == null || value == null) return false;
 		for(String v: this.values) {
+			//System.err.format("### Does :%s: match :%s:?\n", v, value);
 			if(value.equalsIgnoreCase(v)) return true;
 		}
 		return false;
