@@ -44,6 +44,7 @@ public class RhizomeController {
 	private Map<String, RequestConfiguration> cqMap = null;
 	private Map<String, Class<?>> preloaded = null;
 	private RepositoryManager repoman = null;
+	//private boolean timeCommands = true;
 	protected RepositoryContext repocxt = null;
 	
 	/**
@@ -153,6 +154,7 @@ public class RhizomeController {
 	public LinkedList<CommandResult> doRequest(String requestName, Map<String, Object> data) 
 			throws RequestNotFoundException {
 		
+		long requestStart = System.currentTimeMillis();
 		LinkedList<CommandResult> results = new LinkedList<CommandResult>();
 		
 		if(!this.cqMap.containsKey(requestName))
@@ -162,11 +164,15 @@ public class RhizomeController {
 		
 		CommandConfiguration cconf = null;
 		try {
+			long startTime, endTime, totalTime;// = System.currentTimeMillis();
 			while (commands.hasNext()) {
 				cconf = commands.next();
 				System.out.format("Doing command %s.\n", cconf.getName());
+				startTime = System.currentTimeMillis();
 				this.doCommand(cconf, data, results);
-				System.out.format("Command: There are %d results.\n", results.size());
+				endTime = System.currentTimeMillis();
+				totalTime = endTime - startTime;
+				System.out.format("Command: There are %d results. Computed in %d milliseconds.\n", results.size(), totalTime);
 			}
 		} catch (ReRouteRequest rrr) {
 			// Reroute a request to a new request and begin processing again.
@@ -196,7 +202,10 @@ public class RhizomeController {
 			res = new CommandResult(cconf);
 			res.setError(errMsg, ferrMsg, fce);
 			results.add(res);
-		}		
+		} finally {
+			long requestTime = System.currentTimeMillis() - requestStart;
+			System.out.format("Request %s took %d milliseconds (%.2f seconds).\n", requestName, requestTime, (float)requestTime/1000F);
+		}
 		return results;
 	}
 	
