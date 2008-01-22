@@ -165,9 +165,24 @@ public interface RepositorySearcher {
 	 * Get an array containing metadata names.
 	 * Metadata has two main parts: the name and the list of values. This method
 	 * retrieves a complete list of unique names in the database.
-	 * @return
+	 * @return Array of metadata names.
+	 * @see getMetadataValues(String)
+	 * @throws RepositoryAccessException when there is a problem accessing the repository.
 	 */
 	public String []  getMetadataNames() throws RepositoryAccessException;
+	
+	/**
+	 * Get a Map containing metadata values and the number of times each value occured.
+	 * Metadata has two main parts: the name and the list of values. This method
+	 * retrieves a complete list of unique <em>values</em> for a given name in the database.
+	 * Along with each name, it returns a counter indicating how many times the name appears
+	 * in the database. This can be used for sorting on popularity and so on.
+	 * <b>Warning:</b> Depending on the values returned, this can be a very costly method to call.
+	 * @param mdName The name of the metadatum.
+	 * @return An array containing the unique values for all Metdata by that name.
+	 * @throws RepositoryAccessException when there is a problem accessing the repository.
+	 */
+	public Map<String,Integer>  getMetadataValues(String mdName) throws RepositoryAccessException;
 	
 	/**
 	 * This should provide a hint to the Repository Manager as to 

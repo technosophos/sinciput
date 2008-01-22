@@ -26,6 +26,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.io.File;
+import java.io.IOException;
+
 import static com.technosophos.rhizome.repository.lucene.LuceneElements.*;
 
 public class LuceneSearcher implements RepositorySearcher {
@@ -50,7 +52,7 @@ public class LuceneSearcher implements RepositorySearcher {
 	 * Get an array containing metadata names.
 	 * Metadata has two main parts: the name and the list of values. This method
 	 * retrieves a complete list of unique names in the database.
-	 * @return
+	 * @return Array of metadata names
 	 */
 	public String []  getMetadataNames() throws RepositoryAccessException {
 		String [] fields = null;
@@ -77,6 +79,45 @@ public class LuceneSearcher implements RepositorySearcher {
 			}
 		}
 		return fields;
+	}
+	
+	public Map<String,Integer>  getMetadataValues(String mdName) throws RepositoryAccessException {
+		HashMap<String, Integer> map = new HashMap<String, Integer>();
+		
+		MapFieldSelector fieldSelector = new MapFieldSelector(new String [] {mdName});
+		IndexReader lreader = null;
+		try {
+			lreader = this.getIndexReader();
+			int last = lreader.maxDoc();
+			
+			Document d;
+			String[] vals;
+			for(int i = 0; i < last; ++i) {
+				if(!lreader.isDeleted(i)) {
+					d = lreader.document(i, fieldSelector);
+					
+					vals = d.getValues(mdName);
+					// If this MD name exists, we want to put it in the Map, incrementing the 
+					// counter (or setting it to 1 if the entry is new)
+					if(vals != null && vals.length > 0) {
+						for(String v: vals) {
+							map.put(v,
+									map.containsKey(v) ? map.get(v) + 1 : 1
+							);
+						}
+					}
+				}
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			if(lreader != null) {
+				try{ lreader.close(); } catch (java.io.IOException ioe) {}
+			}
+		}
+		
+		return map;
 	}
 	
 	/**

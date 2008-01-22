@@ -349,6 +349,7 @@ public class RepositoryManager {
 	 * return a fresh instance or a cached copy.
 	 * 
 	 * @return initialized repository searcher.
+	 * @throws RhizomeInitializationException when the search tables cannot be created, opened, or read.
 	 */
 	public RepositorySearcher getSearcher(String searcherName) 
 			throws RhizomeInitializationException {
