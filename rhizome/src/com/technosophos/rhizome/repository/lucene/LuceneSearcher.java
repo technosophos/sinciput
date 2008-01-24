@@ -692,10 +692,22 @@ public class LuceneSearcher implements RepositorySearcher {
 		return false;
 	}
 	
+	/**
+	 * Utility function: Get metadata values in a list.
+	 * @param d Initialized document
+	 * @param names Names of metadata to get
+	 * @return List of metadata objects with names and values.
+	 */
 	private ArrayList<Metadatum> fetchMetadata(Document d, String[] names) {
 		ArrayList<Metadatum> md = new ArrayList<Metadatum>(names.length);
 		
-		for(String name: names)	md.add(new Metadatum(name, d.getValues(name)));
+		// Sometimes a returned key will have a null value. Need to check for that here.
+		for(String name: names)	{
+			String[] vals = d.getValues(name);
+			if(vals != null)
+				md.add(new Metadatum(name, vals));
+			//else System.err.format("LuceneSearcher: Key %s has no values.\n", name);
+		}
 		
 		return md;
 	}
