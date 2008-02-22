@@ -84,6 +84,26 @@ public interface RepositorySearcher {
 			throws RepositoryAccessException;
 	
 	/**
+	 * Perform a simple text search.
+	 * This should take a query string, search the index for it, and return a DocumentList
+	 * of matches. The returned list *should* be ordered with the best matches first.
+	 * @param query Plain text query string.
+	 * @param names Metadata items that should definitely be returned
+	 * @param args Miscelaneious search args can be passed here. The underlying search 
+	 * implementation may or may not make use of these
+	 * @param repo Document repository to be used for fetching the entire document.
+	 * @return A DocumentList of matching documents.
+	 * @throws RepositoryAccessException If an error is encountered while searching.
+	 * @see getDocumentList(String[], String[], DocumentRepository)
+	 */
+	public SearchResults simpleSearch(String query, String[] names, Map<String, String> args, DocumentRepository repo) 
+			throws RepositoryAccessException;
+	public SearchResults simpleSearch(String query, String[] names, Map<String, String> args, DocumentRepository repo,int maxResults) 
+			throws RepositoryAccessException;
+	public SearchResults simpleSearch(String query, String[] names, Map<String, String> args, DocumentRepository repo,int maxResults, int offset) 
+			throws RepositoryAccessException;
+	
+	/**
 	 * This retrieves a DocumentList.
 	 * <p>The list will have a document for every member of docIDs passed in docIDs. 
 	 * A document in the list will have a Metadatum item for every item

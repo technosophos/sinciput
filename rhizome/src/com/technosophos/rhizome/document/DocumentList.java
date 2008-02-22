@@ -38,6 +38,8 @@ public class DocumentList extends ArrayList<RhizomeDocument> {
 		super(collection);
 	}
 	
+	public DocumentList() { super(); }
+	
 	public String[] getFields() {
 		return this.fields;
 	}

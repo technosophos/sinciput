@@ -4,6 +4,7 @@ import com.technosophos.rhizome.repository.RepositorySearcher;
 import com.technosophos.rhizome.repository.RepositoryContext;
 import com.technosophos.rhizome.repository.RepositoryAccessException;
 import com.technosophos.rhizome.repository.DocumentRepository;
+import com.technosophos.rhizome.repository.SearchResults;
 import com.technosophos.rhizome.document.DocumentCollection;
 import com.technosophos.rhizome.document.DocumentList;
 import com.technosophos.rhizome.document.Metadatum;
@@ -14,6 +15,13 @@ import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.MapFieldSelector;
 import org.apache.lucene.document.SetBasedFieldSelector;
+import org.apache.lucene.search.IndexSearcher; // For simpleSearch
+import org.apache.lucene.queryParser.MultiFieldQueryParser;
+import org.apache.lucene.queryParser.ParseException;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.search.Hits;
+import org.apache.lucene.search.Sort;
+import org.apache.lucene.document.Document;
 
 import java.util.Map;
 import java.util.Set;
@@ -34,6 +42,9 @@ public class LuceneSearcher implements RepositorySearcher {
 
 	//public static String LUCENE_INDEX_PATH_PARAM = "indexpath";
 	
+	public static final String SIMPLE_SEARCH_FIELDS = "fields";
+	public static final String SIMPLE_SEARCH_SEARCH_BODY = "search_body";
+
 	private RepositoryContext context;
 	private String indexName = null;
 	//private String indexLocation = null;
@@ -336,6 +347,101 @@ public class LuceneSearcher implements RepositorySearcher {
 		String[] names = {name};
 		return this.getDocumentList(names, docs, repo);
 	}
+
+	/**
+	 * Returns top matches. No more than maxResults are returned.
+	 */
+	public SearchResults simpleSearch(String query, String names[], Map<String, String> args, DocumentRepository repo, int maxResults)
+			throws RepositoryAccessException {
+		return this.simpleSearch(query, names, args, repo, maxResults, 0);
+	}
+	
+	/**
+	 * Return no more than 25 matches.
+	 */
+	public SearchResults simpleSearch(String query, String names[], Map<String, String> args, DocumentRepository repo)
+			throws RepositoryAccessException {
+		return this.simpleSearch(query, names, args, repo, 25, 0);
+	}
+	
+	/**
+	 * Perform a simple search against a Lucene backend.
+	 * 
+	 * <p>Values that can appear in in args:</p>
+	 * <ul>
+	 * <li>'fields': A comma-separated list of fields to search: "title,subtitle". Most important fields should be listed first. Order will determine sorting.</li>
+	 * <li>'search_body': If this is a string starting with f or n, the body will not be searched.
+	 * </ul> 
+	 */
+	public SearchResults simpleSearch(String query, String names[], Map<String, String> args, DocumentRepository repo, int maxResults, int offset)
+			throws RepositoryAccessException {
+		ArrayList<String> fields = new ArrayList<String>();
+		if(args.containsKey(SIMPLE_SEARCH_FIELDS)) {
+			String p = args.get(SIMPLE_SEARCH_FIELDS);
+			String [] fieldsBuffer = p.split(",");
+			for(String pp: fieldsBuffer) fields.add(pp.trim());
+		}
+		
+		if(args.containsKey(SIMPLE_SEARCH_SEARCH_BODY)) {
+			String q = args.get(SIMPLE_SEARCH_SEARCH_BODY);
+			if(!(q.startsWith("n") || q.startsWith("f")))
+				fields.add(LUCENE_BODY_FIELD);
+		} else fields.add(LUCENE_BODY_FIELD);
+		
+		// New index searcher
+		IndexReader reader;
+		try {
+			reader = this.getIndexReader();
+		} catch (IOException e) {
+			throw new RepositoryAccessException("Could not read the index.");
+		}
+		IndexSearcher searcher = new IndexSearcher(reader);
+		MultiFieldQueryParser qp = new MultiFieldQueryParser(
+			fields.toArray(new String[fields.size()]), 
+			new StandardAnalyzer()
+		);
+		
+		Hits hits; // Sort if we have enough fields:
+		try {
+			if( fields.size() > 0 )
+				hits = searcher.search(qp.parse(query), new Sort(fields.get(0)));
+			else 
+				hits = searcher.search(qp.parse(query));
+		} catch (IOException e) {
+			throw new RepositoryAccessException("IOException: Could not search index: " + e.toString());
+		} catch (ParseException e) {
+			// TODO: Decide what to do when this happens. Maybe we shouldn't return an
+			// error to the user.
+			throw new RepositoryAccessException("ParseException: Could not parse search query: " + e.toString());
+		}
+		
+		int numHits = hits.length();
+		if(numHits == 0 || offset > numHits) {
+			return new SearchResults(query, names, args, maxResults, offset);
+			//throw new RepositoryAccessException("Offset exceeds number of returned hits.");
+		}
+		
+		DocumentList dl = new DocumentList();
+		ProxyRhizomeDocument pdoc;
+		Document ldoc;
+		for(int i = 0; i < maxResults; ++i) {
+			try {
+				ldoc = hits.doc(offset + i); // throws IOException
+				pdoc = new ProxyRhizomeDocument(
+						ldoc.get(LUCENE_DOCID_FIELD),
+						this.fetchMetadata(ldoc, names),
+						repo
+				);
+				dl.add(pdoc);
+			} catch (IOException e) {
+				// Skip document?
+				System.out.println("Skipping document."); // FIXME: This should do something useful
+			}
+		}
+		return new SearchResults(query, names, args, maxResults, offset, hits.length(), dl);
+	}
+	
+
 	
 	/**
 	 * This retrieves a DocumentCollection.
@@ -711,6 +817,7 @@ public class LuceneSearcher implements RepositorySearcher {
 		
 		return md;
 	}
+
 	
 	public boolean isReusable() {
 		return false;
