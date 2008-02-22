@@ -424,7 +424,8 @@ public class LuceneSearcher implements RepositorySearcher {
 		DocumentList dl = new DocumentList();
 		ProxyRhizomeDocument pdoc;
 		Document ldoc;
-		for(int i = 0; i < maxResults; ++i) {
+		int max = maxResults > numHits ? numHits : maxResults;
+		for(int i = 0; i < max; ++i) {
 			try {
 				ldoc = hits.doc(offset + i); // throws IOException
 				pdoc = new ProxyRhizomeDocument(
