@@ -116,9 +116,13 @@ public class LuceneIndexer implements DocumentIndexer {
 			RhizomeDocument rd;
 			for(int i = 0; i < all_docs.length; ++i ) {
 				rd = repman.getRepository(this.indexName).getDocument(all_docs[i]);
+				Metadatum m = rd.getMetadatum("title");
+				//String id = rd.getDocumentID();
+				//System.err.format("reindexing %s (%s).\n", id, m.getFirstValue());
 				doc = this.prepareDocument(rd);
 				indWriter.addDocument(doc);
 			}
+			indWriter.flush();
 			indWriter.optimize();
 			doc_count = indWriter.docCount();
 		} catch (RhizomeParseException e) {	

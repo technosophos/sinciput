@@ -21,7 +21,7 @@ import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.document.Document;
+//import org.apache.lucene.document.Document;
 
 import java.util.Map;
 import java.util.Set;
@@ -401,12 +401,15 @@ public class LuceneSearcher implements RepositorySearcher {
 			new StandardAnalyzer()
 		);
 		
-		Hits hits; // Sort if we have enough fields:
+		Hits hits;
+		// We don't want to sort because we want the weighted rankings back.
 		try {
-			if( fields.size() > 0 )
-				hits = searcher.search(qp.parse(query), new Sort(fields.get(0)));
-			else 
-				hits = searcher.search(qp.parse(query));
+			// Can't sort on tokenized fields, so this fails:
+			//if( fields.size() > 0 )
+			//	hits = searcher.search(qp.parse(query), new Sort(fields.get(0)));
+			//else 
+			//	hits = searcher.search(qp.parse(query));
+			hits = searcher.search(qp.parse(query), new Sort(LUCENE_DOCID_FIELD));
 		} catch (IOException e) {
 			throw new RepositoryAccessException("IOException: Could not search index: " + e.toString());
 		} catch (ParseException e) {
@@ -424,10 +427,13 @@ public class LuceneSearcher implements RepositorySearcher {
 		DocumentList dl = new DocumentList();
 		ProxyRhizomeDocument pdoc;
 		Document ldoc;
-		int max = maxResults > numHits ? numHits : maxResults;
-		for(int i = 0; i < max; ++i) {
+		//int max = maxResults + offset > numHits ? numHits : maxResults;
+		//for(int i = 0; i < max; ++i) {
+		int max = maxResults + offset > numHits ? numHits : maxResults + offset;
+		for(int i = offset; i < max; ++i) {
 			try {
-				ldoc = hits.doc(offset + i); // throws IOException
+				//ldoc = hits.doc(offset + i); // throws IOException
+				ldoc = hits.doc(i); // throws IOException
 				pdoc = new ProxyRhizomeDocument(
 						ldoc.get(LUCENE_DOCID_FIELD),
 						this.fetchMetadata(ldoc, names),

@@ -4,6 +4,7 @@ import java.util.Map;
 
 import com.technosophos.rhizome.document.DocumentList;
 
+
 /**
  * Search results.
  * This utility class encapsulates search results.
@@ -11,11 +12,11 @@ import com.technosophos.rhizome.document.DocumentList;
  *
  */
 public class SearchResults {
-	public final String q;
-	public final String[] names;
-	public final Map<String,String> args;
-	public final int maxResults, offset, numberOfResults;
-	public final DocumentList docList;
+	protected String q;
+	protected String[] names;
+	protected Map<String,String> args;
+	protected int maxResults, offset, numberOfResults;
+	protected DocumentList docList;
 	
 	/**
 	 * Use this whenever your search returns results.
@@ -55,6 +56,10 @@ public class SearchResults {
 		this(q, names, args, maxResults, offset, 0, new DocumentList());
 	}
 	
+	protected SearchResults() {
+		this("", new String[0], null, 25, 0, 0, new DocumentList());
+	}
+	
 	// These are required for Velocity's introspection agent:
 	public String getQuery() { return this.q; }
 	public String[] getNames() {return this.names;}
@@ -63,5 +68,6 @@ public class SearchResults {
 	public int getOffset(){return this.offset;}
 	public int getTotalMatches(){return this.numberOfResults;}
 	public DocumentList getDocumentList(){return this.docList;}
-	public int getListLength(){return this.docList.size();}
+	
+	
 }

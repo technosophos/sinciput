@@ -25,9 +25,11 @@ public class LuceneIndexerDepot implements DocumentIndexerDepot {
 		if( full_path.exists())
 			throw new RepositoryAccessException(String.format("Index %s already exists. Can't create.", full_path));
 		
-		
+		// The RepositoryDepot probably already created this dir.
+		//if(!full_path.exists()) {
 		boolean b = full_path.mkdir();
 		if(!b) throw new RepositoryAccessException("Cannot create directory " + full_path.getAbsolutePath());
+		//}
 		
 		// Finally, we need to create and initialize the index files:
 		LuceneIndexer ind = new LuceneIndexer(name, cxt);
