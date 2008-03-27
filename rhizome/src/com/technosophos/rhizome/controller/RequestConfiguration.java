@@ -17,8 +17,8 @@ import java.util.Queue;
  */
 public class RequestConfiguration {
 
-	/** Default MIME type, which is text/html. */
-	public static final String DEFAULT_MIME_TYPE = "text/html";
+	/** Default MIME type, which is "text/html; charset=UTF-8". */
+	public static final String DEFAULT_MIME_TYPE = "text/html; charset=UTF-8";
 	
 	protected String name = null;
 	protected Queue<CommandConfiguration> commands = null;
@@ -53,15 +53,32 @@ public class RequestConfiguration {
 		this.commands = commands;
 		if(mimeType != null) this.mimeType = mimeType;
 	}
-	
+	/**
+	 * Get the queue for this request.
+	 * A request has an attached queue of commands. This retrieves the queue.
+	 * @return A queue with one {@link CommandConfiguration} item for every command this request should do.
+	 */
 	public Queue<CommandConfiguration> getQueue() {
 		return this.commands;
 	}
 	
+	/**
+	 * Get the name of the request.
+	 * 
+	 * This returns the request name.
+	 * @return Request name
+	 */
 	public String getName() {
 		return this.name;
 	}
 	
+	/**
+	 * Return the MIME type (and possibly the character encoding).
+	 * A request can self-report what MIME type it will return. So a request that returns
+	 * a PNG image might return <code>image/png</code>, and one that generates HTML might return
+	 * <code>text/html; charset=iso-8859-1</code>.
+	 * @return MIME type and possibly a character encoding.
+	 */
 	public String getMimeType() {
 		return this.mimeType;
 	}

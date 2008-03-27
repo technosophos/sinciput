@@ -203,9 +203,10 @@ public class DoVelocityTemplate extends AbstractCommand {
 	 * <p>This processes the velocity template, using the given context. It returns the results
 	 * in the form of a string.</p>
 	 * <p>This version uses the {@link VelocityEngine.mergeTemplate(String, VelocityContext, Writer} 
-	 * method to process the template. THis method is dependent on reading templates from
+	 * method to process the template. This method is dependent on reading templates from
 	 * the file system. Override this if you want to read templates from another location,
 	 * such as the Rhizome Repository.</p>
+	 * <p>Note that this currently always encodes content to UTF-8.</p>
 	 * @param c An initialized VelocityContext.
 	 * @return The results of template processing.
 	 * @throws Exception Any exception that Velocity throws is thrown here.
@@ -214,6 +215,7 @@ public class DoVelocityTemplate extends AbstractCommand {
 		StringWriter w = new StringWriter();
 		
 		this.velen.mergeTemplate(this.template_name, "UTF-8", c, w);
+		//this.velen.mergeTemplate(this.template_name, c, w);
 		return w.toString();
 	}
 	
