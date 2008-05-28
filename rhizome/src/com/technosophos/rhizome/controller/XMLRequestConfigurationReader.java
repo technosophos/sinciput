@@ -32,14 +32,16 @@ public class XMLRequestConfigurationReader {
 	public static String REQ_CMD_ELE = "cmd";
 	public static String REQ_PARAM_ELE = "param";
 	public static String REQ_VALUE_ELE = "value";
+	public static String REQ_GROUP_ELE = "group";
 	
 	public static String REQ_NAME_ATTR = "name";
 	public static String REQ_CLASS_ATTR = "class";
 	public static String REQ_DO_ATTR = "do";
 	public static String REQ_FATAL_ATTR = "fatal";
 	public static String REQ_PREFIX_ATTR = "prefix";
-	public static final String REQ_MIME_ATTR="mimetype";
+	public static final String REQ_MIME_ATTR = "mimetype";
 	//public static String REQ_DEFAULT_ATTR = "default";
+	public static final String REQ_GROUP_ATTR = "group";
 	
 	/**
 	 * Processor Instructions for this Target will be translated to path information.
@@ -57,6 +59,9 @@ public class XMLRequestConfigurationReader {
 	private HashMap<String, String> classes = new HashMap<String, String>();
 	private HashMap<String, String[]> globals = new HashMap<String, String[]>();
 	private Map<String, String> pathInfo = null;
+	
+	// This is used to store group info.
+	private HashMap<String, RequestConfiguration> groups = null;
 	
 	public XMLRequestConfigurationReader(Map<String, String> pathInfo) {
 		this.pathInfo = pathInfo;
@@ -168,7 +173,24 @@ public class XMLRequestConfigurationReader {
 				this.globals.put(xattrs.getAttributeValue(REQ_NAME_ATTR), txt);
 		}
 		
-		// THIRD: Get Request Queues 
+		// THIRD: Get Command Groups
+		LinkedList<XElement> group_l = reqs_ele.getChildrenElements(REQ_GROUP_ELE);
+		this.groups = new HashMap();
+		if(group_l.size() > 0) {
+			RequestConfiguration reqC;
+			for(XElement req_ele: group_l) {
+				xattrs = req_ele.getAttributes();
+				if(xattrs.containsAttribute(REQ_NAME_ATTR)) {
+					reqC = new RequestConfiguration(
+							xattrs.getAttributeValue(REQ_NAME_ATTR), //Name
+							this.getCommands(req_ele) // Queue
+					);
+					groups.put(xattrs.getAttributeValue(REQ_NAME_ATTR), reqC);
+				}
+			}
+		}
+		
+		// FOURTH: Get Request Queues 
 		LinkedList<XElement> req_l = reqs_ele.getChildrenElements(REQ_REQUEST_ELE);
 		String mimeType = null;
 		RequestConfiguration reqC;
@@ -191,6 +213,18 @@ public class XMLRequestConfigurationReader {
 		return map;
 	}
 	
+	/**
+	 * Given an XML elemnt, get all of the commands in this element.
+	 * This handles two kinds of commands. Commands with the do="command_name" attribute
+	 * are added directly to the queue. Commands with the attribute group="group_name" 
+	 * cause getCommands to examine this.groups to see if there is a group with that name.
+	 * If there is, then the commands in that group are injected into the current request.
+	 * 
+	 * Using this group mechanism, it is possible to introduce a layer of abstraction onto
+	 * the request object construction.
+	 * @param req_ele
+	 * @return
+	 */
 	private Queue<CommandConfiguration> getCommands(XElement req_ele) {
 		this.piReplace(req_ele); // Replace processing instructions.
 		LinkedList<XElement> cmd_l = req_ele.getChildrenElements(REQ_CMD_ELE);
@@ -240,11 +274,39 @@ public class XMLRequestConfigurationReader {
 					
 					cconf_l.add(cconf);
 				}
+			} else if (xattrs.containsAttribute(REQ_GROUP_ATTR)) {
+				// Here we handle groups.
+				// A command can reference a group, which is a collection of commands.
+				// In such a case, all of the commands in that group will be injected
+				// into the current request.
+				String groupName = xattrs.getAttributeValue(REQ_GROUP_ATTR);
+				if(this.groups.containsKey(groupName)) {
+					Queue<CommandConfiguration> groupCommands = 
+						this.groups.get(groupName).getQueue();
+					for(CommandConfiguration cc: groupCommands) {
+					  System.err.println("Adding command from group.");
+					  cconf_l.add(cc);	
+					}
+				}
+				
 			}
 		}
 		return cconf_l;
 	}
 	
+	/*
+	private XElement getGroup(String name, XElement parent) {
+		LinkedList<XElement> groups = parent.getChildrenElements(REQ_GROUP_ELE);
+		for(XElement group: groups) {
+			XAttributes attr = group.getAttributes();
+			if(attr.containsAttribute(REQ_GROUP_ATTR) 
+					&& name.equalsIgnoreCase(attr.getAttributeValue(REQ_GROUP_ATTR))) {
+				return group;
+			}
+		}
+		return null;
+	}
+	*/
 
 	private String catPCData(LinkedList<XPCData> pcd) {
 		if(pcd == null || pcd.size() == 0 ) return "";

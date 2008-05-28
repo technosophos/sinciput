@@ -304,7 +304,9 @@ public class RhizomeDocument implements Presentable {
 	}
 	/**
 	 * Add a metadatum item to the existing list.
-	 * @param meta
+	 * This does NOT overwrite existing metadata.
+	 * @param meta Initialized Metadatum object.
+	 * @see replaceMetadatum(Metadatum)
 	 */
 	public void addMetadatum(Metadatum meta) {
 		this.metadata.add(meta);
@@ -316,12 +318,87 @@ public class RhizomeDocument implements Presentable {
 	 */
 	public void replaceMetadatum( Metadatum meta ) {
 		int i, j = this.metadataSize();
+		List<Metadatum> remove = new ArrayList<Metadatum>();
 		for( i = 0; i < j; ++i ) {
 			if( this.metadata.get(i).getName().equalsIgnoreCase(meta.getName())) {
-				this.metadata.remove(i);
+				remove.add(this.metadata.get(i));
 			}
 		}
+		this.metadata.removeAll(remove); // If there are duplicates of the same object, this will fail
 		this.metadata.add(meta);
+	}
+	
+	/**
+	 * Changes the relation based on document ID.
+	 * @param rel
+	 */
+	public void changeRelationType( Relation rel ) {
+		
+		int i, j = this.relations.size();
+		for( i = 0; i < j; ++i ) {
+			if( this.relations.get(i).getDocID().equals(rel.getDocID())) {
+				this.relations.set(i, rel);
+			}
+		}
+	}
+	
+	/**
+	 * Remove all relations that point to the given document ID.
+	 * @param docID
+	 * @return True if anything was removed
+	 */
+	public boolean removeRelation(String relDocID) {
+		int i, j = this.relations.size();
+		boolean removed = false;
+		for( i = 0; i < j; ++i ) {
+			if( this.relations.get(i).getDocID().equals(relDocID)) {
+				this.relations.remove(i);
+				removed = true;
+			}
+		}
+		return removed;
+	}
+	/**
+	 * Remove all relations that point to the document ID of the given document.
+	 * @param rel
+	 * @return True if anything was removed.
+	 */
+	public boolean removeRelation(Relation rel) {
+		int i, j = this.relations.size();
+		boolean removed = false;
+		for( i = 0; i < j; ++i ) {
+			if( this.relations.get(i).getDocID().equals(rel.getDocID())) {
+				this.relations.remove(i);
+				removed = true;
+			}
+		}
+		return removed;
+	}
+	
+	/**
+	 * Remove a relation.
+	 * Remove all relations that point to the document ID of the given Relation. If
+	 * strict is set to true, then this will only remove the relation if it matches
+	 * both the document ID AND the Relation type.
+	 * @param rel
+	 * @param strict If this is TRUE, then the relation will be removed only if the ID
+	 *   and the type match.
+	 * @return True if anything was removed.
+	 */
+	public boolean removeRelation(Relation rel, boolean strict) {
+		if(strict == false) return this.removeRelation(rel);
+		
+		int i, j = this.relations.size();
+		boolean removed = false;
+		for( i = 0; i < j; ++i ) {
+			if( this.relations.get(i).getDocID().equals(rel.getDocID())
+					&& this.relations.get(i).getRelationType().equals(rel.getRelationType())
+					) {
+				this.relations.remove(i);
+				removed = true;
+			}
+		}
+		return removed;
 	}
 	
 	/**
