@@ -191,6 +191,30 @@ public class RhizomeDocument implements Presentable {
 	public ArrayList<Relation> getRelations() {
 		return this.relations;
 	}
+	
+	/**
+	 * Checks to see if this document is related to the given document ID.
+	 * 
+	 * This method is relatively slow -- especially on documents with lots of relations.
+	 * 
+	 * @param docID Doc ID to check
+	 * @return True if the document ID is in one of this document's Relations.
+	 */
+	public boolean isRelatedTo(String docID) {
+		for(Relation r: this.relations)
+			if(r.getDocID().equals(docID)) return true;
+		return false;
+	}
+	
+	public boolean isRelatedTo(String docID, String parentType) {
+		for(Relation r: this.relations) {
+			if(r.getRelationType().equals(parentType) 
+					&& r.getDocID().equals(docID)) { 
+				return true;
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Get the body (the data) of the document.

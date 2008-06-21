@@ -100,6 +100,10 @@ public class ProxyRhizomeDocument extends RhizomeDocument {
 	public ArrayList<Relation> getRelations() {
 		return this.getRealDoc() != null ? this.realDoc.getRelations() : null;
 	}
+	
+	public boolean isRelatedTo(String docID) {
+		return this.getRealDoc().isRelatedTo(docID);
+	}
 
 	public boolean hasExtension(String name) {
 		return this.getRealDoc() != null ? this.realDoc.hasExtension(name) : null;

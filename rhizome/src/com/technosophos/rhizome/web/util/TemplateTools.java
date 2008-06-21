@@ -57,6 +57,10 @@ public class TemplateTools {
 		}
 	}
 	
+	public long now() {
+		return (new Date()).getTime();//this.outDF.format(new Date());
+	}
+	
 	public String ts2Date(String timestamp, String format) {
 		try {
 			long ts = Long.parseLong(timestamp);
@@ -284,6 +288,7 @@ public class TemplateTools {
 	 */
 	public boolean ne(Object o){ return this.notEmpty(o); }
 	
+	public boolean empty(Object o) { return !this.notEmpty(o); }
 	
 	/**
 	 * Escape for HTML/XML display.
