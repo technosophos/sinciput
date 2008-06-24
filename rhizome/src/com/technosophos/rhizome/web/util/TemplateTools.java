@@ -72,6 +72,10 @@ public class TemplateTools {
 		}
 	}
 	
+	public String ts2Date(Date time, String format) {
+		return ts2Date(Long.toString(time.getTime()), format);
+	}
+	
 	/**
 	 * Format a date for display.
 	 * @param date Date string from Rhizome.
