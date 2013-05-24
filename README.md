@@ -13,12 +13,14 @@ Front end:
 - Primary focus on note taking
 - Also designed to help with bibliography, subject tracking, and ambient
   findability.
+- Linked with US Library of Congress and other library catalogs
+  - ZING SRU client
+  - CQL query builder
 
 Backend:
 - NoSQL storage engine that utilizes Lucene for indexing and searching
 - HTML-based markup
 - Folksonomic tagging and arbitrary hierarchy
-- Linked with US Library of Congress and other library catalogs
 
 
 ## History
